@@ -50,7 +50,7 @@ function NewComplaintForm() {
       // URL to your Google Sheet - using the visualization API to get the data
       // Make sure to replace the spreadsheet ID with your actual spreadsheet ID
       // and set the sheet name to your master dropdown sheet
-      const sheetUrl = "https://docs.google.com/spreadsheets/d/1PWtiteT5TvFotvSy97ePaMpLx9Rshn7FiF1s3tRvJuw/gviz/tq?tqx=out:json&sheet=master"
+      const sheetUrl = "https://docs.google.com/spreadsheets/d/1Vn295WmY0o6qh03rYzpCISGfMgT5RViXdYyd_ZNQ2p8/gviz/tq?tqx=out:json&sheet=master"
       
       const response = await fetch(sheetUrl)
       const text = await response.text()
@@ -116,7 +116,7 @@ function NewComplaintForm() {
   const fetchLastSerialNumber = async () => {
     try {
       const response = await fetch(
-        'https://script.google.com/macros/s/AKfycbyv-ipZnaEfHU78cI5ycdgSCXLjIHMfWon0GY7H8e0SA1W1_4BKaKoPmxg_ReQ2KEM2VA/exec?action=getLastSerialNumber&sheetName=FMS',
+        'https://script.google.com/macros/s/AKfycbzkBpcYMupYQi6gSURT_tqDfeQrGtbS6DwiRvmjw0s2kAIGmHlkjnVJDddXOy0v6ur7rw/exec?action=getLastSerialNumber&sheetName=FMS',
         {
           method: 'GET',
           mode: 'no-cors'

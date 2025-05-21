@@ -21,7 +21,7 @@ function TrackerPendingTable() {
   const [uploadStatus, setUploadStatus] = useState("")
 
   // Google Apps Script Web App URL - Replace with your actual deployed script URL
-  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyv-ipZnaEfHU78cI5ycdgSCXLjIHMfWon0GY7H8e0SA1W1_4BKaKoPmxg_ReQ2KEM2VA/exec"
+  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkBpcYMupYQi6gSURT_tqDfeQrGtbS6DwiRvmjw0s2kAIGmHlkjnVJDddXOy0v6ur7rw/exec"
   // Google Drive folder ID for file uploads
   const DRIVE_FOLDER_ID = "1b1MUkCIRxWoDk_jOFHNVvSwhYoaQdY5e"
   
@@ -33,7 +33,7 @@ function TrackerPendingTable() {
       
       try {
         // Fetch the entire sheet using Google Sheets API directly
-        const sheetUrl = "https://docs.google.com/spreadsheets/d/1PWtiteT5TvFotvSy97ePaMpLx9Rshn7FiF1s3tRvJuw/gviz/tq?tqx=out:json&sheet=FMS"
+        const sheetUrl = "https://docs.google.com/spreadsheets/d/1Vn295WmY0o6qh03rYzpCISGfMgT5RViXdYyd_ZNQ2p8/gviz/tq?tqx=out:json&sheet=FMS"
         const response = await fetch(sheetUrl)
         const text = await response.text()
         

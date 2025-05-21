@@ -16,12 +16,12 @@ function LoginPage() {
 
     try {
       // Using your existing AppScript URL
-      const scriptUrl = 'https://script.google.com/macros/s/AKfycbyv-ipZnaEfHU78cI5ycdgSCXLjIHMfWon0GY7H8e0SA1W1_4BKaKoPmxg_ReQ2KEM2VA/exec';
+      const scriptUrl = 'https://script.google.com/macros/s/AKfycbzkBpcYMupYQi6gSURT_tqDfeQrGtbS6DwiRvmjw0s2kAIGmHlkjnVJDddXOy0v6ur7rw/exec';
       
       // Direct authentication from the Login sheet without modifying your app script
       try {
         // Fetch the Google Sheet data for validation
-        const sheetUrl = "https://docs.google.com/spreadsheets/d/1PWtiteT5TvFotvSy97ePaMpLx9Rshn7FiF1s3tRvJuw/gviz/tq?tqx=out:json&sheet=Login";
+        const sheetUrl = "https://docs.google.com/spreadsheets/d/1Vn295WmY0o6qh03rYzpCISGfMgT5RViXdYyd_ZNQ2p8/gviz/tq?tqx=out:json&sheet=Login";
         const response = await fetch(sheetUrl);
         const text = await response.text();
         

@@ -16,7 +16,7 @@ function TrackerHistoryTable() {
       
       try {
         // Fetch the Tracker History sheet using Google Sheets API directly
-        const sheetUrl = "https://docs.google.com/spreadsheets/d/1PWtiteT5TvFotvSy97ePaMpLx9Rshn7FiF1s3tRvJuw/gviz/tq?tqx=out:json&sheet=Tracker%20History"
+        const sheetUrl = "https://docs.google.com/spreadsheets/d/1Vn295WmY0o6qh03rYzpCISGfMgT5RViXdYyd_ZNQ2p8/gviz/tq?tqx=out:json&sheet=Tracker%20History"
         const response = await fetch(sheetUrl)
         const text = await response.text()
         

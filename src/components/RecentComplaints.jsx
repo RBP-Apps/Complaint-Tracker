@@ -13,7 +13,7 @@ function RecentComplaints() {
         setIsLoading(true)
         // Fetch the entire sheet using Google Sheets API directly
         const sheetUrl =
-          "https://docs.google.com/spreadsheets/d/1PWtiteT5TvFotvSy97ePaMpLx9Rshn7FiF1s3tRvJuw/gviz/tq?tqx=out:json&sheet=FMS"
+          "https://docs.google.com/spreadsheets/d/1Vn295WmY0o6qh03rYzpCISGfMgT5RViXdYyd_ZNQ2p8/gviz/tq?tqx=out:json&sheet=FMS"
         const response = await fetch(sheetUrl)
 
         if (!response.ok) {
@@ -53,9 +53,10 @@ function RecentComplaints() {
 
   // Process recent complaints from sheet data
   // Recent complaints: column Y is not null and column Z is null
+  // Process recent complaints from sheet data
   const processRecentComplaints = () => {
     if (!data) return []
-
+  
     return data
       .filter(
         (row) =>
@@ -70,42 +71,42 @@ function RecentComplaints() {
         const beneficiaryName = row.c[7] ? row.c[7].v : "Unknown"
         const product = row.c[15] ? row.c[15].v : "Unknown"
         const village = row.c[12] ? row.c[12].v : "Unknown"
-
-        // Calculate relative time for date
+  
+        // Simple date display in dd/mm/yyyy format
         let date = "Unknown"
         if (row.c[24] && row.c[24].v) {
           try {
-            const complaintDate = new Date(row.c[24].v)
-            const now = new Date()
-            const diffHours = Math.floor((now - complaintDate) / (1000 * 60 * 60))
-
-            if (diffHours < 24) {
-              date = `${diffHours} hours ago`
-            } else if (diffHours < 48) {
-              date = "Yesterday"
-            } else {
-              date = `${Math.floor(diffHours / 24)} days ago`
+            // If it's already a string in the correct format
+            if (typeof row.c[24].v === 'string') {
+              date = row.c[24].v
+            } 
+            // If it's a date object or serial number
+            else {
+              const dateValue = new Date(row.c[24].v)
+              if (!isNaN(dateValue.getTime())) {
+                const day = String(dateValue.getDate()).padStart(2, '0')
+                const month = String(dateValue.getMonth() + 1).padStart(2, '0')
+                const year = dateValue.getFullYear()
+                date = `${day}/${month}/${year}`
+              }
             }
           } catch (e) {
-            console.error("Error parsing date:", e)
+            console.error("Error formatting date:", e)
           }
         }
-
-        // Determine status based on other columns
+  
+        // Status logic remains the same
         let status = "New"
         if (row.c[35] && row.c[35].v) {
-          // Column AJ has data
           if (row.c[36] && row.c[36].v) {
-            // Column AK has data
             status = "Completed"
           } else {
             status = "In Progress"
           }
         } else if (row.c[27] && row.c[27].v) {
-          // Column AA has data (assigned)
           status = "Assigned"
         }
-
+  
         return {
           id,
           beneficiaryName,

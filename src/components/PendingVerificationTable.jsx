@@ -23,7 +23,7 @@ function PendingVerificationTable() {
       
       try {
         // Fetch the entire sheet using Google Sheets API directly
-        const sheetUrl = "https://docs.google.com/spreadsheets/d/1PWtiteT5TvFotvSy97ePaMpLx9Rshn7FiF1s3tRvJuw/gviz/tq?tqx=out:json&sheet=FMS"
+        const sheetUrl = "https://docs.google.com/spreadsheets/d/1Vn295WmY0o6qh03rYzpCISGfMgT5RViXdYyd_ZNQ2p8/gviz/tq?tqx=out:json&sheet=FMS"
         const response = await fetch(sheetUrl)
         const text = await response.text()
         
@@ -104,32 +104,32 @@ function PendingVerificationTable() {
         `${verificationDate.getMonth() + 1}/${verificationDate.getDate()}/${verificationDate.getFullYear()}` : 
         ""
       
-      // Get the actual row index in the sheet
-      const rowIndex = taskToVerify.rowIndex
-      
       // Prepare form data for the update
       const formData = new FormData()
-      formData.append('sheetName', 'FMS')
-      formData.append('action', 'update')
-      formData.append('rowIndex', rowIndex.toString())
+      formData.append('sheetName', 'Verifications')
+      formData.append('action', 'insert') // Changed from 'update' to 'insert' to add to a new row
       
-      // Create an array with all columns, filled with empty strings
-      // This ensures we only update specific columns and leave others unchanged
-      const rowDataArray = new Array(50).fill('')
+      // Get current timestamp for the first column
+      const currentTimestamp = new Date().toLocaleString()
       
-      // Fill only the columns we want to update (AQ to AS, indices 42-44)
-      rowDataArray[46] = verificationStatus // Column AQ - Verification Status
-      rowDataArray[47] = formattedDate // Column AR - Verification Date
-      rowDataArray[48] = verificationPassword // Column AS - Verification Password
+      // Create an array with columns we want to update
+      // [timestamp, complaint_id, status, verification_date, verification_password]
+      const rowDataArray = [
+        currentTimestamp,         // First column - Timestamp
+        selectedTask,             // Second column - Complaint ID
+        verificationStatus,       // Third column - Verification Status
+        formattedDate,            // Fourth column - Verification Date
+        verificationPassword      // Fifth column - Verification Password
+      ]
       
       // Add the JSON string of row data to the form
       formData.append('rowData', JSON.stringify(rowDataArray))
       
-      console.log("Submitting verification for row:", rowIndex)
+      console.log("Submitting verification data")
       console.log("Row data:", rowDataArray)
       
       // Google Apps Script Web App URL
-      const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyv-ipZnaEfHU78cI5ycdgSCXLjIHMfWon0GY7H8e0SA1W1_4BKaKoPmxg_ReQ2KEM2VA/exec"
+      const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkBpcYMupYQi6gSURT_tqDfeQrGtbS6DwiRvmjw0s2kAIGmHlkjnVJDddXOy0v6ur7rw/exec"
       
       // Post the update
       const response = await fetch(GOOGLE_SCRIPT_URL, {
