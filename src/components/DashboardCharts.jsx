@@ -110,42 +110,48 @@ function DashboardCharts() {
 
   const processComplaintsByMonth = () => {
     if (!data) return []
-
-    const monthCounts = {
-      Jan: { completed: 0, pending: 0 },
-      Feb: { completed: 0, pending: 0 },
-      Mar: { completed: 0, pending: 0 },
-      Apr: { completed: 0, pending: 0 },
-      May: { completed: 0, pending: 0 },
-      Jun: { completed: 0, pending: 0 },
-    }
-
-    // Count complaints by month (columns Y and Z, indices 24 and 25)
+  
+    // Initialize all months with zeros
+    const allMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    const monthCounts = Object.fromEntries(
+      allMonths.map(month => [month, { completed: 0, pending: 0 }])
+    )
+  
     data.forEach((row) => {
-      // Extract month from date in column Y (index 24)
-      if (row.c[24] && row.c[24].v) {
+      if (row.c && row.c[49] && row.c[49].v) {
         try {
-          const dateStr = row.c[24].v
-          const date = new Date(dateStr)
-          const month = date.toLocaleString("default", { month: "short" })
-
-          // Check if completed (column Z, index 25 has value)
-          if (row.c[25] && row.c[25].v) {
-            monthCounts[month].completed = (monthCounts[month].completed || 0) + 1
+          const dateStr = row.c[49].v
+          let date
+  
+          if (typeof dateStr === 'string') {
+            // Handle "5/21/2025" format
+            const [month, day, year] = dateStr.split('/').map(Number)
+            date = new Date(year, month - 1, day)
+          } else if (dateStr instanceof Date) {
+            date = new Date(dateStr)
           } else {
-            monthCounts[month].pending = (monthCounts[month].pending || 0) + 1
+            return
+          }
+  
+          const monthName = date.toLocaleString('default', { month: 'short' })
+  
+          // Count based on AY (index 51)
+          if (row.c[50] && row.c[50].v) {
+            monthCounts[monthName].completed++
+          } else {
+            monthCounts[monthName].pending++
           }
         } catch (e) {
           console.error("Error parsing date:", e)
         }
       }
     })
-
-    // Convert to array format for chart
-    return Object.entries(monthCounts).map(([name, counts]) => ({
-      name,
-      completed: counts.completed,
-      pending: counts.pending,
+  
+    // Return data for all months regardless of counts
+    return allMonths.map(month => ({
+      name: month,
+      completed: monthCounts[month].completed,
+      pending: monthCounts[month].pending
     }))
   }
 
