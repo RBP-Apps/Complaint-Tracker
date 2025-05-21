@@ -1,0 +1,232 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { Link, useLocation } from "react-router-dom"
+import {
+  Clipboard,
+  Home,
+  CheckCircle,
+  Clock,
+  LogOut,
+  Menu,
+  Bell,
+  User,
+  Settings,
+  FileText,
+  UserCheck,
+} from "react-feather"
+
+function DashboardLayout({ children }) {
+  const location = useLocation()
+  const [isMobile, setIsMobile] = useState(false)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+
+  // Check if we're on mobile
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+
+    checkIfMobile()
+    window.addEventListener("resize", checkIfMobile)
+
+    return () => {
+      window.removeEventListener("resize", checkIfMobile)
+    }
+  }, [])
+
+  const navItems = [
+    {
+      name: "Dashboard",
+      href: "/dashboard",
+      icon: Home,
+    },
+    {
+      name: "New Complaint",
+      href: "/dashboard/new-complaint",
+      icon: FileText,
+    },
+    {
+      name: "Assign Complaint",
+      href: "/dashboard/assign-complaint",
+      icon: UserCheck,
+      badge: 18,
+      badgeColor: "bg-blue-500 hover:bg-blue-600",
+    },
+    {
+      name: "Tracker",
+      href: "/dashboard/tracker",
+      icon: Clock,
+      badge: 18,
+      badgeColor: "bg-blue-500 hover:bg-blue-600",
+    },
+    {
+      name: "Verification",
+      href: "/dashboard/verification",
+      icon: CheckCircle,
+      badge: 5,
+      badgeColor: "bg-blue-500 hover:bg-blue-600",
+    },
+    {
+      name: "Document Verification",
+      href: "/dashboard/document-verification",
+      icon: FileText,
+      badge: 3,
+      badgeColor: "bg-blue-500 hover:bg-blue-600",
+    },
+  ]
+
+  const SidebarContent = () => (
+    <div className="flex flex-col h-full bg-gray-800 text-white">
+      <div className="flex h-16 items-center justify-center border-b border-gray-700">
+        <div className="bg-gray-700 p-2 rounded-full mr-2">
+          <Clipboard className="h-6 w-6" />
+        </div>
+        <h1 className="text-xl font-bold">Complaints Tracker</h1>
+      </div>
+
+      <div className="p-4 border-b border-gray-700">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 border-2 border-gray-700 rounded-full overflow-hidden flex items-center justify-center bg-gray-600 text-white">
+            <span>AD</span>
+          </div>
+          <div>
+            <p className="font-medium">Admin User</p>
+            <p className="text-xs text-gray-400">admin@example.com</p>
+          </div>
+        </div>
+      </div>
+
+      <nav className="mt-5 px-3 flex-1 overflow-y-auto">
+        <div className="space-y-1">
+          {navItems.map((item) => {
+            const isActive = location.pathname === item.href
+            return (
+              <Link
+                key={item.name}
+                to={item.href}
+                className={`group flex items-center rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${
+                  isActive ? "bg-gray-700 text-white" : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                }`}
+                onClick={() => isMobile && setIsSidebarOpen(false)}
+              >
+                <item.icon className="mr-3 h-5 w-5" />
+                {item.name}
+                {item.badge && (
+                  <span className={`ml-auto px-2 py-0.5 text-xs font-semibold rounded-full ${item.badgeColor}`}>
+                    {item.badge}
+                  </span>
+                )}
+              </Link>
+            )
+          })}
+        </div>
+
+        <div className="mt-8 pt-4 border-t border-gray-700">
+          <p className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Settings</p>
+          <Link
+            to="#"
+            className="group flex items-center rounded-md px-3 py-2.5 text-sm font-medium transition-colors text-gray-300 hover:bg-gray-700 hover:text-white"
+          >
+            <User className="mr-3 h-5 w-5" />
+            Profile
+          </Link>
+          <Link
+            to="#"
+            className="group flex items-center rounded-md px-3 py-2.5 text-sm font-medium transition-colors text-gray-300 hover:bg-gray-700 hover:text-white"
+          >
+            <Settings className="mr-3 h-5 w-5" />
+            Settings
+          </Link>
+        </div>
+      </nav>
+
+      <div className="p-4 mt-auto">
+        <Link to="/">
+          <button className="w-full border border-gray-700 text-white hover:bg-gray-700 hover:text-white py-2 px-4 rounded-md flex items-center justify-center">
+            <LogOut className="mr-2 h-4 w-4" />
+            Logout
+          </button>
+        </Link>
+      </div>
+    </div>
+  )
+
+  return (
+    <div className="flex flex-col min-h-screen bg-gray-100">
+      {/* Mobile sidebar */}
+      {isMobile && (
+        <>
+          <button
+            onClick={() => setIsSidebarOpen(true)}
+            className="fixed top-4 left-4 z-40 p-2 rounded-md bg-white border border-gray-200 shadow-sm"
+          >
+            <Menu />
+          </button>
+
+          {isSidebarOpen && (
+            <div className="fixed inset-0 z-50 flex">
+              <div className="fixed inset-0 bg-black/50" onClick={() => setIsSidebarOpen(false)}></div>
+              <div className="relative w-[280px] max-w-[80vw] bg-gray-800">
+                <SidebarContent />
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Desktop sidebar */}
+      {!isMobile && (
+        <div className="hidden md:block md:w-64 fixed inset-y-0 left-0 z-40">
+          <SidebarContent />
+        </div>
+      )}
+
+      {/* Main content */}
+      <div className="flex-1 md:ml-64">
+        {/* Top navbar */}
+        <header className="h-16 bg-white shadow-sm flex items-center justify-between px-4 md:px-8">
+          <div className="md:hidden w-8"></div> {/* Spacer for mobile */}
+          <div className="md:hidden flex items-center">
+            <Clipboard className="h-5 w-5 mr-2" />
+            <h1 className="text-lg font-bold">Complaints Tracker</h1>
+          </div>
+          <div className="flex items-center gap-4">
+            <button className="relative p-2 rounded-md border border-gray-200">
+              <Bell className="h-5 w-5" />
+              <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-[10px] text-white flex items-center justify-center">
+                3
+              </span>
+            </button>
+
+            <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 border border-gray-300">
+              AD
+            </div>
+          </div>
+        </header>
+
+        <main className="pb-16">{children}</main>
+
+        <footer className="bg-gray-200 text-center py-4 text-sm text-gray-600">
+          <div className="flex justify-center items-center">
+            <span>© {new Date().getFullYear()} Complaints Tracker. All rights reserved.</span>
+            <span className="mx-2">|</span>
+            <span>
+              Powered By -{" "}
+              <a
+                href="https://www.botivate.in/"
+                className="text-blue-600 hover:underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Botivate
+              </a>
+            </span>
+          </div>
+        </footer>
+      </div>
+    </div>
+  )
+}
+
+export default DashboardLayout

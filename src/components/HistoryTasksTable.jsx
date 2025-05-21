@@ -1,0 +1,289 @@
+"use client"
+
+import { useState, useEffect } from "react"
+
+function TrackerHistoryTable() {
+  const [historyData, setHistoryData] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [searchTerm, setSearchTerm] = useState("")
+
+  // Function to fetch data from Google Sheets
+  useEffect(() => {
+    const fetchHistoryData = async () => {
+      setIsLoading(true)
+      setError(null)
+      
+      try {
+        // Fetch the Tracker History sheet using Google Sheets API directly
+        const sheetUrl = "https://docs.google.com/spreadsheets/d/1PWtiteT5TvFotvSy97ePaMpLx9Rshn7FiF1s3tRvJuw/gviz/tq?tqx=out:json&sheet=Tracker%20History"
+        const response = await fetch(sheetUrl)
+        const text = await response.text()
+        
+        // Extract the JSON part from the response
+        const jsonStart = text.indexOf('{')
+        const jsonEnd = text.lastIndexOf('}') + 1
+        const jsonData = text.substring(jsonStart, jsonEnd)
+        
+        const data = JSON.parse(jsonData)
+        
+                  // Process the history data
+        if (data && data.table && data.table.rows) {
+          const recordsData = []
+          
+          // Skip the header row and process the data rows
+          data.table.rows.slice(1).forEach((row, index) => {
+            if (row.c) {
+              // Format date if it exists in any date field (assuming columnC might be a date)
+              let dateValue = row.c[2] ? row.c[2].v : "";
+              // Check if the value is a date and format it as dd/mm/yyyy
+              if (dateValue && typeof dateValue === 'object' && dateValue.getDate) {
+                const day = String(dateValue.getDate()).padStart(2, '0');
+                const month = String(dateValue.getMonth() + 1).padStart(2, '0');
+                const year = dateValue.getFullYear();
+                dateValue = `${day}/${month}/${year}`;
+              }
+              
+              const record = {
+                rowIndex: index + 2, // Actual row index in the sheet (1-indexed, +1 for header row, +1 for 1-indexing)
+                columnA: row.c[0] ? row.c[0].v : "", // Column A
+                columnB: row.c[1] ? row.c[1].v : "", // Column B
+                columnC: dateValue, // Column C (formatted date)
+                columnD: row.c[3] ? row.c[3].v : "", // Column D
+                columnE: row.c[4] ? row.c[4].v : "", // Column E
+                columnF: row.c[5] ? row.c[5].v : "", // Column F
+                columnG: row.c[6] ? row.c[6].v : "", // Column G
+                
+                // Store which columns contain Drive URLs (for rendering as hyperlinks)
+                hasDriveUrl: {
+                  columnA: row.c[0] && typeof row.c[0].v === 'string' && row.c[0].v.includes('drive.google.com'),
+                  columnB: row.c[1] && typeof row.c[1].v === 'string' && row.c[1].v.includes('drive.google.com'),
+                  columnC: typeof dateValue === 'string' && dateValue.includes('drive.google.com'),
+                  columnD: row.c[3] && typeof row.c[3].v === 'string' && row.c[3].v.includes('drive.google.com'),
+                  columnE: row.c[4] && typeof row.c[4].v === 'string' && row.c[4].v.includes('drive.google.com'),
+                  columnF: row.c[5] && typeof row.c[5].v === 'string' && row.c[5].v.includes('drive.google.com'),
+                  columnG: row.c[6] && typeof row.c[6].v === 'string' && row.c[6].v.includes('drive.google.com'),
+                }
+              }
+              
+              recordsData.push(record)
+            }
+          })
+          
+          setHistoryData(recordsData)
+        }
+      } catch (err) {
+        console.error("Error fetching history data:", err)
+        setError(err.message)
+        // On error, set to empty array
+        setHistoryData([])
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    
+    fetchHistoryData()
+  }, [])
+
+  // Filter data based on search term
+  const filteredData = historyData.filter(
+    (record) =>
+      record.columnA?.toString().toLowerCase().includes(searchTerm.toLowerCase()) ||
+      record.columnB?.toString().toLowerCase().includes(searchTerm.toLowerCase()) ||
+      record.columnC?.toString().toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
+  if (isLoading) {
+    return (
+      <div className="p-4 flex justify-center items-center h-64">
+        <div className="text-gray-500">Loading tracker history data...</div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="p-4 flex justify-center items-center h-64">
+        <div className="text-red-500">Error loading data: {error}</div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="p-4">
+      <div className="mb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <h1 className="text-xl font-bold">Tracker History</h1>
+        
+        <div className="relative">
+          <input
+            type="search"
+            placeholder="Search history..."
+            className="pl-8 w-[200px] md:w-[300px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <svg 
+            className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500"
+            xmlns="http://www.w3.org/2000/svg" 
+            fill="none" 
+            viewBox="0 0 24 24" 
+            stroke="currentColor"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+      </div>
+
+      <div className="overflow-x-auto -mx-4 sm:mx-0">
+        <div className="inline-block min-w-full align-middle">
+          {filteredData.length === 0 ? (
+            <div className="text-center p-6 bg-gray-50 rounded-lg border border-gray-200">
+              <p className="text-gray-500">No history data found</p>
+            </div>
+          ) : (
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                  >
+                    Timestamp
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                  >
+                    Complaint Id
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                  >
+                    Date Of Complete
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                  >
+                    Tracker Status
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                  >
+                    Remarks
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                  >
+                    Upload Document
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                  >
+                    GeoTag Photo
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredData.map((record, index) => (
+                  <tr key={index} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {record.hasDriveUrl.columnA ? (
+                        <a 
+                          href={record.columnA} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="text-blue-600 hover:text-blue-800 hover:underline"
+                        >
+                          Open Drive Folder
+                        </a>
+                      ) : record.columnA}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {record.hasDriveUrl.columnB ? (
+                        <a 
+                          href={record.columnB} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="text-blue-600 hover:text-blue-800 hover:underline"
+                        >
+                          Open Drive Folder
+                        </a>
+                      ) : record.columnB}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {record.hasDriveUrl.columnC ? (
+                        <a 
+                          href={record.columnC} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="text-blue-600 hover:text-blue-800 hover:underline"
+                        >
+                          Open Drive Folder
+                        </a>
+                      ) : record.columnC}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {record.hasDriveUrl.columnD ? (
+                        <a 
+                          href={record.columnD} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="text-blue-600 hover:text-blue-800 hover:underline"
+                        >
+                          Open Drive Folder
+                        </a>
+                      ) : record.columnD}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {record.hasDriveUrl.columnE ? (
+                        <a 
+                          href={record.columnE} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="text-blue-600 hover:text-blue-800 hover:underline"
+                        >
+                          Open Drive Folder
+                        </a>
+                      ) : record.columnE}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {record.hasDriveUrl.columnF ? (
+                        <a 
+                          href={record.columnF} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="text-blue-600 hover:text-blue-800 hover:underline"
+                        >
+                          Open Drive Folder
+                        </a>
+                      ) : record.columnF}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {record.hasDriveUrl.columnG ? (
+                        <a 
+                          href={record.columnG} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="text-blue-600 hover:text-blue-800 hover:underline"
+                        >
+                          Open Drive Folder
+                        </a>
+                      ) : record.columnG}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default TrackerHistoryTable
