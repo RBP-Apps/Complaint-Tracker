@@ -20,6 +20,8 @@ function DashboardLayout({ children }) {
   const location = useLocation()
   const [isMobile, setIsMobile] = useState(false)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [userPermissions, setUserPermissions] = useState([])
+  const [username, setUsername] = useState("")
 
   // Check if we're on mobile
   useEffect(() => {
@@ -35,16 +37,48 @@ function DashboardLayout({ children }) {
     }
   }, [])
 
-  const navItems = [
+  // Get user permissions from localStorage
+  useEffect(() => {
+    const storedPermissions = localStorage.getItem('userPermissions')
+    const storedUsername = localStorage.getItem('username')
+    
+    // Parse permissions - handling both "all" and comma-separated values
+    if (storedPermissions) {
+      if (storedPermissions.toLowerCase() === 'all') {
+        setUserPermissions(['all'])
+      } else {
+        setUserPermissions(storedPermissions.split(',').map(item => item.trim().toLowerCase()))
+      }
+    }
+    
+    if (storedUsername) {
+      setUsername(storedUsername)
+    }
+  }, [])
+
+  // Check if user has permission to access a specific route
+  const hasPermission = (routeName) => {
+    if (!userPermissions.length) return false
+    if (userPermissions.includes('all')) return true
+    
+    return userPermissions.some(permission => 
+      routeName.toLowerCase().includes(permission.toLowerCase())
+    )
+  }
+
+  // All possible nav items
+  const allNavItems = [
     {
       name: "Dashboard",
       href: "/dashboard",
       icon: Home,
+      permissionKey: "dashboard"
     },
     {
       name: "New Complaint",
       href: "/dashboard/new-complaint",
       icon: FileText,
+      permissionKey: "new complaint"
     },
     {
       name: "Assign Complaint",
@@ -52,6 +86,7 @@ function DashboardLayout({ children }) {
       icon: UserCheck,
       badge: 18,
       badgeColor: "bg-blue-500 hover:bg-blue-600",
+      permissionKey: "assign complaint"
     },
     {
       name: "Tracker",
@@ -59,6 +94,7 @@ function DashboardLayout({ children }) {
       icon: Clock,
       badge: 18,
       badgeColor: "bg-blue-500 hover:bg-blue-600",
+      permissionKey: "tracker"
     },
     {
       name: "Verification",
@@ -66,6 +102,7 @@ function DashboardLayout({ children }) {
       icon: CheckCircle,
       badge: 5,
       badgeColor: "bg-blue-500 hover:bg-blue-600",
+      permissionKey: "verification"
     },
     {
       name: "Document Verification",
@@ -73,8 +110,23 @@ function DashboardLayout({ children }) {
       icon: FileText,
       badge: 3,
       badgeColor: "bg-blue-500 hover:bg-blue-600",
+      permissionKey: "document verification"
     },
   ]
+
+  // Filter nav items based on user permissions
+  const navItems = allNavItems.filter(item => 
+    hasPermission(item.permissionKey)
+  )
+
+  // We'll handle permission redirects in the ProtectedRoute component instead
+  // so removing the redirect logic from here to prevent conflicts
+
+  const handleLogout = () => {
+    localStorage.removeItem('userPermissions')
+    localStorage.removeItem('username')
+    window.location.href = '/'
+  }
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full bg-gray-800 text-white">
@@ -88,11 +140,13 @@ function DashboardLayout({ children }) {
       <div className="p-4 border-b border-gray-700">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 border-2 border-gray-700 rounded-full overflow-hidden flex items-center justify-center bg-gray-600 text-white">
-            <span>AD</span>
+            <span>{username ? username.substring(0, 2).toUpperCase() : "AU"}</span>
           </div>
           <div>
-            <p className="font-medium">Admin User</p>
-            <p className="text-xs text-gray-400">admin@example.com</p>
+            <p className="font-medium">{username || "User"}</p>
+            <p className="text-xs text-gray-400">
+              {userPermissions.includes('all') ? 'Full Access' : userPermissions.join(', ')}
+            </p>
           </div>
         </div>
       </div>
@@ -122,32 +176,35 @@ function DashboardLayout({ children }) {
           })}
         </div>
 
-        <div className="mt-8 pt-4 border-t border-gray-700">
-          <p className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Settings</p>
-          <Link
-            to="#"
-            className="group flex items-center rounded-md px-3 py-2.5 text-sm font-medium transition-colors text-gray-300 hover:bg-gray-700 hover:text-white"
-          >
-            <User className="mr-3 h-5 w-5" />
-            Profile
-          </Link>
-          <Link
-            to="#"
-            className="group flex items-center rounded-md px-3 py-2.5 text-sm font-medium transition-colors text-gray-300 hover:bg-gray-700 hover:text-white"
-          >
-            <Settings className="mr-3 h-5 w-5" />
-            Settings
-          </Link>
-        </div>
+        {userPermissions.includes('all') && (
+          <div className="mt-8 pt-4 border-t border-gray-700">
+            <p className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Settings</p>
+            <Link
+              to="#"
+              className="group flex items-center rounded-md px-3 py-2.5 text-sm font-medium transition-colors text-gray-300 hover:bg-gray-700 hover:text-white"
+            >
+              <User className="mr-3 h-5 w-5" />
+              Profile
+            </Link>
+            <Link
+              to="#"
+              className="group flex items-center rounded-md px-3 py-2.5 text-sm font-medium transition-colors text-gray-300 hover:bg-gray-700 hover:text-white"
+            >
+              <Settings className="mr-3 h-5 w-5" />
+              Settings
+            </Link>
+          </div>
+        )}
       </nav>
 
       <div className="p-4 mt-auto">
-        <Link to="/">
-          <button className="w-full border border-gray-700 text-white hover:bg-gray-700 hover:text-white py-2 px-4 rounded-md flex items-center justify-center">
-            <LogOut className="mr-2 h-4 w-4" />
-            Logout
-          </button>
-        </Link>
+        <button 
+          onClick={handleLogout}
+          className="w-full border border-gray-700 text-white hover:bg-gray-700 hover:text-white py-2 px-4 rounded-md flex items-center justify-center"
+        >
+          <LogOut className="mr-2 h-4 w-4" />
+          Logout
+        </button>
       </div>
     </div>
   )
@@ -200,7 +257,7 @@ function DashboardLayout({ children }) {
             </button>
 
             <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 border border-gray-300">
-              AD
+              {username ? username.substring(0, 2).toUpperCase() : "AU"}
             </div>
           </div>
         </header>
