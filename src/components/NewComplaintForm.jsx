@@ -11,6 +11,13 @@ function NewComplaintForm() {
   const [date, setDate] = useState(null)
   const [complaintDate, setComplaintDate] = useState(null)
   const [serialNumber, setSerialNumber] = useState('')
+  
+  // States for dropdown options from master sheet
+  const [modeOfCallOptions, setModeOfCallOptions] = useState([])
+  const [acdcOptions, setAcdcOptions] = useState([])
+  const [priorityOptions, setPriorityOptions] = useState([])
+  const [insuranceTypeOptions, setInsuranceTypeOptions] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
 
   const [formData, setFormData] = useState({
     head: "",
@@ -34,6 +41,76 @@ function NewComplaintForm() {
     priority: "",
     insuranceType: "",
   })
+
+  // Fetch dropdown options from the master sheet
+  const fetchDropdownOptions = async () => {
+    try {
+      setIsLoading(true)
+      
+      // URL to your Google Sheet - using the visualization API to get the data
+      // Make sure to replace the spreadsheet ID with your actual spreadsheet ID
+      // and set the sheet name to your master dropdown sheet
+      const sheetUrl = "https://docs.google.com/spreadsheets/d/1PWtiteT5TvFotvSy97ePaMpLx9Rshn7FiF1s3tRvJuw/gviz/tq?tqx=out:json&sheet=master"
+      
+      const response = await fetch(sheetUrl)
+      const text = await response.text()
+      
+      // Extract the JSON part from the response
+      const jsonStart = text.indexOf('{')
+      const jsonEnd = text.lastIndexOf('}') + 1
+      const jsonData = text.substring(jsonStart, jsonEnd)
+      
+      const data = JSON.parse(jsonData)
+      
+      // Process the dropdown data
+      if (data && data.table && data.table.rows) {
+        const modeOfCall = []
+        const acdc = []
+        const priority = []
+        const insuranceType = []
+        
+        // Extract values from specific columns
+        data.table.rows.slice(1).forEach(row => {
+          if (row.c) {
+            // Column A: Mode of Call
+            if (row.c[0] && row.c[0].v !== null && row.c[0].v !== "") {
+              modeOfCall.push(row.c[0].v)
+            }
+            
+            // Column B: AC/DC
+            if (row.c[1] && row.c[1].v !== null && row.c[1].v !== "") {
+              acdc.push(row.c[1].v)
+            }
+            
+            // Column C: Priority
+            if (row.c[2] && row.c[2].v !== null && row.c[2].v !== "") {
+              priority.push(row.c[2].v)
+            }
+            
+            // Column D: Insurance Type
+            if (row.c[3] && row.c[3].v !== null && row.c[3].v !== "") {
+              insuranceType.push(row.c[3].v)
+            }
+          }
+        })
+        
+        // Set the dropdown options
+        setModeOfCallOptions(modeOfCall)
+        setAcdcOptions(acdc)
+        setPriorityOptions(priority)
+        setInsuranceTypeOptions(insuranceType)
+      }
+    } catch (error) {
+      console.error('Error fetching dropdown options:', error)
+      // Fallback options in case of error
+      setModeOfCallOptions(['Phone', 'Email', 'In Person', 'Web Form'])
+      setAcdcOptions(['AC', 'DC'])
+      setPriorityOptions(['Low', 'Medium', 'High', 'Urgent'])
+      setInsuranceTypeOptions(['Insuranced', 'Without Insuranced'])
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   // Fetch the last serial number from the sheet
   const fetchLastSerialNumber = async () => {
@@ -69,9 +146,10 @@ function NewComplaintForm() {
     }
   }
 
-  // Fetch serial number on component mount
+  // Fetch data on component mount
   useEffect(() => {
     fetchLastSerialNumber()
+    fetchDropdownOptions()
   }, [])
 
   const handleChange = (e) => {
@@ -182,10 +260,15 @@ function NewComplaintForm() {
     }
   }
 
-
   return (
     <div className="rounded-lg border-0 shadow-md bg-white">
     <div className="p-4 sm:p-6">
+      {isLoading ? (
+        <div className="flex justify-center items-center h-24">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+          <span className="ml-2">Loading form data...</span>
+        </div>
+      ) : (
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid gap-6 md:grid-cols-3">
           <div className="space-y-2">
@@ -224,7 +307,6 @@ function NewComplaintForm() {
               />
             </div>
           </div>
-
 
             <div className="space-y-2">
               <label htmlFor="head" className="block text-sm font-medium">
@@ -268,10 +350,11 @@ function NewComplaintForm() {
                 className="w-full border border-gray-300 rounded-md py-2 px-3"
               >
                 <option value="">Select mode of call</option>
-                <option value="phone">Phone</option>
-                <option value="email">Email</option>
-                <option value="in-person">In Person</option>
-                <option value="web">Web Form</option>
+                {modeOfCallOptions.map((option, index) => (
+                  <option key={`mode-${index}`} value={option}>
+                    {option}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -519,8 +602,11 @@ function NewComplaintForm() {
                 className="w-full border border-gray-300 rounded-md py-2 px-3"
               >
                 <option value="">Select AC/DC</option>
-                <option value="ac">AC</option>
-                <option value="dc">DC</option>
+                {acdcOptions.map((option, index) => (
+                  <option key={`acdc-${index}`} value={option}>
+                    {option}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -536,10 +622,11 @@ function NewComplaintForm() {
                 className="w-full border border-gray-300 rounded-md py-2 px-3"
               >
                 <option value="">Select priority</option>
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-                <option value="urgent">Urgent</option>
+                {priorityOptions.map((option, index) => (
+                  <option key={`priority-${index}`} value={option}>
+                    {option}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -555,8 +642,11 @@ function NewComplaintForm() {
                 className="w-full border border-gray-300 rounded-md py-2 px-3"
               >
                 <option value="">Select insurance type</option>
-                <option value="insuranced">Insuranced</option>
-                <option value="without-insuranced">Without Insuranced</option>
+                {insuranceTypeOptions.map((option, index) => (
+                  <option key={`insurance-${index}`} value={option}>
+                    {option}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -604,8 +694,8 @@ function NewComplaintForm() {
                 "Create Complaint"
               )}
             </button>
-
         </form>
+      )}
       </div>
     </div>
   )
