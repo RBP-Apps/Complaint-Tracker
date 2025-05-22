@@ -233,7 +233,7 @@ function NewComplaintForm() {
 
       // Submit data to Google Apps Script
       const response = await fetch(
-        'https://script.google.com/macros/s/AKfycbyv-ipZnaEfHU78cI5ycdgSCXLjIHMfWon0GY7H8e0SA1W1_4BKaKoPmxg_ReQ2KEM2VA/exec',
+        'https://script.google.com/macros/s/AKfycbzkBpcYMupYQi6gSURT_tqDfeQrGtbS6DwiRvmjw0s2kAIGmHlkjnVJDddXOy0v6ur7rw/exec',
         {
           method: 'POST',
           mode: 'no-cors', // Note: this prevents getting the response body
