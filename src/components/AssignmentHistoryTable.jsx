@@ -46,7 +46,7 @@ function AssignmentHistoryTable() {
                   date: row.c[2] ? row.c[2].v : "", // Column C - Date
                   beneficiaryName: row.c[10] ? row.c[10].v : "", // Column K - Beneficiary Name
                   contactNumber: row.c[11] ? row.c[11].v : "", // Column L - Contact Number
-                  village: row.c[12] ? row.c[12].v : "", // Column M - Village
+                  village: row.c[31] ? row.c[31].v : "", // Column M - Village
                   district: row.c[14] ? row.c[14].v : "", // Column O - District
                   product: row.c[15] ? row.c[15].v : "", // Column P - Product
                   priority: row.c[21] ? row.c[21].v : "Medium", // Column V - Priority

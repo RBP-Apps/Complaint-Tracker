@@ -8,6 +8,52 @@ function VerifiedDocumentsTable() {
   const [error, setError] = useState(null)
   const [searchTerm, setSearchTerm] = useState("")
 
+
+  const formatDateString = (dateValue) => {
+    if (!dateValue) return "";
+    
+    let date;
+    
+    // Handle ISO string format (2025-05-22T07:38:28.052Z)
+    if (typeof dateValue === 'string' && dateValue.includes('T')) {
+      date = new Date(dateValue);
+    }
+    // Handle date format (2025-05-21)
+    else if (typeof dateValue === 'string' && dateValue.includes('-')) {
+      date = new Date(dateValue);
+    }
+    // Handle Google Sheets Date constructor format like "Date(2025,4,21)"
+    else if (typeof dateValue === 'string' && dateValue.startsWith('Date(')) {
+      // Extract the date parts from "Date(2025,4,21)" format
+      const match = dateValue.match(/Date\((\d+),(\d+),(\d+)\)/);
+      if (match) {
+        const year = parseInt(match[1]);
+        const month = parseInt(match[2]); // Month is 0-indexed in this format
+        const day = parseInt(match[3]);
+        date = new Date(year, month, day);
+      } else {
+        return dateValue;
+      }
+    }
+    // Handle if it's already a Date object
+    else if (typeof dateValue === 'object' && dateValue.getDate) {
+      date = dateValue;
+    }
+    else {
+      return dateValue; // Return as is if not a recognizable date format
+    }
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      return dateValue; // Return original value if invalid date
+    }
+    
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
   // Function to fetch data from Google Sheets
   useEffect(() => {
     const fetchVerifiedDocuments = async () => {
@@ -52,7 +98,8 @@ function VerifiedDocumentsTable() {
                   document1: row.c[52] ? row.c[52].v : "", // Document 1
                   document2: row.c[53] ? row.c[53].v : "", // Document 2
                   additionalDocuments: row.c[54] ? row.c[54].v : "", // Additional Documents
-                  verificationDate: row.c[43] ? row.c[43].v : "", // Document Verification Date
+                  // verificationDate: row.c[43] ? row.c[43].v : "", // Document Verification Date
+                  verificationDate: row.c[43] ? formatDateString(row.c[43].v) : "",
                 }
 
                 documentsData.push(document)
@@ -189,9 +236,51 @@ function VerifiedDocumentsTable() {
                     <td className="px-6 py-4 whitespace-nowrap font-medium">{doc.id}</td>
                     <td className="px-6 py-4 whitespace-nowrap">{doc.date}</td>
                     <td className="px-6 py-4 whitespace-nowrap">{doc.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{doc.document1}</td>
+                    {/* <td className="px-6 py-4 whitespace-nowrap">{doc.document1}</td>
                     <td className="px-6 py-4 whitespace-nowrap">{doc.document2}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{doc.additionalDocuments}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{doc.additionalDocuments}</td> */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+  {doc.document1 ? (
+    <a 
+      href={doc.document1} 
+      className="text-blue-600 hover:text-blue-800 underline"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      Document 1
+    </a>
+  ) : (
+    ""
+  )}
+</td>
+<td className="px-6 py-4 whitespace-nowrap">
+  {doc.document2 ? (
+    <a 
+      href={doc.document2} 
+      className="text-blue-600 hover:text-blue-800 underline"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      Document 2
+    </a>
+  ) : (
+    ""
+  )}
+</td>
+<td className="px-6 py-4 whitespace-nowrap">
+  {doc.additionalDocuments ? (
+    <a 
+      href={doc.additionalDocuments} 
+      className="text-blue-600 hover:text-blue-800 underline"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      Additional Docs
+    </a>
+  ) : (
+    ""
+  )}
+</td>
                     <td className="px-6 py-4 whitespace-nowrap">{doc.verificationDate}</td>
                   </tr>
                 ))}

@@ -103,8 +103,8 @@ function PendingVerificationTable() {
                   date: dateValue, // Column C - Date (formatted)
                   name: row.c[39] ? row.c[39].v : "", // Column D - Name
                   phone: row.c[4] ? row.c[4].v : "", // Column E - Phone
-                  email: row.c[5] ? row.c[5].v : "", // Column F - Email
-                  address: row.c[41] ? row.c[41].v : "", // Column G - Address
+                  email: row.c[41] ? row.c[41].v : "", // Column F - Email
+                  address: row.c[42] ? row.c[42].v : "", // Column G - Address
                 }
                 
                 tasksData.push(task)
@@ -161,7 +161,7 @@ function PendingVerificationTable() {
       
       // Get current timestamp for the first column
       // const currentTimestamp = new Date().toLocaleString()
-      const timestamp = new Date().toLocaleString('en-US')
+      const currentTimestamp = new Date().toLocaleString('en-US')
       
       // Create an array with columns we want to update
       // [timestamp, complaint_id, status, verification_date, verification_password]
@@ -292,19 +292,19 @@ function PendingVerificationTable() {
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
                   >
-                    Phone
+                    Company Name
                   </th>
                   <th
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
                   >
-                    Email
+                    Upload Documents
                   </th>
                   <th
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
                   >
-                    Remarks
+                    Geotag Photo
                   </th>
                   <th
                     scope="col"
@@ -321,8 +321,36 @@ function PendingVerificationTable() {
                     <td className="px-6 py-4 whitespace-nowrap">{task.date}</td>
                     <td className="px-6 py-4 whitespace-nowrap">{task.name}</td>
                     <td className="px-6 py-4 whitespace-nowrap">{task.phone}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{task.email}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{task.address}</td>
+                    {/* <td className="px-6 py-4 whitespace-nowrap">{task.email}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{task.address}</td> */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+  {task.email ? (
+    <a 
+      href={`mailto:${task.email}`} 
+      className="text-blue-600 hover:text-blue-800 underline"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      {task.email}
+    </a>
+  ) : (
+    ""
+  )}
+</td>
+<td className="px-6 py-4 whitespace-nowrap">
+  {task.address ? (
+    <a 
+      href={task.address} 
+      className="text-blue-600 hover:text-blue-800 underline"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      {task.address}
+    </a>
+  ) : (
+    ""
+  )}
+</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <button
                         className="bg-gradient-to-r from-purple-400 to-pink-500 text-white hover:from-purple-500 hover:to-pink-600 border-0 py-1 px-3 rounded-md"
