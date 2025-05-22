@@ -8,6 +8,52 @@ function VerifiedTasksTable() {
   const [error, setError] = useState(null)
   const [searchTerm, setSearchTerm] = useState("")
 
+  // Function to format date string to dd/mm/yyyy
+  const formatDateString = (dateValue) => {
+    if (!dateValue) return "";
+    
+    let date;
+    
+    // Handle ISO string format (2025-05-22T07:38:28.052Z)
+    if (typeof dateValue === 'string' && dateValue.includes('T')) {
+      date = new Date(dateValue);
+    }
+    // Handle date format (2025-05-21)
+    else if (typeof dateValue === 'string' && dateValue.includes('-')) {
+      date = new Date(dateValue);
+    }
+    // Handle Google Sheets Date constructor format like "Date(2025,4,21)"
+    else if (typeof dateValue === 'string' && dateValue.startsWith('Date(')) {
+      // Extract the date parts from "Date(2025,4,21)" format
+      const match = dateValue.match(/Date\((\d+),(\d+),(\d+)\)/);
+      if (match) {
+        const year = parseInt(match[1]);
+        const month = parseInt(match[2]); // Month is 0-indexed in this format
+        const day = parseInt(match[3]);
+        date = new Date(year, month, day);
+      } else {
+        return dateValue;
+      }
+    }
+    // Handle if it's already a Date object
+    else if (typeof dateValue === 'object' && dateValue.getDate) {
+      date = dateValue;
+    }
+    else {
+      return dateValue; // Return as is if not a recognizable date format
+    }
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      return dateValue; // Return original value if invalid date
+    }
+    
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
   // Function to fetch data from Google Sheets
   useEffect(() => {
     const fetchVerifiedTasks = async () => {
@@ -16,7 +62,7 @@ function VerifiedTasksTable() {
       
       try {
         // Fetch the entire sheet using Google Sheets API directly
-        const sheetUrl = "https://docs.google.com/spreadsheets/d/1Vn295WmY0o6qh03rYzpCISGfMgT5RViXdYyd_ZNQ2p8/gviz/tq?tqx=out:json&sheet=FMS"
+        const sheetUrl = "https://docs.google.com/spreadsheets/d/1Vn295WmY0o6qh03rYzpCISGfMgT5RViXdYyd_ZNQ2p8/gviz/tq?tqx=out:json&sheet=Verifications"
         const response = await fetch(sheetUrl)
         const text = await response.text()
         
@@ -32,36 +78,25 @@ function VerifiedTasksTable() {
           const tasksData = []
           
           // Skip the header row and process the data rows
-          data.table.rows.slice(5).forEach((row, index) => {
+          data.table.rows.slice(0).forEach((row, index) => {
             if (row.c) {
-              // Check if columns AT (index 45) and AU (index 46) are both not null
-              const hasColumnAT = row.c[40] && row.c[40].v !== null && row.c[40].v !== "";
-              const hasColumnAU = row.c[41] && row.c[41].v !== null && row.c[41].v !== "";
+              // Format dates if they exist
+              let timestampValue = row.c[0] ? row.c[0].v : "";
+              timestampValue = formatDateString(timestampValue);
               
-              // Only include rows where both column AT and AU have data
-              if (hasColumnAT && hasColumnAU) {
-                const task = {
-                  rowIndex: index + 6, // Actual row index in the sheet (1-indexed, +5 for header rows, +1 for 1-indexing)
-                  id: row.c[1] ? row.c[1].v : `COMP-${index + 1}`, // Column B - Complaint No.
-                  date: row.c[2] ? row.c[2].v : "", // Column C - Date
-                  name: row.c[3] ? row.c[3].v : "", // Column D - Name
-                  phone: row.c[4] ? row.c[4].v : "", // Column E - Phone
-                  email: row.c[5] ? row.c[5].v : "", // Column F - Email
-                  address: row.c[6] ? row.c[6].v : "", // Column G - Address
-                  
-                  // Additional relevant data that might be useful
-                  assignee: row.c[27] ? row.c[27].v : "", // Column AA - Assignee Name
-                  technician: row.c[28] ? row.c[28].v : "", // Column AB - Technician Name
-                  complaintDetails: row.c[32] ? row.c[32].v : "", // Column AF - Complaint Details
-                  completedDate: row.c[36] ? row.c[36].v : "", // Column AJ - Completed Date
-                  verificationDate: row.c[45] ? row.c[45].v : "", // Column AT - Verification Date
-                  
-                  // Status is always "Verified" for verified tasks
-                  status: "Verified",
-                }
-                
-                tasksData.push(task)
+              let verificationDateValue = row.c[3] ? row.c[3].v : "";
+              verificationDateValue = formatDateString(verificationDateValue);
+              
+              const task = {
+                rowIndex: index + 2, // Actual row index in the sheet (1-indexed, +1 for header row, +1 for 1-indexing)
+                timestamp: timestampValue, // Column A - Timestamp (formatted)
+                complaintId: row.c[1] ? row.c[1].v : "", // Column B - Complaint ID
+                status: row.c[2] ? row.c[2].v : "", // Column C - Status
+                verificationDate: verificationDateValue, // Column D - Verification Date (formatted)
+                password: row.c[4] ? row.c[4].v : "", // Column E - Password
               }
+              
+              tasksData.push(task)
             }
           })
           
@@ -83,10 +118,9 @@ function VerifiedTasksTable() {
   // Filter tasks based on search term
   const filteredTasks = verifiedTasks.filter(
     (task) =>
-      task.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      task.id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      task.address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      task.technician?.toLowerCase().includes(searchTerm.toLowerCase())
+      task.complaintId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      task.status?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      task.timestamp?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   if (isLoading) {
@@ -144,55 +178,19 @@ function VerifiedTasksTable() {
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
                   >
+                    Timestamp
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                  >
                     Complaint ID
                   </th>
                   <th
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
                   >
-                    Date
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
-                  >
-                    Name
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
-                  >
-                    Phone
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
-                  >
-                    Email
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
-                  >
-                    Address
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
-                  >
-                    Assignee
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
-                  >
-                    Technician
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
-                  >
-                    Completed Date
+                    Status
                   </th>
                   <th
                     scope="col"
@@ -204,28 +202,25 @@ function VerifiedTasksTable() {
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
                   >
-                    Status
+                    Password
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredTasks.map((task) => (
-                  <tr key={task.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap font-medium">{task.id}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{task.date}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{task.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{task.phone}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{task.email}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{task.address}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{task.assignee}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{task.technician}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{task.completedDate}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{task.verificationDate}</td>
+                {filteredTasks.map((task, index) => (
+                  <tr key={index} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">{task.timestamp}</td>
+                    <td className="px-6 py-4 whitespace-nowrap font-medium">{task.complaintId}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-2 py-1 text-xs font-semibold rounded-full text-white bg-teal-500">
+                      <span className={`px-2 py-1 text-xs font-semibold rounded-full text-white ${
+                        task.status?.toLowerCase() === 'verified' ? 'bg-green-500' : 
+                        task.status?.toLowerCase() === 'rejected' ? 'bg-red-500' : 'bg-gray-500'
+                      }`}>
                         {task.status}
                       </span>
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap">{task.verificationDate}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{task.password}</td>
                   </tr>
                 ))}
               </tbody>

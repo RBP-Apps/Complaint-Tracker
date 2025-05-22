@@ -13,7 +13,7 @@ function PendingDocumentVerificationTable() {
   const [uploadStatus, setUploadStatus] = useState("")
 
   // Google Drive folder ID for file uploads
-  const DRIVE_FOLDER_ID = "1b1MUkCIRxWoDk_jOFHNVvSwhYoaQdY5e"
+  const DRIVE_FOLDER_ID = "1XqVaevdcDk5xPqdC6qY8mPOsGwdPsGme"
   // Google Apps Script Web App URL
   const GOOGLE_SCRIPT_URL =
     "https://script.google.com/macros/s/AKfycbzkBpcYMupYQi6gSURT_tqDfeQrGtbS6DwiRvmjw0s2kAIGmHlkjnVJDddXOy0v6ur7rw/exec"
@@ -53,21 +53,21 @@ function PendingDocumentVerificationTable() {
               // Only include rows that need document verification
               if (needsDocumentVerification && isDocumentVerified) {
                 const document = {
-                  rowIndex: index + 6, // Actual row index in the sheet (1-indexed, +5 for header rows, +1 for 1-indexing)
-                  id: row.c[1] ? row.c[1].v : `COMP-${index + 1}`, // Column B - Complaint No.
-                  date: row.c[2] ? row.c[2].v : "", // Column C - Date
-                  name: row.c[3] ? row.c[3].v : "", // Column D - Name
-                  phone: row.c[46] ? row.c[6].v : "", // Column E - Phone
-                  email: row.c[47] ? row.c[47].v : "", // Column F - Email
-                  address: row.c[48] ? row.c[48].v : "", // Column G - Address
-                }
-
-                documentsData.push(document)
+                  rowIndex: index + 6, // Actual row index in the sheet
+                  id: row.c[1]?.v || `COMP-${index + 1}`, // Column B - Complaint No.
+                  date: row.c[2]?.v || "", // Column C - Date
+                  name: row.c[3]?.v || "", // Column D - Name
+                  phone: row.c[6]?.v || "", // Column G - Phone (fixed index from 46 to 6)
+                  email: row.c[47]?.v || "", // Column AV - Email
+                  address: row.c[48]?.v || "", // Column AW - Address
+                };
+        
+                documentsData.push(document);
               }
             }
-          })
-
-          setPendingDocuments(documentsData)
+          });
+        
+          setPendingDocuments(documentsData);
         }
       } catch (err) {
         console.error("Error fetching pending documents data:", err)
@@ -193,6 +193,7 @@ const handleVerifyDocument = async (documentId, verificationData) => {
   
     // Fill the columns for verification status and first two documents
     // rowDataArray[46] = "Verified"; // Column AP - Verification Status
+    rowDataArray[50] = new Date().toLocaleString('en-US')    
     rowDataArray[52] = document1Url || ""; // Document 1 (Column AQ)
     rowDataArray[53] = document2Url || ""; // Document 2 (Column AR)
     

@@ -115,36 +115,45 @@ function NewComplaintForm() {
   // Fetch the last serial number from the sheet
   const fetchLastSerialNumber = async () => {
     try {
+      // Try to fetch the last serial number from the sheet
       const response = await fetch(
         'https://script.google.com/macros/s/AKfycbzkBpcYMupYQi6gSURT_tqDfeQrGtbS6DwiRvmjw0s2kAIGmHlkjnVJDddXOy0v6ur7rw/exec?action=getLastSerialNumber&sheetName=FMS',
         {
           method: 'GET',
-          mode: 'no-cors'
+          // Remove no-cors to be able to read the response
+          headers: {
+            'Content-Type': 'application/json',
+          }
         }
-      )
-
-      // Since we can't read the response due to no-cors, we'll generate a serial number client-side
+      );
+  
+      const data = await response.json();
+      
       const generateSerialNumber = (lastNumber) => {
-        if (!lastNumber) return 'CT-001'
+        if (!lastNumber || lastNumber === "") return 'CT-001';
         
         // Extract the numeric part and increment
-        const numPart = parseInt(lastNumber.split('-')[1])
-        const newNum = numPart + 1
+        const numPart = parseInt(lastNumber.split('-')[1]);
+        const newNum = numPart + 1;
         
         // Pad with zeros to maintain 3-digit format
-        return `CT-${newNum.toString().padStart(3, '0')}`
-      }
-
-      // For now, generate a serial number 
-      // In a real scenario, you'd want to get this from the server response
-      const newSerialNumber = generateSerialNumber(null)
-      setSerialNumber(newSerialNumber)
+        return `CT-${newNum.toString().padStart(3, '0')}`;
+      };
+  
+      const newSerialNumber = generateSerialNumber(data.lastSerialNumber);
+      setSerialNumber(newSerialNumber);
     } catch (error) {
-      console.error('Error fetching serial number:', error)
-      // Fallback generation
-      setSerialNumber('CT-001')
+      console.error('Error fetching serial number:', error);
+      // Fallback - check localStorage for last used number
+      const lastNumber = localStorage.getItem('lastSerialNumber');
+      const newSerialNumber = lastNumber 
+        ? `CT-${(parseInt(lastNumber.split('-')[1]) + 1).toString().padStart(3, '0')}`
+        : 'CT-001';
+      setSerialNumber(newSerialNumber);
+      // Save to localStorage for next time
+      localStorage.setItem('lastSerialNumber', newSerialNumber);
     }
-  }
+  };
 
   // Fetch data on component mount
   useEffect(() => {
@@ -164,10 +173,12 @@ function NewComplaintForm() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setIsSubmitting(true)
+    
 
     try {
       // Get current timestamp
-      const timestamp = new Date().toLocaleString()
+      // const timestamp = new Date().toLocaleString()
+      const timestamp = new Date().toLocaleString('en-US')
       
       // Get submit date (current date)
       const submitDate = new Date().toLocaleDateString()

@@ -8,6 +8,52 @@ function TrackerHistoryTable() {
   const [error, setError] = useState(null)
   const [searchTerm, setSearchTerm] = useState("")
 
+  // Function to format date string to dd/mm/yyyy
+  const formatDateString = (dateValue) => {
+    if (!dateValue) return "";
+    
+    let date;
+    
+    // Handle ISO string format (2025-05-22T07:38:28.052Z)
+    if (typeof dateValue === 'string' && dateValue.includes('T')) {
+      date = new Date(dateValue);
+    }
+    // Handle date format (2025-05-21)
+    else if (typeof dateValue === 'string' && dateValue.includes('-')) {
+      date = new Date(dateValue);
+    }
+    // Handle Google Sheets Date constructor format like "Date(2025,4,21)"
+    else if (typeof dateValue === 'string' && dateValue.startsWith('Date(')) {
+      // Extract the date parts from "Date(2025,4,21)" format
+      const match = dateValue.match(/Date\((\d+),(\d+),(\d+)\)/);
+      if (match) {
+        const year = parseInt(match[1]);
+        const month = parseInt(match[2]); // Month is 0-indexed in this format
+        const day = parseInt(match[3]);
+        date = new Date(year, month, day);
+      } else {
+        return dateValue;
+      }
+    }
+    // Handle if it's already a Date object
+    else if (typeof dateValue === 'object' && dateValue.getDate) {
+      date = dateValue;
+    }
+    else {
+      return dateValue; // Return as is if not a recognizable date format
+    }
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      return dateValue; // Return original value if invalid date
+    }
+    
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
   // Function to fetch data from Google Sheets
   useEffect(() => {
     const fetchHistoryData = async () => {
@@ -34,21 +80,19 @@ function TrackerHistoryTable() {
           // Skip the header row and process the data rows
           data.table.rows.slice(1).forEach((row, index) => {
             if (row.c) {
-              // Format date if it exists in any date field (assuming columnC might be a date)
-              let dateValue = row.c[2] ? row.c[2].v : "";
-              // Check if the value is a date and format it as dd/mm/yyyy
-              if (dateValue && typeof dateValue === 'object' && dateValue.getDate) {
-                const day = String(dateValue.getDate()).padStart(2, '0');
-                const month = String(dateValue.getMonth() + 1).padStart(2, '0');
-                const year = dateValue.getFullYear();
-                dateValue = `${day}/${month}/${year}`;
-              }
+              // Format timestamp (Column A) - ISO format to dd/mm/yyyy
+              let timestampValue = row.c[0] ? row.c[0].v : "";
+              timestampValue = formatDateString(timestampValue);
+              
+              // Format date of complete (Column C) - date format to dd/mm/yyyy
+              let dateCompleteValue = row.c[2] ? row.c[2].v : "";
+              dateCompleteValue = formatDateString(dateCompleteValue);
               
               const record = {
                 rowIndex: index + 2, // Actual row index in the sheet (1-indexed, +1 for header row, +1 for 1-indexing)
-                columnA: row.c[0] ? row.c[0].v : "", // Column A
+                columnA: timestampValue, // Column A (formatted timestamp)
                 columnB: row.c[1] ? row.c[1].v : "", // Column B
-                columnC: dateValue, // Column C (formatted date)
+                columnC: dateCompleteValue, // Column C (formatted date)
                 columnD: row.c[3] ? row.c[3].v : "", // Column D
                 columnE: row.c[4] ? row.c[4].v : "", // Column E
                 columnF: row.c[5] ? row.c[5].v : "", // Column F
@@ -58,7 +102,7 @@ function TrackerHistoryTable() {
                 hasDriveUrl: {
                   columnA: row.c[0] && typeof row.c[0].v === 'string' && row.c[0].v.includes('drive.google.com'),
                   columnB: row.c[1] && typeof row.c[1].v === 'string' && row.c[1].v.includes('drive.google.com'),
-                  columnC: typeof dateValue === 'string' && dateValue.includes('drive.google.com'),
+                  columnC: row.c[2] && typeof row.c[2].v === 'string' && row.c[2].v.includes('drive.google.com'),
                   columnD: row.c[3] && typeof row.c[3].v === 'string' && row.c[3].v.includes('drive.google.com'),
                   columnE: row.c[4] && typeof row.c[4].v === 'string' && row.c[4].v.includes('drive.google.com'),
                   columnF: row.c[5] && typeof row.c[5].v === 'string' && row.c[5].v.includes('drive.google.com'),

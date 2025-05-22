@@ -36,8 +36,8 @@ function VerifiedDocumentsTable() {
           data.table.rows.slice(5).forEach((row, index) => {
             if (row.c) {
               // Check if BOTH document verification columns have data (AT and AU, indices 45 and 46)
-              const hasDocument1 = row.c[45] && row.c[45].v !== null && row.c[45].v !== ""
-              const hasDocument2 = row.c[46] && row.c[46].v !== null && row.c[46].v !== ""
+              const hasDocument1 = row.c[49] && row.c[49].v !== null && row.c[49].v !== ""
+              const hasDocument2 = row.c[50] && row.c[50].v !== null && row.c[50].v !== ""
 
               // Only include rows where BOTH document fields are not null
               if (hasDocument1 && hasDocument2) {
@@ -49,9 +49,9 @@ function VerifiedDocumentsTable() {
                   phone: row.c[4] ? row.c[4].v : "", // Column E - Phone
                   email: row.c[5] ? row.c[5].v : "", // Column F - Email
                   address: row.c[6] ? row.c[6].v : "", // Column G - Address
-                  document1: row.c[47] ? row.c[47].v : "", // Document 1
-                  document2: row.c[48] ? row.c[48].v : "", // Document 2
-                  additionalDocuments: row.c[49] ? row.c[49].v : "", // Additional Documents
+                  document1: row.c[52] ? row.c[52].v : "", // Document 1
+                  document2: row.c[53] ? row.c[53].v : "", // Document 2
+                  additionalDocuments: row.c[54] ? row.c[54].v : "", // Additional Documents
                   verificationDate: row.c[43] ? row.c[43].v : "", // Document Verification Date
                 }
 

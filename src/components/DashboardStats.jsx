@@ -35,8 +35,8 @@ function DashboardStats() {
         
         // Process the data
         if (parsedData && parsedData.table && parsedData.table.rows) {
-          // Skip the header rows (first 5 rows)
-          setData(parsedData.table.rows.slice(5))
+          // Skip the header rows (first 5 rows) - this gives us data starting from row 6
+          setData(parsedData.table.rows.slice(6))
         } else {
           throw new Error("No data found in the sheet")
         }
@@ -51,7 +51,7 @@ function DashboardStats() {
     fetchData()
   }, [])
 
-  // Calculate stats from sheet data
+  // Calculate stats from sheet data - all calculations now count data starting from row 6
   const totalComplaints = data ? data.length : 0
 
   // Pending complaints: column AJ is not null and column AK is null
@@ -78,12 +78,16 @@ function DashboardStats() {
       ).length
     : 0
 
-  // Verified complaints: both columns AX and AY are null
+  // Verified complaints: both columns 49 and 50 are not null (have values)
   const verifiedComplaints = data
     ? data.filter(
         (row) =>
-          (!row.c[49] || row.c[49].v === null || row.c[49].v === "") &&
-          (!row.c[50] || row.c[50].v === null || row.c[50].v === ""),
+          row.c[49] &&
+          row.c[49].v !== null &&
+          row.c[49].v !== "" &&
+          row.c[50] &&
+          row.c[50].v !== null &&
+          row.c[50].v !== "",
       ).length
     : 0
 

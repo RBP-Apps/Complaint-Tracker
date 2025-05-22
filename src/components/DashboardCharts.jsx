@@ -67,7 +67,7 @@ function DashboardCharts() {
         // Process the data
         if (parsedData && parsedData.table && parsedData.table.rows) {
           // Skip the header rows (first 5 rows)
-          setData(parsedData.table.rows.slice(5))
+          setData(parsedData.table.rows.slice(6))
         } else {
           throw new Error("No data found in the sheet")
         }
