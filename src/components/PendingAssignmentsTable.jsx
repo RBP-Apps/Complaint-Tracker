@@ -107,9 +107,9 @@ function PendingAssignmentsTable() {
       // Fill only the columns we want to update (AA to AI, indices 26-34)
       // Also update column Z (index 25) to indicate this complaint has been assigned
 rowDataArray[25] = new Date().toLocaleString('en-US')
-      rowDataArray[27] = assigneeData.assignee // Column AA - Assignee Name
-      rowDataArray[28] = assigneeData.technicianName // Column AB - Technician Name
-      rowDataArray[29] = assigneeData.technicianContact // Column AC - Technician Contact
+      rowDataArray[29] = assigneeData.assignee // Column AA - Assignee Name
+      rowDataArray[27] = assigneeData.technicianName // Column AB - Technician Name
+      rowDataArray[28] = assigneeData.technicianContact // Column AC - Technician Contact
       rowDataArray[30] = assigneeData.assigneeWhatsapp // Column AD - Assignee WhatsApp
       rowDataArray[31] = assigneeData.location // Column AE - Location
       rowDataArray[32] = assigneeData.complaintDetails // Column AF - Complaint Details
