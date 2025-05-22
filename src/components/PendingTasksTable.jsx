@@ -473,31 +473,27 @@ const addToTrackerHistory = async (task, completionDate, remarks, documentUrl, p
                     <h3 className="text-lg leading-6 font-medium text-gray-900">Update Task: {selectedTask}</h3>
                     <div className="mt-4 max-h-[60vh] overflow-auto">
                       <div className="grid gap-4">
-                        <div className="space-y-2">
-                          <label htmlFor="completeDate" className="block text-sm font-medium">
-                            Date of Complete
-                          </label>
-                          <div className="relative">
-                            <button
-                              type="button"
-                              className="w-full flex justify-start items-center text-left border border-gray-300 rounded-md py-2 px-3 bg-white"
-                              onClick={() => document.getElementById("complete-date-picker").focus()}
-                            >
-                              <Calendar className="mr-2 h-4 w-4" />
-                              {date ? date.toLocaleDateString() : "Select date"}
-                            </button>
-                            <div className="absolute top-0 left-0 w-full">
-                              <DatePicker
-                                id="complete-date-picker"
-                                selected={date}
-                                onChange={(date) => setDate(date)}
-                                className="w-full opacity-0 absolute"
-                                dateFormat="yyyy-MM-dd"
-                                placeholderText="Select date"
-                              />
-                            </div>
-                          </div>
-                        </div>
+                      <div className="space-y-2">
+  <label htmlFor="completeDate" className="block text-sm font-medium text-gray-700">
+    Date of Complete
+  </label>
+  <div className="relative">
+    <DatePicker
+      id="completeDate"
+      selected={date}
+      onChange={(selectedDate) => setDate(selectedDate)}
+      className="w-full border border-gray-300 rounded-md py-2 px-3 pr-10 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+      dateFormat="yyyy-MM-dd"
+      placeholderText="Select completion date"
+      showPopperArrow={false}
+      popperClassName="z-50"
+      calendarClassName="shadow-lg border border-gray-200 rounded-md"
+      dayClassName={(date) => "hover:bg-blue-500 hover:text-white rounded"}
+      wrapperClassName="w-full"
+    />
+    <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+  </div>
+</div>
 
                         <div className="space-y-2">
                           <label htmlFor="status" className="block text-sm font-medium">
