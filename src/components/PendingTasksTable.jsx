@@ -225,7 +225,8 @@ const addToTrackerHistory = async (task, completionDate, remarks, documentUrl, p
     formData.append('action', 'insert');
     
     const now = new Date();
-    const timestamp = now.toISOString();
+    // const timestamp = now.toISOString();
+    const timestamp = new Date().toLocaleString('en-US')
     
     const historyRow = [
       timestamp,

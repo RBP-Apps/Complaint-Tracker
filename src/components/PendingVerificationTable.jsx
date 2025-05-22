@@ -160,7 +160,8 @@ function PendingVerificationTable() {
       formData.append('action', 'insert') // Changed from 'update' to 'insert' to add to a new row
       
       // Get current timestamp for the first column
-      const currentTimestamp = new Date().toLocaleString()
+      // const currentTimestamp = new Date().toLocaleString()
+      const timestamp = new Date().toLocaleString('en-US')
       
       // Create an array with columns we want to update
       // [timestamp, complaint_id, status, verification_date, verification_password]
