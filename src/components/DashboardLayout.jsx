@@ -84,7 +84,6 @@ function DashboardLayout({ children }) {
       name: "Assign Complaint",
       href: "/dashboard/assign-complaint",
       icon: UserCheck,
-      badge: 18,
       badgeColor: "bg-blue-500 hover:bg-blue-600",
       permissionKey: "assign complaint"
     },
@@ -92,7 +91,7 @@ function DashboardLayout({ children }) {
       name: "Tracker",
       href: "/dashboard/tracker",
       icon: Clock,
-      badge: 18,
+      // badge: 18,
       badgeColor: "bg-blue-500 hover:bg-blue-600",
       permissionKey: "tracker"
     },
@@ -100,7 +99,7 @@ function DashboardLayout({ children }) {
       name: "Verification",
       href: "/dashboard/verification",
       icon: CheckCircle,
-      badge: 5,
+      // badge: 5,
       badgeColor: "bg-blue-500 hover:bg-blue-600",
       permissionKey: "verification"
     },
@@ -108,7 +107,7 @@ function DashboardLayout({ children }) {
       name: "Document Verification",
       href: "/dashboard/document-verification",
       icon: FileText,
-      badge: 3,
+      // badge: 3,
       badgeColor: "bg-blue-500 hover:bg-blue-600",
       permissionKey: "document verification"
     },
@@ -176,7 +175,7 @@ function DashboardLayout({ children }) {
           })}
         </div>
 
-        {userPermissions.includes('all') && (
+        {/* {userPermissions.includes('all') && (
           <div className="mt-8 pt-4 border-t border-gray-700">
             <p className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Settings</p>
             <Link
@@ -194,7 +193,7 @@ function DashboardLayout({ children }) {
               Settings
             </Link>
           </div>
-        )}
+        )} */}
       </nav>
 
       <div className="p-4 mt-auto">
@@ -249,12 +248,12 @@ function DashboardLayout({ children }) {
             <h1 className="text-lg font-bold">Complaints Tracker</h1>
           </div>
           <div className="flex items-center gap-4">
-            <button className="relative p-2 rounded-md border border-gray-200">
+            {/* <button className="relative p-2 rounded-md border border-gray-200">
               <Bell className="h-5 w-5" />
               <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-[10px] text-white flex items-center justify-center">
                 3
               </span>
-            </button>
+            </button> */}
 
             <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 border border-gray-300">
               {username ? username.substring(0, 2).toUpperCase() : "AU"}
