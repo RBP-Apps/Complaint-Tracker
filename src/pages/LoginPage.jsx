@@ -161,7 +161,7 @@ function LoginPage() {
             {isLoading ? "Logging in..." : "Login"}
           </button>
           
-          <div className="flex justify-center">
+          {/* <div className="flex justify-center">
             <button
               type="button"
               onClick={copyCredentials}
@@ -170,7 +170,7 @@ function LoginPage() {
               <Clipboard size={16} className="mr-1" />
               Demo credentials
             </button>
-          </div>
+          </div> */}
         </form>
         
         <div className="mt-8 text-center text-xs text-gray-500">
