@@ -58,10 +58,10 @@ function DashboardStats() {
   const pendingComplaints = data
     ? data.filter(
         (row) =>
-          row.c[35] &&
-          row.c[35].v !== null &&
-          row.c[35].v !== "" &&
-          (!row.c[36] || row.c[36].v === null || row.c[36].v === ""),
+          row.c[43] &&
+          row.c[43].v !== null &&
+          row.c[43].v !== "" &&
+          (!row.c[44] || row.c[44].v === null || row.c[44].v === ""),
       ).length
     : 0
 
@@ -69,12 +69,12 @@ function DashboardStats() {
   const completedComplaints = data
     ? data.filter(
         (row) =>
-          row.c[35] &&
-          row.c[35].v !== null &&
-          row.c[35].v !== "" &&
-          row.c[36] &&
-          row.c[36].v !== null &&
-          row.c[36].v !== "",
+          row.c[43] &&
+          row.c[43].v !== null &&
+          row.c[43].v !== "" &&
+          row.c[44] &&
+          row.c[44].v !== null &&
+          row.c[44].v !== "",
       ).length
     : 0
 
@@ -114,7 +114,7 @@ function DashboardStats() {
       textColor: "text-blue-600",
     },
     {
-      title: "Completed Complaints",
+      title: "Completed Verification",
       value: isLoading ? "-" : completedComplaints,
       change: "+18%",
       trend: "up",
