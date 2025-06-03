@@ -39,7 +39,7 @@ function PendingAssignmentsTable() {
           const complaintData = []
           
           // Skip the header row and process the data rows
-          data.table.rows.slice(5).forEach((row, index) => {
+          data.table.rows.slice(2).forEach((row, index) => {
             if (row.c) {
               // Check if column Y (index 24) has data and column Z (index 25) is null/empty
               const hasColumnY = row.c[24] && row.c[24].v !== null && row.c[24].v !== "";
@@ -49,7 +49,7 @@ function PendingAssignmentsTable() {
               if (hasColumnY && isColumnZEmpty) {
                 const complaint = {
                   rowIndex: index + 6, // Actual row index in the sheet (1-indexed, +5 for header rows, +1 for 1-indexing)
-                  id: row.c[1] ? row.c[1].v : `COMP-${index + 1}`,
+                  id: row.c[1] ? row.c[1].v : `CT-${index + 1}`,
                   beneficiaryName: row.c[7] ? row.c[7].v : "",
                   product: row.c[9] ? row.c[9].v : "",
                   village: row.c[12] ? row.c[12].v : "",

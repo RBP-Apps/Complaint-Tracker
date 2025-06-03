@@ -113,47 +113,93 @@ function NewComplaintForm() {
   }
 
   // Fetch the last serial number from the sheet
-  const fetchLastSerialNumber = async () => {
-    try {
-      // Try to fetch the last serial number from the sheet
-      const response = await fetch(
-        'https://script.google.com/macros/s/AKfycbzkBpcYMupYQi6gSURT_tqDfeQrGtbS6DwiRvmjw0s2kAIGmHlkjnVJDddXOy0v6ur7rw/exec?action=getLastSerialNumber&sheetName=FMS',
-        {
-          method: 'GET',
-          // Remove no-cors to be able to read the response
-          headers: {
-            'Content-Type': 'application/json',
-          }
-        }
-      );
-  
-      const data = await response.json();
-      
-      const generateSerialNumber = (lastNumber) => {
-        if (!lastNumber || lastNumber === "") return 'CT-001';
-        
-        // Extract the numeric part and increment
-        const numPart = parseInt(lastNumber.split('-')[1]);
-        const newNum = numPart + 1;
-        
-        // Pad with zeros to maintain 3-digit format
-        return `CT-${newNum.toString().padStart(3, '0')}`;
-      };
-  
-      const newSerialNumber = generateSerialNumber(data.lastSerialNumber);
-      setSerialNumber(newSerialNumber);
-    } catch (error) {
-      console.error('Error fetching serial number:', error);
-      // Fallback - check localStorage for last used number
-      const lastNumber = localStorage.getItem('lastSerialNumber');
-      const newSerialNumber = lastNumber 
-        ? `CT-${(parseInt(lastNumber.split('-')[1]) + 1).toString().padStart(3, '0')}`
-        : 'CT-001';
-      setSerialNumber(newSerialNumber);
-      // Save to localStorage for next time
-      localStorage.setItem('lastSerialNumber', newSerialNumber);
+  // Fetch the last serial number from the sheet
+  // Fixed fetchLastSerialNumber function for React component
+const fetchLastSerialNumber = async () => {
+  try {
+    // Build the URL with query parameters for GET request
+    const scriptUrl = `https://script.google.com/macros/s/AKfycbzkBpcYMupYQi6gSURT_tqDfeQrGtbS6DwiRvmjw0s2kAIGmHlkjnVJDddXOy0v6ur7rw/exec?action=getLastSerialNumber&sheetName=FMS`;
+    
+    console.log('Fetching from:', scriptUrl);
+    
+    const response = await fetch(scriptUrl, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+      }
+    });
+    
+    console.log('Response status:', response.status);
+    console.log('Response headers:', response.headers);
+    
+    // Check if the response is OK
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
-  };
+    
+    // Get the response text first to debug
+    const responseText = await response.text();
+    console.log('Raw response:', responseText);
+    
+    // Try to parse as JSON
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (parseError) {
+      console.error('JSON parse error:', parseError);
+      console.error('Response text:', responseText);
+      throw new Error("Response is not valid JSON");
+    }
+    
+    console.log('Parsed data:', data);
+    
+    if (data.success && typeof data.lastSerialNumber !== 'undefined') {
+      // Process the serial number
+      const lastNumber = data.lastSerialNumber;
+      let newSerialNumber;
+      
+      if (lastNumber && lastNumber.toString().includes('CT-')) {
+        const numPart = parseInt(lastNumber.toString().split('-')[1]);
+        if (!isNaN(numPart)) {
+          newSerialNumber = `CT-${(numPart + 1).toString().padStart(3, '0')}`;
+        } else {
+          newSerialNumber = 'CT-001';
+        }
+      } else {
+        newSerialNumber = 'CT-001';
+      }
+      
+      console.log('Generated serial number:', newSerialNumber);
+      setSerialNumber(newSerialNumber);
+      localStorage.setItem('lastSerialNumber', newSerialNumber);
+      return;
+    }
+    
+    throw new Error(data.error || "Failed to get serial number from response");
+  } catch (error) {
+    console.error('Error fetching serial number:', error);
+    console.log('Falling back to localStorage');
+    
+    // Fallback - use localStorage
+    const lastNumber = localStorage.getItem('lastSerialNumber');
+    let newSerialNumber;
+    
+    if (lastNumber && lastNumber.includes('CT-')) {
+      const numPart = parseInt(lastNumber.split('-')[1]);
+      if (!isNaN(numPart)) {
+        newSerialNumber = `CT-${(numPart + 1).toString().padStart(3, '0')}`;
+      } else {
+        newSerialNumber = 'CT-001';
+      }
+    } else {
+      newSerialNumber = 'CT-001';
+    }
+    
+    console.log('Fallback serial number:', newSerialNumber);
+    setSerialNumber(newSerialNumber);
+    localStorage.setItem('lastSerialNumber', newSerialNumber);
+  }
+};
 
   // Fetch data on component mount
   useEffect(() => {

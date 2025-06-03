@@ -55,7 +55,7 @@ function AssignComplaintForm({ complaintId, onClose, onSubmit }) {
           
           // Find the complaint row index (we'll need the actual row index that matches the complaintId)
           // Since this is a fallback, we'll use a hardcoded approach for simplicity
-          const rowIndex = parseInt(complaintId.replace('COMP-', '')) + 5 // Rough estimate based on ID
+          const rowIndex = parseInt(complaintId.replace('CT-', '')) + 5 // Rough estimate based on ID
           formDataPayload.append('rowIndex', rowIndex.toString())
           
           // We need to create an array with all columns, filling in only the ones we want to update

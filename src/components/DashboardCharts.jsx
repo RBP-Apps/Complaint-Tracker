@@ -117,37 +117,58 @@ function DashboardCharts() {
       allMonths.map(month => [month, { completed: 0, pending: 0 }])
     )
   
-    data.forEach((row) => {
-      if (row.c && row.c[49] && row.c[49].v) {
+    data.forEach((row, rowIndex) => {
+      if (row.c && row.c[49] && row.c[49].v) { // Column AX (index 49) for date
         try {
-          const dateStr = row.c[49].v
+          const dateValue = row.c[49].v
           let date
   
-          if (typeof dateStr === 'string') {
-            // Handle "5/21/2025" format
-            const [month, day, year] = dateStr.split('/').map(Number)
-            date = new Date(year, month - 1, day)
-          } else if (dateStr instanceof Date) {
-            date = new Date(dateStr)
-          } else {
+          // Handle Date(2025,5,3) format from Google Sheets
+          if (typeof dateValue === 'string' && dateValue.startsWith('Date(')) {
+            const match = dateValue.match(/Date\((\d+),(\d+),(\d+)(?:,(\d+),(\d+),(\d+))?\)/)
+            if (match) {
+              const year = parseInt(match[1])
+              const month = parseInt(match[2]) // Month is 0-indexed in this format
+              const day = parseInt(match[3])
+              date = new Date(year, month, day)
+            }
+          }
+          // Handle other date formats
+          else if (typeof dateValue === 'string') {
+            date = new Date(dateValue)
+          }
+          else if (dateValue instanceof Date) {
+            date = new Date(dateValue)
+          }
+  
+          // Check if date is valid
+          if (!date || isNaN(date.getTime())) {
             return
           }
   
           const monthName = date.toLocaleString('default', { month: 'short' })
+          
+          // Check completion status - look for any non-empty value in columns 50-56 (AY-BE)
+          let isCompleted = false
+          for (let i = 50; i <= 51; i++) {
+            if (row.c[i] && row.c[i].v && row.c[i].v !== '') {
+              isCompleted = true
+              break
+            }
+          }
   
-          // Count based on AY (index 51)
-          if (row.c[50] && row.c[50].v) {
+          if (isCompleted) {
             monthCounts[monthName].completed++
           } else {
             monthCounts[monthName].pending++
           }
         } catch (e) {
-          console.error("Error parsing date:", e)
+          console.error(`Error processing row ${rowIndex}:`, e)
         }
       }
     })
   
-    // Return data for all months regardless of counts
+    // Return data for all months
     return allMonths.map(month => ({
       name: month,
       completed: monthCounts[month].completed,

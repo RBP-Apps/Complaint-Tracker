@@ -32,7 +32,7 @@ function AssignmentHistoryTable() {
           const historyData = []
           
           // Skip the header row and process the data rows
-          data.table.rows.slice(5).forEach((row, index) => {
+          data.table.rows.slice(0).forEach((row, index) => {
             if (row.c) {
               // Check if column Y (index 24) has data and column Z (index 25) is null/empty
               const hasColumnY = row.c[24] && row.c[24].v !== null && row.c[24].v !== "";
