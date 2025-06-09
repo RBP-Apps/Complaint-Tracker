@@ -87,7 +87,7 @@ const formatDateString = (dateValue) => {
           const recordsData = []
           
           // Skip the header row and process the data rows
-          data.table.rows.slice(1).forEach((row, index) => {
+          data.table.rows.slice(0).forEach((row, index) => {
             if (row.c) {
               // Format timestamp (Column A) - ISO format to dd/mm/yyyy
               let timestampValue = row.c[0] ? row.c[0].v : "";

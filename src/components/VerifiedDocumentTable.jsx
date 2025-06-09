@@ -79,7 +79,7 @@ function VerifiedDocumentsTable() {
           const documentsData = []
 
           // Skip the header row and process the data rows
-          data.table.rows.slice(5).forEach((row, index) => {
+          data.table.rows.slice(3).forEach((row, index) => {
             if (row.c) {
               // Check if BOTH document verification columns have data (AT and AU, indices 45 and 46)
               const hasDocument1 = row.c[49] && row.c[49].v !== null && row.c[49].v !== ""

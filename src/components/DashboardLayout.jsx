@@ -2,19 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Link, useLocation } from "react-router-dom"
-import {
-  Clipboard,
-  Home,
-  CheckCircle,
-  Clock,
-  LogOut,
-  Menu,
-  Bell,
-  User,
-  Settings,
-  FileText,
-  UserCheck,
-} from "react-feather"
+import { Clipboard, Home, CheckCircle, Clock, LogOut, Menu, FileText, UserCheck, DollarSign } from "react-feather"
 
 function DashboardLayout({ children }) {
   const location = useLocation()
@@ -39,18 +27,18 @@ function DashboardLayout({ children }) {
 
   // Get user permissions from localStorage
   useEffect(() => {
-    const storedPermissions = localStorage.getItem('userPermissions')
-    const storedUsername = localStorage.getItem('username')
-    
+    const storedPermissions = localStorage.getItem("userPermissions")
+    const storedUsername = localStorage.getItem("username")
+
     // Parse permissions - handling both "all" and comma-separated values
     if (storedPermissions) {
-      if (storedPermissions.toLowerCase() === 'all') {
-        setUserPermissions(['all'])
+      if (storedPermissions.toLowerCase() === "all") {
+        setUserPermissions(["all"])
       } else {
-        setUserPermissions(storedPermissions.split(',').map(item => item.trim().toLowerCase()))
+        setUserPermissions(storedPermissions.split(",").map((item) => item.trim().toLowerCase()))
       }
     }
-    
+
     if (storedUsername) {
       setUsername(storedUsername)
     }
@@ -59,11 +47,9 @@ function DashboardLayout({ children }) {
   // Check if user has permission to access a specific route
   const hasPermission = (routeName) => {
     if (!userPermissions.length) return false
-    if (userPermissions.includes('all')) return true
-    
-    return userPermissions.some(permission => 
-      routeName.toLowerCase().includes(permission.toLowerCase())
-    )
+    if (userPermissions.includes("all")) return true
+
+    return userPermissions.some((permission) => routeName.toLowerCase().includes(permission.toLowerCase()))
   }
 
   // All possible nav items
@@ -72,59 +58,58 @@ function DashboardLayout({ children }) {
       name: "Dashboard",
       href: "/dashboard",
       icon: Home,
-      permissionKey: "dashboard"
+      permissionKey: "dashboard",
     },
     {
       name: "New Complaint",
       href: "/dashboard/new-complaint",
       icon: FileText,
-      permissionKey: "new complaint"
+      permissionKey: "new complaint",
     },
     {
       name: "Assign Complaint",
       href: "/dashboard/assign-complaint",
       icon: UserCheck,
       badgeColor: "bg-blue-500 hover:bg-blue-600",
-      permissionKey: "assign complaint"
+      permissionKey: "assign complaint",
     },
     {
       name: "Tracker",
       href: "/dashboard/tracker",
       icon: Clock,
-      // badge: 18,
       badgeColor: "bg-blue-500 hover:bg-blue-600",
-      permissionKey: "tracker"
+      permissionKey: "tracker",
     },
     {
       name: "Verification",
       href: "/dashboard/verification",
       icon: CheckCircle,
-      // badge: 5,
       badgeColor: "bg-blue-500 hover:bg-blue-600",
-      permissionKey: "verification"
+      permissionKey: "verification",
     },
     {
       name: "Document Verification",
       href: "/dashboard/document-verification",
       icon: FileText,
-      // badge: 3,
       badgeColor: "bg-blue-500 hover:bg-blue-600",
-      permissionKey: "document verification"
+      permissionKey: "document verification",
+    },
+    {
+      name: "Petrol Expenses",
+      href: "/dashboard/petrol-expenses",
+      icon: DollarSign,
+      badgeColor: "bg-green-500 hover:bg-green-600",
+      permissionKey: "petrol expenses",
     },
   ]
 
   // Filter nav items based on user permissions
-  const navItems = allNavItems.filter(item => 
-    hasPermission(item.permissionKey)
-  )
-
-  // We'll handle permission redirects in the ProtectedRoute component instead
-  // so removing the redirect logic from here to prevent conflicts
+  const navItems = allNavItems.filter((item) => hasPermission(item.permissionKey))
 
   const handleLogout = () => {
-    localStorage.removeItem('userPermissions')
-    localStorage.removeItem('username')
-    window.location.href = '/'
+    localStorage.removeItem("userPermissions")
+    localStorage.removeItem("username")
+    window.location.href = "/"
   }
 
   const SidebarContent = () => (
@@ -144,7 +129,7 @@ function DashboardLayout({ children }) {
           <div>
             <p className="font-medium">{username || "User"}</p>
             <p className="text-xs text-gray-400">
-              {userPermissions.includes('all') ? 'Full Access' : userPermissions.join(', ')}
+              {userPermissions.includes("all") ? "Full Access" : userPermissions.join(", ")}
             </p>
           </div>
         </div>
@@ -174,30 +159,10 @@ function DashboardLayout({ children }) {
             )
           })}
         </div>
-
-        {/* {userPermissions.includes('all') && (
-          <div className="mt-8 pt-4 border-t border-gray-700">
-            <p className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Settings</p>
-            <Link
-              to="#"
-              className="group flex items-center rounded-md px-3 py-2.5 text-sm font-medium transition-colors text-gray-300 hover:bg-gray-700 hover:text-white"
-            >
-              <User className="mr-3 h-5 w-5" />
-              Profile
-            </Link>
-            <Link
-              to="#"
-              className="group flex items-center rounded-md px-3 py-2.5 text-sm font-medium transition-colors text-gray-300 hover:bg-gray-700 hover:text-white"
-            >
-              <Settings className="mr-3 h-5 w-5" />
-              Settings
-            </Link>
-          </div>
-        )} */}
       </nav>
 
       <div className="p-4 mt-auto">
-        <button 
+        <button
           onClick={handleLogout}
           className="w-full border border-gray-700 text-white hover:bg-gray-700 hover:text-white py-2 px-4 rounded-md flex items-center justify-center"
         >
@@ -242,19 +207,12 @@ function DashboardLayout({ children }) {
       <div className="flex-1 md:ml-64">
         {/* Top navbar */}
         <header className="h-16 bg-white shadow-sm flex items-center justify-between px-4 md:px-8">
-          <div className="md:hidden w-8"></div> {/* Spacer for mobile */}
+          <div className="md:hidden w-8"></div>
           <div className="md:hidden flex items-center">
             <Clipboard className="h-5 w-5 mr-2" />
             <h1 className="text-lg font-bold">Complaints Tracker</h1>
           </div>
           <div className="flex items-center gap-4">
-            {/* <button className="relative p-2 rounded-md border border-gray-200">
-              <Bell className="h-5 w-5" />
-              <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-[10px] text-white flex items-center justify-center">
-                3
-              </span>
-            </button> */}
-
             <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 border border-gray-300">
               {username ? username.substring(0, 2).toUpperCase() : "AU"}
             </div>
@@ -263,7 +221,7 @@ function DashboardLayout({ children }) {
 
         <main className="pb-16">{children}</main>
 
-        <footer className="bg-gray-200 text-center py-4 text-sm text-gray-600">
+        <footer className="bg-gray-200 text-center py-4 text-sm text-gray-600 fixed bottom-0 left-0 right-0 md:left-64 z-30">
           <div className="flex justify-center items-center">
             <span>© {new Date().getFullYear()} Complaints Tracker. All rights reserved.</span>
             <span className="mx-2">|</span>

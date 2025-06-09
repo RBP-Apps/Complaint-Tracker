@@ -34,6 +34,7 @@ import AssignComplaintPage from "./pages/AssignComplaintPage"
 import TrackerPage from "./pages/TrackerPage"
 import VerificationPage from "./pages/VerificationPage"
 import DocumentVerificationPage from "./pages/DocumentVerficationPage"
+import PetrolExpensesPage from "./pages/PetrolExpensesPage"
 
 function App() {
   return (
@@ -46,6 +47,7 @@ function App() {
         <Route path="/dashboard/tracker" element={<TrackerPage />} />
         <Route path="/dashboard/verification" element={<VerificationPage />} />
         <Route path="/dashboard/document-verification" element={<DocumentVerificationPage />} />
+        <Route path="/dashboard/petrol-expenses" element={<PetrolExpensesPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>

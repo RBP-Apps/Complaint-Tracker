@@ -15,6 +15,60 @@ function PendingAssignmentsTable() {
   // Google Apps Script Web App URL - Replace with your actual deployed script URL
   const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkBpcYMupYQi6gSURT_tqDfeQrGtbS6DwiRvmjw0s2kAIGmHlkjnVJDddXOy0v6ur7rw/exec"
   
+
+  const formatDateString = (dateValue) => {
+    if (!dateValue) return "";
+    
+    let date;
+    
+    // Handle ISO string format (2025-05-22T07:38:28.052Z)
+    if (typeof dateValue === 'string' && dateValue.includes('T')) {
+      date = new Date(dateValue);
+    }
+    // Handle date format (2025-05-21)
+    else if (typeof dateValue === 'string' && dateValue.includes('-')) {
+      date = new Date(dateValue);
+    }
+    // Handle Google Sheets format like "5/22/2025, 2:32:51 PM"
+    else if (typeof dateValue === 'string' && dateValue.includes('/') && dateValue.includes(',')) {
+      date = new Date(dateValue);
+    }
+    // Handle Google Sheets Date constructor format like "Date(2025,4,21)" or "Date(2025,4,22,14,32,51)"
+    else if (typeof dateValue === 'string' && dateValue.startsWith('Date(')) {
+      // Extract the date parts from "Date(2025,4,21)" or "Date(2025,4,22,14,32,51)" format
+      const match = dateValue.match(/Date\((\d+),(\d+),(\d+)(?:,(\d+),(\d+),(\d+))?\)/);
+      if (match) {
+        const year = parseInt(match[1]);
+        const month = parseInt(match[2]); // Month is 0-indexed in this format
+        const day = parseInt(match[3]);
+        // Optional time components
+        const hours = match[4] ? parseInt(match[4]) : 0;
+        const minutes = match[5] ? parseInt(match[5]) : 0;
+        const seconds = match[6] ? parseInt(match[6]) : 0;
+        date = new Date(year, month, day, hours, minutes, seconds);
+      } else {
+        return dateValue;
+      }
+    }
+    // Handle if it's already a Date object
+    else if (typeof dateValue === 'object' && dateValue.getDate) {
+      date = dateValue;
+    }
+    else {
+      return dateValue; // Return as is if not a recognizable date format
+    }
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      return dateValue; // Return original value if invalid date
+    }
+    
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+  
   // Function to fetch data from Google Sheets
   useEffect(() => {
     const fetchComplaints = async () => {
@@ -44,6 +98,10 @@ function PendingAssignmentsTable() {
               // Check if column Y (index 24) has data and column Z (index 25) is null/empty
               const hasColumnY = row.c[24] && row.c[24].v !== null && row.c[24].v !== "";
               const isColumnZEmpty = !row.c[25] || row.c[25].v === null || row.c[25].v === "";
+
+              let product = row.c[9] ? row.c[9].v : "";
+              let productdate = formatDateString(product);
+              
               
               // Only include rows where column Y has data and column Z is null
               if (hasColumnY && isColumnZEmpty) {
@@ -51,7 +109,7 @@ function PendingAssignmentsTable() {
                   rowIndex: index + 6, // Actual row index in the sheet (1-indexed, +5 for header rows, +1 for 1-indexing)
                   id: row.c[1] ? row.c[1].v : `CT-${index + 1}`,
                   beneficiaryName: row.c[7] ? row.c[7].v : "",
-                  product: row.c[9] ? row.c[9].v : "",
+                  product: productdate,
                   village: row.c[12] ? row.c[12].v : "",
                   district: row.c[14] ? row.c[14].v : "",
                   complaintDate: row.c[11] ? row.c[11].v : "",
