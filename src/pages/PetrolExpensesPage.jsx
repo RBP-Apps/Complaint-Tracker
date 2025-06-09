@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from "react"
 import DashboardLayout from "../components/DashboardLayout"
-import { Plus, X, Calendar, User, Navigation, FileText, Loader } from "react-feather"
+import { Plus, X, Calendar, User, Navigation, FileText, Loader, Search } from "react-feather"
 
 function PetrolExpensesPage() {
   const [showForm, setShowForm] = useState(false)
   const [expenses, setExpenses] = useState([])
+  const [filteredExpenses, setFilteredExpenses] = useState([]) // For filtered results
+  const [searchQuery, setSearchQuery] = useState("") // Search query state
   const [formData, setFormData] = useState({
     date: "",
     technicianName: "",
@@ -17,12 +19,11 @@ function PetrolExpensesPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [technicians, setTechnicians] = useState([]) // Changed from static array to state
+  const [isTechniciansLoading, setIsTechniciansLoading] = useState(false) // Loading state for technicians
 
   // Google Apps Script Web App URL - Replace with your actual deployed script URL
   const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkBpcYMupYQi6gSURT_tqDfeQrGtbS6DwiRvmjw0s2kAIGmHlkjnVJDddXOy0v6ur7rw/exec"
-
-  // Sample technician data - can be fetched from Google Sheets if needed
-  const technicians = ["John Smith", "Mike Johnson", "Sarah Wilson", "David Brown", "Lisa Davis"]
 
   // Function to format date string to dd/mm/yyyy
   const formatDateString = (dateValue) => {
@@ -78,6 +79,52 @@ function PetrolExpensesPage() {
     return `${day}/${month}/${year}`;
   };
 
+  // Function to fetch technicians from Master sheet column F
+  const fetchTechnicians = async () => {
+    setIsTechniciansLoading(true)
+    
+    try {
+      // Fetch the Master sheet using Google Sheets API directly
+      const sheetUrl = "https://docs.google.com/spreadsheets/d/1Vn295WmY0o6qh03rYzpCISGfMgT5RViXdYyd_ZNQ2p8/gviz/tq?tqx=out:json&sheet=Master"
+      const response = await fetch(sheetUrl)
+      const text = await response.text()
+      
+      // Extract the JSON part from the response
+      const jsonStart = text.indexOf('{')
+      const jsonEnd = text.lastIndexOf('}') + 1
+      const jsonData = text.substring(jsonStart, jsonEnd)
+      
+      const data = JSON.parse(jsonData)
+      
+      // Process the technicians data from column F
+      if (data && data.table && data.table.rows) {
+        const techniciansData = []
+        
+        // Process all rows and extract column F (index 5)
+        data.table.rows.slice(1).forEach((row) => {
+          if (row.c && row.c[5] && row.c[5].v) { // Column F is index 5 (0-based)
+            const technicianName = row.c[5].v.toString().trim()
+            // Only add non-empty, unique technician names
+            if (technicianName && !techniciansData.includes(technicianName)) {
+              techniciansData.push(technicianName)
+            }
+          }
+        })
+        
+        // Sort technicians alphabetically
+        setTechnicians(techniciansData.sort())
+      } else {
+        setTechnicians([])
+      }
+    } catch (err) {
+      console.error("Error fetching technicians:", err)
+      // Fallback to empty array if fetch fails
+      setTechnicians([])
+    } finally {
+      setIsTechniciansLoading(false)
+    }
+  }
+
   // Load expenses from Google Sheets on component mount
   useEffect(() => {
     const fetchExpenses = async () => {
@@ -127,20 +174,55 @@ function PetrolExpensesPage() {
           
           // Reverse to show newest first
           setExpenses(expensesData.reverse())
+          setFilteredExpenses(expensesData) // Initialize filtered expenses
         } else {
           setExpenses([])
+          setFilteredExpenses([])
         }
       } catch (err) {
         console.error("Error fetching expenses:", err)
         setError(err.message)
         setExpenses([])
+        setFilteredExpenses([])
       } finally {
         setIsLoading(false)
       }
     }
     
+    // Fetch both expenses and technicians
     fetchExpenses()
+    fetchTechnicians()
   }, [])
+
+  // Filter expenses based on search query
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredExpenses(expenses)
+    } else {
+      const query = searchQuery.toLowerCase().trim()
+      const filtered = expenses.filter((expense) => {
+        return (
+          expense.date.toLowerCase().includes(query) ||
+          expense.technicianName.toLowerCase().includes(query) ||
+          expense.openingKm.toString().includes(query) ||
+          expense.closingKm.toString().includes(query) ||
+          expense.totalKm.toString().includes(query) ||
+          formatDateString(expense.createdAt).toLowerCase().includes(query)
+        )
+      })
+      setFilteredExpenses(filtered)
+    }
+  }, [searchQuery, expenses])
+
+  // Handle search input change
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value)
+  }
+
+  // Clear search
+  const clearSearch = () => {
+    setSearchQuery("")
+  }
 
   // Calculate total km when opening or closing km changes
   useEffect(() => {
@@ -224,6 +306,7 @@ function PetrolExpensesPage() {
 
       const updatedExpenses = [newExpense, ...expenses]
       setExpenses(updatedExpenses)
+      setFilteredExpenses(updatedExpenses) // Update filtered expenses too
 
       // Reset form and close
       setFormData({
@@ -312,14 +395,23 @@ function PetrolExpensesPage() {
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
+                    disabled={isTechniciansLoading}
                   >
-                    <option value="">Select Technician</option>
+                    <option value="">
+                      {isTechniciansLoading ? "Loading technicians..." : "Select Technician"}
+                    </option>
                     {technicians.map((tech, index) => (
                       <option key={index} value={tech}>
                         {tech}
                       </option>
                     ))}
                   </select>
+                  {isTechniciansLoading && (
+                    <div className="flex items-center mt-2 text-sm text-gray-500">
+                      <Loader className="h-3 w-3 animate-spin mr-1" />
+                      Loading technicians from Master sheet...
+                    </div>
+                  )}
                 </div>
 
                 {/* Opening KM */}
@@ -397,7 +489,7 @@ function PetrolExpensesPage() {
 
          {/* Summary Stats */}
          {expenses.length > 0 && !isLoading && (
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
               <div className="flex items-center">
                 <div className="p-2 bg-blue-100 rounded-lg">
@@ -437,6 +529,18 @@ function PetrolExpensesPage() {
                 </div>
               </div>
             </div>
+
+            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+              <div className="flex items-center">
+                <div className="p-2 bg-orange-100 rounded-lg">
+                  <Search className="h-6 w-6 text-orange-600" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Filtered Results</p>
+                  <p className="text-2xl font-semibold text-gray-900">{filteredExpenses.length}</p>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
@@ -459,7 +563,49 @@ function PetrolExpensesPage() {
         {!isLoading && (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200">
             <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900">Expenses History</h2>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <h2 className="text-lg font-semibold text-gray-900">Expenses History</h2>
+                
+                {/* Search Box */}
+                <div className="relative flex-1 max-w-md">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Search className="h-4 w-4 text-gray-400" />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Search by date, technician, km values..."
+                    value={searchQuery}
+                    onChange={handleSearchChange}
+                    className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={clearSearch}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    >
+                      <X className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                    </button>
+                  )}
+                </div>
+              </div>
+              
+              {/* Search Results Info */}
+              {searchQuery && (
+                <div className="mt-3 text-sm text-gray-600">
+                  {filteredExpenses.length === 0 ? (
+                    <span className="text-red-600">No results found for "{searchQuery}"</span>
+                  ) : (
+                    <span>
+                      Showing {filteredExpenses.length} of {expenses.length} entries
+                      {filteredExpenses.length !== expenses.length && (
+                        <span className="ml-2 text-blue-600">
+                          (filtered by "{searchQuery}")
+                        </span>
+                      )}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
 
             {expenses.length === 0 ? (
@@ -473,6 +619,20 @@ function PetrolExpensesPage() {
                 >
                   <Plus className="h-4 w-4" />
                   Add First Expense
+                </button>
+              </div>
+            ) : filteredExpenses.length === 0 && searchQuery ? (
+              <div className="p-8 text-center">
+                <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No results found</h3>
+                <p className="text-gray-500 mb-4">
+                  No expenses match your search for "{searchQuery}"
+                </p>
+                <button
+                  onClick={clearSearch}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+                >
+                  Clear Search
                 </button>
               </div>
             ) : (
@@ -501,7 +661,7 @@ function PetrolExpensesPage() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {expenses.map((expense) => (
+                    {filteredExpenses.map((expense) => (
                       <tr key={expense.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {expense.date}
