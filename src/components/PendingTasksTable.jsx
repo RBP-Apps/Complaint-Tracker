@@ -49,7 +49,7 @@ function TrackerPendingTable() {
           const taskData = []
           
           // Skip the header row and process the data rows
-          data.table.rows.slice(5).forEach((row, index) => {
+          data.table.rows.slice(3).forEach((row, index) => {
             if (row.c) {
               const hasColumnAJ = row.c[35] && row.c[35].v !== null && row.c[35].v !== "";
               const isColumnAKEmpty = !row.c[36] || row.c[36].v === null || row.c[36].v === "";

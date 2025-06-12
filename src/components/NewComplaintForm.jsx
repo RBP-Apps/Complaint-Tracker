@@ -17,6 +17,7 @@ function NewComplaintForm() {
   const [acdcOptions, setAcdcOptions] = useState([])
   const [priorityOptions, setPriorityOptions] = useState([])
   const [insuranceTypeOptions, setInsuranceTypeOptions] = useState([])
+  const [pumpTypeOptions, setPumpTypeOptions] = useState([])
   const [isLoading, setIsLoading] = useState(true)
 
   const [formData, setFormData] = useState({
@@ -36,6 +37,7 @@ function NewComplaintForm() {
     systemVoltage: "",
     rating: "",
     qty: "",
+    pumpType: "",
     acdc: "",
     natureOfComplaint: "",
     priority: "",
@@ -68,6 +70,7 @@ function NewComplaintForm() {
         const acdc = []
         const priority = []
         const insuranceType = []
+        const pumpType = []
         
         // Extract values from specific columns
         data.table.rows.slice(1).forEach(row => {
@@ -91,6 +94,11 @@ function NewComplaintForm() {
             if (row.c[3] && row.c[3].v !== null && row.c[3].v !== "") {
               insuranceType.push(row.c[3].v)
             }
+            
+            // Column E: Pump Type
+            if (row.c[4] && row.c[4].v !== null && row.c[4].v !== "") {
+              pumpType.push(row.c[4].v)
+            }
           }
         })
         
@@ -99,6 +107,7 @@ function NewComplaintForm() {
         setAcdcOptions(acdc)
         setPriorityOptions(priority)
         setInsuranceTypeOptions(insuranceType)
+        setPumpTypeOptions(pumpType)
       }
     } catch (error) {
       console.error('Error fetching dropdown options:', error)
@@ -107,6 +116,7 @@ function NewComplaintForm() {
       setAcdcOptions(['AC', 'DC'])
       setPriorityOptions(['Low', 'Medium', 'High', 'Urgent'])
       setInsuranceTypeOptions(['Insuranced', 'Without Insuranced'])
+      setPumpTypeOptions(['Centrifugal', 'Submersible', 'Jet', 'Diaphragm'])
     } finally {
       setIsLoading(false)
     }
@@ -276,10 +286,11 @@ const fetchLastSerialNumber = async () => {
       rowData[17] = formData.systemVoltage;
       rowData[18] = formData.rating;
       rowData[19] = formData.qty;
-      rowData[20] = formData.acdc;
-      rowData[21] = formData.priority;
-      rowData[22] = formData.insuranceType;
-      rowData[23] = formData.natureOfComplaint;
+      rowData[57] = formData.pumpType;  // Added Pump Type to column 21
+      rowData[20] = formData.acdc;      // Moved AC/DC to column 22
+      rowData[21] = formData.priority;  // Moved Priority to column 23
+      rowData[22] = formData.insuranceType; // Moved Insurance Type to column 24
+      rowData[23] = formData.natureOfComplaint; // Moved Nature of Complaint to column 25
 
       // Prepare the payload for Google Apps Script
       const payload = {
@@ -645,6 +656,26 @@ const fetchLastSerialNumber = async () => {
                 required
                 className="w-full border border-gray-300 rounded-md py-2 px-3"
               />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="pumpType" className="block text-sm font-medium">
+                Pump Type
+              </label>
+              <select
+                id="pumpType"
+                name="pumpType"
+                value={formData.pumpType}
+                onChange={(e) => handleSelectChange("pumpType", e.target.value)}
+                className="w-full border border-gray-300 rounded-md py-2 px-3"
+              >
+                <option value="">Select pump type</option>
+                {pumpTypeOptions.map((option, index) => (
+                  <option key={`pump-${index}`} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="space-y-2">

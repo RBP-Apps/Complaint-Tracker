@@ -85,7 +85,7 @@ function PendingVerificationTable() {
           const tasksData = []
           
           // Skip the header row and process the data rows
-          data.table.rows.slice(5).forEach((row, index) => {
+          data.table.rows.slice(3).forEach((row, index) => {
             if (row.c) {
               // Check if column AO (index 41) is not null and column AP (index 42) is null
               const hasColumnAO = row.c[43] && row.c[43].v !== null && row.c[43].v !== "";

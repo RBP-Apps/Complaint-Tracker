@@ -43,7 +43,7 @@ function PendingDocumentVerificationTable() {
           const documentsData = []
 
           // Skip the header row and process the data rows
-          data.table.rows.slice(5).forEach((row, index) => {
+          data.table.rows.slice(3).forEach((row, index) => {
             if (row.c) {
               // Check if column AO (index 41) is not null and column AP (index 42) is null
               // This is just an example condition - you may need to adjust based on your sheet structure

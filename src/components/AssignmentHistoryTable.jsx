@@ -35,8 +35,8 @@ function AssignmentHistoryTable() {
           data.table.rows.slice(0).forEach((row, index) => {
             if (row.c) {
               // Check if column Y (index 24) has data and column Z (index 25) is null/empty
-              const hasColumnY = row.c[24] && row.c[24].v !== null && row.c[24].v !== "";
-              const isColumnZEmpty = row.c[25] && row.c[25].v !== null && row.c[25].v !== "";
+              const hasColumnY = row.c[25] && row.c[25].v !== null && row.c[25].v !== "";
+              const isColumnZEmpty = row.c[26] && row.c[26].v !== null && row.c[26].v !== "";
               
               // Only include rows where column Y has data and column Z is null
               if (hasColumnY && isColumnZEmpty) {
@@ -46,20 +46,20 @@ function AssignmentHistoryTable() {
                   date: row.c[2] ? row.c[2].v : "", // Column C - Date
                   beneficiaryName: row.c[10] ? row.c[10].v : "", // Column K - Beneficiary Name
                   contactNumber: row.c[11] ? row.c[11].v : "", // Column L - Contact Number
-                  village: row.c[31] ? row.c[31].v : "", // Column M - Village
+                  village: row.c[32] ? row.c[32].v : "", // Column M - Village
                   district: row.c[14] ? row.c[14].v : "", // Column O - District
                   product: row.c[15] ? row.c[15].v : "", // Column P - Product
                   priority: row.c[21] ? row.c[21].v : "Medium", // Column V - Priority
                   nature: row.c[23] ? row.c[23].v : "", // Column X - Nature Of Complaint
                   
                   // Assignment details (AB to AI)
-                  technicianName: row.c[29] ? row.c[29].v : "", // Column AB - Technician Name
+                  technicianName: row.c[30] ? row.c[30].v : "", // Column AB - Technician Name
                   technicianContact: row.c[29] ? row.c[29].v : "", // Column AC - Technician Contact
                   assigneeName: row.c[27] ? row.c[27].v : "", // Column AA - Assignee Name
                   assigneeWhatsApp: row.c[30] ? row.c[30].v : "", // Column AD - Assignee WhatsApp Number
                   location: row.c[31] ? row.c[31].v : "", // Column AE - Location
                   complaintDetails: row.c[32] ? row.c[32].v : "", // Column AF - Complaint Details
-                  expectedCompletionDate: row.c[33] ? row.c[33].v : "", // Column AG - Expected Completion Date
+                  expectedCompletionDate: row.c[34] ? row.c[34].v : "", // Column AG - Expected Completion Date
                   notes: row.c[34] ? row.c[34].v : "", // Column AH - Notes for Technician
                   
                   // Determine status based on if it has a completed date or not
