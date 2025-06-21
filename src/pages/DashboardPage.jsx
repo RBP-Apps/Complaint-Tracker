@@ -4,6 +4,7 @@ import DashboardCharts from "../components/DashboardCharts"
 import RecentComplaints from "../components/RecentComplaints"
 import QuickActions from "../components/QuickActions"
 import ComplaintsByRegion from "../components/ComplaintsByRegion"
+import DasbhoardPendingTask from "../components/DashboardPendingTable"
 
 function DashboardPage() {
   return (
@@ -27,6 +28,7 @@ function DashboardPage() {
         </div>
 
         <ComplaintsByRegion />
+        <DasbhoardPendingTask />
       </div>
     </DashboardLayout>
   )

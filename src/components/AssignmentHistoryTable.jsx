@@ -8,6 +8,51 @@ function AssignmentHistoryTable() {
   const [error, setError] = useState(null)
   const [searchTerm, setSearchTerm] = useState("")
 
+  const formatDateString = (dateValue) => {
+    if (!dateValue) return "";
+    
+    let date;
+    
+    // Handle ISO string format (2025-05-22T07:38:28.052Z)
+    if (typeof dateValue === 'string' && dateValue.includes('T')) {
+      date = new Date(dateValue);
+    }
+    // Handle date format (2025-05-21)
+    else if (typeof dateValue === 'string' && dateValue.includes('-')) {
+      date = new Date(dateValue);
+    }
+    // Handle Google Sheets Date constructor format like "Date(2025,4,21)"
+    else if (typeof dateValue === 'string' && dateValue.startsWith('Date(')) {
+      // Extract the date parts from "Date(2025,4,21)" format
+      const match = dateValue.match(/Date\((\d+),(\d+),(\d+)\)/);
+      if (match) {
+        const year = parseInt(match[1]);
+        const month = parseInt(match[2]); // Month is 0-indexed in this format
+        const day = parseInt(match[3]);
+        date = new Date(year, month, day);
+      } else {
+        return dateValue;
+      }
+    }
+    // Handle if it's already a Date object
+    else if (typeof dateValue === 'object' && dateValue.getDate) {
+      date = dateValue;
+    }
+    else {
+      return dateValue; // Return as is if not a recognizable date format
+    }
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      return dateValue; // Return original value if invalid date
+    }
+    
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
   // Function to fetch data from Google Sheets
   useEffect(() => {
     const fetchAssignmentHistory = async () => {
@@ -46,20 +91,20 @@ function AssignmentHistoryTable() {
                   date: row.c[2] ? row.c[2].v : "", // Column C - Date
                   beneficiaryName: row.c[10] ? row.c[10].v : "", // Column K - Beneficiary Name
                   contactNumber: row.c[11] ? row.c[11].v : "", // Column L - Contact Number
-                  village: row.c[32] ? row.c[32].v : "", // Column M - Village
+                  village: row.c[31] ? row.c[31].v : "", // Column M - Village
                   district: row.c[14] ? row.c[14].v : "", // Column O - District
                   product: row.c[15] ? row.c[15].v : "", // Column P - Product
                   priority: row.c[21] ? row.c[21].v : "Medium", // Column V - Priority
                   nature: row.c[23] ? row.c[23].v : "", // Column X - Nature Of Complaint
                   
                   // Assignment details (AB to AI)
-                  technicianName: row.c[30] ? row.c[30].v : "", // Column AB - Technician Name
+                  technicianName: row.c[29] ? row.c[29].v : "", // Column AB - Technician Name
                   technicianContact: row.c[29] ? row.c[29].v : "", // Column AC - Technician Contact
                   assigneeName: row.c[27] ? row.c[27].v : "", // Column AA - Assignee Name
                   assigneeWhatsApp: row.c[30] ? row.c[30].v : "", // Column AD - Assignee WhatsApp Number
                   location: row.c[31] ? row.c[31].v : "", // Column AE - Location
                   complaintDetails: row.c[32] ? row.c[32].v : "", // Column AF - Complaint Details
-                  expectedCompletionDate: row.c[34] ? row.c[34].v : "", // Column AG - Expected Completion Date
+                  expectedCompletionDate: row.c[33] ? formatDateString(row.c[33].v) : "", // Column AG - Expected Completion Date
                   notes: row.c[34] ? row.c[34].v : "", // Column AH - Notes for Technician
                   
                   // Determine status based on if it has a completed date or not

@@ -15,6 +15,8 @@ function PetrolExpensesPage() {
     openingKm: "",
     closingKm: "",
     totalKm: 0,
+    fromLocation: "", // Add this
+    toLocation: "",  // Add this
   })
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -160,12 +162,14 @@ function PetrolExpensesPage() {
               
               const expense = {
                 id: index + 1,
-                createdAt: timestampValue, // Column A (timestamp)
-                date: expenseDateValue, // Column B (formatted date)
-                technicianName: row.c[2] ? row.c[2].v : "", // Column C
-                openingKm: row.c[3] ? parseFloat(row.c[3].v) || 0 : 0, // Column D
-                closingKm: row.c[4] ? parseFloat(row.c[4].v) || 0 : 0, // Column E
-                totalKm: row.c[5] ? parseFloat(row.c[5].v) || 0 : 0 // Column F
+                createdAt: timestampValue,
+                date: expenseDateValue,
+                technicianName: row.c[2] ? row.c[2].v : "",
+                fromLocation: row.c[3] ? row.c[3].v : "", // Add this
+                toLocation: row.c[4] ? row.c[4].v : "",   // Add this
+                openingKm: row.c[5] ? parseFloat(row.c[5].v) || 0 : 0,
+                closingKm: row.c[6] ? parseFloat(row.c[6].v) || 0 : 0,
+                totalKm: row.c[7] ? parseFloat(row.c[7].v) || 0 : 0
               }
               
               expensesData.push(expense)
@@ -246,72 +250,78 @@ function PetrolExpensesPage() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setIsSubmitting(true)
-
-    if (!formData.date || !formData.technicianName || !formData.openingKm || !formData.closingKm) {
+  
+    if (!formData.date || !formData.technicianName || !formData.fromLocation || !formData.toLocation || !formData.openingKm || !formData.closingKm) {
       alert("Please fill in all required fields")
       setIsSubmitting(false)
       return
     }
-
+  
     if (Number.parseFloat(formData.closingKm) <= Number.parseFloat(formData.openingKm)) {
       alert("Closing KM must be greater than Opening KM")
       setIsSubmitting(false)
       return
     }
-
+  
     try {
-      // Prepare expense data
+      // Prepare expense data - include fromLocation and toLocation
       const expenseData = {
         date: formData.date,
         technicianName: formData.technicianName,
+        fromLocation: formData.fromLocation,
+        toLocation: formData.toLocation,
         openingKm: formData.openingKm,
         closingKm: formData.closingKm,
         totalKm: formData.totalKm
       }
-
+  
       // Create row data for Google Sheets
       const timestamp = new Date().toISOString()
       const rowData = [
         timestamp,
         expenseData.date,
         expenseData.technicianName,
+        expenseData.fromLocation,
+        expenseData.toLocation,
         expenseData.openingKm,
         expenseData.closingKm,
         expenseData.totalKm
       ]
-
+  
       // Submit to Google Sheets
       const submitFormData = new FormData()
       submitFormData.append('action', 'insert')
       submitFormData.append('sheetName', 'Petrol Expenses')
       submitFormData.append('rowData', JSON.stringify(rowData))
-
+  
       const response = await fetch(GOOGLE_SCRIPT_URL, {
         method: 'POST',
         body: submitFormData
       })
-
+  
       const result = await response.json()
-
+  
       if (!result.success) {
         throw new Error(result.error || 'Failed to add expense')
       }
-
-      // Add the new expense to local state
+  
+      // Add the new expense to local state - include locations
       const newExpense = {
         id: Date.now(),
         ...expenseData,
         createdAt: timestamp,
       }
-
+  
       const updatedExpenses = [newExpense, ...expenses]
       setExpenses(updatedExpenses)
-      setFilteredExpenses(updatedExpenses) // Update filtered expenses too
-
+      setFilteredExpenses(updatedExpenses)
+  
       // Reset form and close
       setFormData({
         date: "",
         technicianName: "",
+        fromLocation: "",
+        toLocation: "",
         openingKm: "",
         closingKm: "",
         totalKm: 0,
@@ -330,6 +340,8 @@ function PetrolExpensesPage() {
     setFormData({
       date: "",
       technicianName: "",
+      fromLocation: "", // Add this
+      toLocation: "",  // Add this
       openingKm: "",
       closingKm: "",
       totalKm: 0,
@@ -413,6 +425,40 @@ function PetrolExpensesPage() {
                     </div>
                   )}
                 </div>
+
+                {/* From Location */}
+<div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    <Navigation className="h-4 w-4 inline mr-1" />
+    From Location *
+  </label>
+  <input
+    type="text"
+    name="fromLocation"
+    value={formData.fromLocation}
+    onChange={handleInputChange}
+    placeholder="Enter starting location"
+    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+    required
+  />
+</div>
+
+{/* To Location */}
+<div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    <Navigation className="h-4 w-4 inline mr-1" />
+    To Location *
+  </label>
+  <input
+    type="text"
+    name="toLocation"
+    value={formData.toLocation}
+    onChange={handleInputChange}
+    placeholder="Enter destination"
+    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+    required
+  />
+</div>
 
                 {/* Opening KM */}
                 <div>
@@ -638,59 +684,71 @@ function PetrolExpensesPage() {
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Date
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Technician
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Opening KM
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Closing KM
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Total KM
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Created
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredExpenses.map((expense) => (
-                      <tr key={expense.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {expense.date}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center mr-3">
-                              <User className="h-4 w-4 text-blue-600" />
-                            </div>
-                            <span className="text-sm font-medium text-gray-900">{expense.technicianName}</span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {Number.parseFloat(expense.openingKm).toFixed(1)} km
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {Number.parseFloat(expense.closingKm).toFixed(1)} km
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            {expense.totalKm.toFixed(1)} km
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {formatDateString(expense.createdAt)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
+                <thead className="bg-gray-50">
+  <tr>
+    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+      Date
+    </th>
+    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+      Technician
+    </th>
+    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+      From
+    </th>
+    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+      To
+    </th>
+    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+      Opening KM
+    </th>
+    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+      Closing KM
+    </th>
+    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+      Total KM
+    </th>
+    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+      Created
+    </th>
+  </tr>
+</thead>
+<tbody className="bg-white divide-y divide-gray-200">
+  {filteredExpenses.map((expense) => (
+    <tr key={expense.id} className="hover:bg-gray-50">
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        {expense.date}
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap">
+        <div className="flex items-center">
+          <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+            <User className="h-4 w-4 text-blue-600" />
+          </div>
+          <span className="text-sm font-medium text-gray-900">{expense.technicianName}</span>
+        </div>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        {expense.fromLocation}
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        {expense.toLocation}
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        {Number.parseFloat(expense.openingKm).toFixed(1)} km
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        {Number.parseFloat(expense.closingKm).toFixed(1)} km
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap">
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+          {expense.totalKm.toFixed(1)} km
+        </span>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+        {formatDateString(expense.createdAt)}
+      </td>
+    </tr>
+  ))}
+</tbody>
                 </table>
               </div>
             )}

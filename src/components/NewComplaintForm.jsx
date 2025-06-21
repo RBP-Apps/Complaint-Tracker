@@ -249,7 +249,9 @@ const fetchLastSerialNumber = async () => {
       rowData[1] = serialNumber;
 
       // Column 3: Date (from date picker)
-      rowData[2] = date ? date.toLocaleDateString() : '';
+      // rowData[2] = date ? date.toLocaleDateString() : '';
+      rowData[2] = date ? date.toLocaleDateString('en-US') : '';
+
 
       // Column 4: Submit Date
       // rowData[3] = submitDate;

@@ -24,6 +24,51 @@ function TrackerPendingTable() {
   const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkBpcYMupYQi6gSURT_tqDfeQrGtbS6DwiRvmjw0s2kAIGmHlkjnVJDddXOy0v6ur7rw/exec"
   // Google Drive folder ID for file uploads
   const DRIVE_FOLDER_ID = "1-H5DWKRV2u_ueqtLX-ISTPvuySGYBLoT"
+
+  const formatDateString = (dateValue) => {
+    if (!dateValue) return "";
+    
+    let date;
+    
+    // Handle ISO string format (2025-05-22T07:38:28.052Z)
+    if (typeof dateValue === 'string' && dateValue.includes('T')) {
+      date = new Date(dateValue);
+    }
+    // Handle date format (2025-05-21)
+    else if (typeof dateValue === 'string' && dateValue.includes('-')) {
+      date = new Date(dateValue);
+    }
+    // Handle Google Sheets Date constructor format like "Date(2025,4,21)"
+    else if (typeof dateValue === 'string' && dateValue.startsWith('Date(')) {
+      // Extract the date parts from "Date(2025,4,21)" format
+      const match = dateValue.match(/Date\((\d+),(\d+),(\d+)\)/);
+      if (match) {
+        const year = parseInt(match[1]);
+        const month = parseInt(match[2]); // Month is 0-indexed in this format
+        const day = parseInt(match[3]);
+        date = new Date(year, month, day);
+      } else {
+        return dateValue;
+      }
+    }
+    // Handle if it's already a Date object
+    else if (typeof dateValue === 'object' && dateValue.getDate) {
+      date = dateValue;
+    }
+    else {
+      return dateValue; // Return as is if not a recognizable date format
+    }
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      return dateValue; // Return original value if invalid date
+    }
+    
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
   
   // Function to fetch data from Google Sheets
   useEffect(() => {
@@ -63,7 +108,7 @@ function TrackerPendingTable() {
                   technician: row.c[28] ? row.c[28].v : "", // AB - Technician Name
                   details: row.c[29] ? row.c[29].v : "", // AF - Complaint Details
                   location: row.c[31] ? row.c[31].v : "", // AE - Location
-                  targetDate: row.c[33] ? row.c[33].v : "", // AG - Expected Completion Date
+                  targetDate: row.c[33] ? formatDateString(row.c[33].v) : "", // AG - Expected Completion Date
                   beneficiaryName: row.c[10] ? row.c[10].v : "",
                   village: row.c[12] ? row.c[12].v : "",
                   district: row.c[14] ? row.c[14].v : "",

@@ -18,6 +18,51 @@ function PendingDocumentVerificationTable() {
   const GOOGLE_SCRIPT_URL =
     "https://script.google.com/macros/s/AKfycbzkBpcYMupYQi6gSURT_tqDfeQrGtbS6DwiRvmjw0s2kAIGmHlkjnVJDddXOy0v6ur7rw/exec"
 
+    const formatDateString = (dateValue) => {
+      if (!dateValue) return "";
+      
+      let date;
+      
+      // Handle ISO string format (2025-05-22T07:38:28.052Z)
+      if (typeof dateValue === 'string' && dateValue.includes('T')) {
+        date = new Date(dateValue);
+      }
+      // Handle date format (2025-05-21)
+      else if (typeof dateValue === 'string' && dateValue.includes('-')) {
+        date = new Date(dateValue);
+      }
+      // Handle Google Sheets Date constructor format like "Date(2025,4,21)"
+      else if (typeof dateValue === 'string' && dateValue.startsWith('Date(')) {
+        // Extract the date parts from "Date(2025,4,21)" format
+        const match = dateValue.match(/Date\((\d+),(\d+),(\d+)\)/);
+        if (match) {
+          const year = parseInt(match[1]);
+          const month = parseInt(match[2]); // Month is 0-indexed in this format
+          const day = parseInt(match[3]);
+          date = new Date(year, month, day);
+        } else {
+          return dateValue;
+        }
+      }
+      // Handle if it's already a Date object
+      else if (typeof dateValue === 'object' && dateValue.getDate) {
+        date = dateValue;
+      }
+      else {
+        return dateValue; // Return as is if not a recognizable date format
+      }
+      
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        return dateValue; // Return original value if invalid date
+      }
+      
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      return `${day}/${month}/${year}`;
+    };
+
   // Function to fetch data from Google Sheets
   useEffect(() => {
     const fetchPendingDocuments = async () => {
@@ -55,10 +100,10 @@ function PendingDocumentVerificationTable() {
                 const document = {
                   rowIndex: index + 6, // Actual row index in the sheet
                   id: row.c[1]?.v || `COMP-${index + 1}`, // Column B - Complaint No.
-                  date: row.c[2]?.v || "", // Column C - Date
+                  date: formatDateString(row.c[2]?.v) || "", // Column C - Date
                   name: row.c[3]?.v || "", // Column D - Name
                   phone: row.c[6]?.v || "", // Column G - Phone (fixed index from 46 to 6)
-                  email: row.c[47]?.v || "", // Column AV - Email
+                  email: formatDateString(row.c[47]?.v) || "", // Column AV - Email
                   address: row.c[48]?.v || "", // Column AW - Address
                 };
         
