@@ -56,27 +56,37 @@ function DashboardStats() {
 
   // Pending complaints: column AJ is not null and column AK is null
   const pendingComplaints = data
-    ? data.filter(
-        (row) =>
-          row.c[43] &&
-          row.c[43].v !== null &&
-          row.c[43].v !== "" &&
-          (!row.c[44] || row.c[44].v === null || row.c[44].v === ""),
-      ).length
-    : 0
+  ? data.filter(
+      (row) =>
+        row.c[35] &&
+        row.c[35].v !== null &&
+        row.c[35].v !== "" &&
+        (!row.c[36] || row.c[36].v === null || row.c[36].v === ""),
+    ).length
+  : 0
 
+
+  //   const pendingComplaints = data
+  // ? data.filter(
+  //     (row) =>
+  //       row.c[39] &&
+  //       row.c[39].v !== null &&
+  //       row.c[39].v !== "" &&
+  //       row.c[39].v !== "completed"
+  //   ).length
+  // : 0
   // Completed complaints: both columns AJ and AK are not null
   const completedComplaints = data
-    ? data.filter(
-        (row) =>
-          row.c[43] &&
-          row.c[43].v !== null &&
-          row.c[43].v !== "" &&
-          row.c[44] &&
-          row.c[44].v !== null &&
-          row.c[44].v !== "",
-      ).length
-    : 0
+  ? data.filter(
+      (row) =>
+        row.c[35] &&
+        row.c[35].v !== null &&
+        row.c[35].v !== "" &&
+        row.c[36] &&
+        row.c[36].v !== null &&
+        row.c[36].v !== "",
+    ).length
+  : 0
 
   // Verified complaints: both columns 49 and 50 are not null (have values)
   const verifiedComplaints = data
@@ -114,7 +124,7 @@ function DashboardStats() {
       textColor: "text-blue-600",
     },
     {
-      title: "Completed Verification",
+      title: "Completed Complaints",
       value: isLoading ? "-" : completedComplaints,
       change: "+18%",
       trend: "up",
@@ -123,16 +133,16 @@ function DashboardStats() {
       lightColor: "bg-blue-50",
       textColor: "text-blue-600",
     },
-    {
-      title: "Verified Complaints",
-      value: isLoading ? "-" : verifiedComplaints,
-      change: "+25%",
-      trend: "up",
-      icon: Check,
-      color: "bg-blue-600",
-      lightColor: "bg-blue-50",
-      textColor: "text-blue-600",
-    },
+    // {
+    //   title: "Verified Complaints",
+    //   value: isLoading ? "-" : verifiedComplaints,
+    //   change: "+25%",
+    //   trend: "up",
+    //   icon: Check,
+    //   color: "bg-blue-600",
+    //   lightColor: "bg-blue-50",
+    //   textColor: "text-blue-600",
+    // },
   ]
 
   return (

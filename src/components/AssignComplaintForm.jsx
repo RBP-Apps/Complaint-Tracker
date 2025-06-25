@@ -1,12 +1,15 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
 
 function AssignComplaintForm({ complaintId, onClose, onSubmit }) {
   const [expectedCompletionDate, setExpectedCompletionDate] = useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [technicians, setTechnicians] = useState([])
+const [isLoadingTechnicians, setIsLoadingTechnicians] = useState(true)
+
 
   const [formData, setFormData] = useState({
     technicianName: "",
@@ -22,6 +25,50 @@ function AssignComplaintForm({ complaintId, onClose, onSubmit }) {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
+
+  useEffect(() => {
+    const fetchTechnicians = async () => {
+      setIsLoadingTechnicians(true)
+      
+      try {
+        // Fetch the Master sheet using Google Sheets API
+        const sheetUrl = "https://docs.google.com/spreadsheets/d/1Vn295WmY0o6qh03rYzpCISGfMgT5RViXdYyd_ZNQ2p8/gviz/tq?tqx=out:json&sheet=Master"
+        const response = await fetch(sheetUrl)
+        const text = await response.text()
+        
+        // Extract the JSON part from the response
+        const jsonStart = text.indexOf('{')
+        const jsonEnd = text.lastIndexOf('}') + 1
+        const jsonData = text.substring(jsonStart, jsonEnd)
+        
+        const data = JSON.parse(jsonData)
+        
+        // Process the technicians data from column F (index 5)
+        if (data && data.table && data.table.rows) {
+          const technicianNames = []
+          
+          // Skip header rows and process data rows
+          data.table.rows.slice(1).forEach((row, index) => {
+            if (row.c && row.c[5] && row.c[5].v) { // Column F is index 5
+              const techName = row.c[5].v.toString().trim()
+              if (techName && !technicianNames.includes(techName)) {
+                technicianNames.push(techName)
+              }
+            }
+          })
+          
+          setTechnicians(technicianNames.sort()) // Sort alphabetically
+        }
+      } catch (err) {
+        console.error("Error fetching technicians:", err)
+        setTechnicians([]) // Set empty array on error
+      } finally {
+        setIsLoadingTechnicians(false)
+      }
+    }
+    
+    fetchTechnicians()
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -123,19 +170,31 @@ function AssignComplaintForm({ complaintId, onClose, onSubmit }) {
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="technicianName" className="block text-sm font-medium">
-          Technician Name <span className="text-red-500">*</span>
-        </label>
-        <input
-          id="technicianName"
-          name="technicianName"
-          placeholder="Enter technician name"
-          value={formData.technicianName}
-          onChange={handleChange}
-          required
-          className="w-full border border-gray-300 rounded-md py-2 px-3"
-        />
-      </div>
+  <label htmlFor="technicianName" className="block text-sm font-medium">
+    Technician Name <span className="text-red-500">*</span>
+  </label>
+  {isLoadingTechnicians ? (
+    <div className="w-full border border-gray-300 rounded-md py-2 px-3 text-gray-500 text-sm">
+      Loading technicians...
+    </div>
+  ) : (
+    <select
+      id="technicianName"
+      name="technicianName"
+      value={formData.technicianName}
+      onChange={handleChange}
+      required
+      className="w-full border border-gray-300 rounded-md py-2 px-3"
+    >
+      <option value="">Select a technician</option>
+      {technicians.map((techName, index) => (
+        <option key={index} value={techName}>
+          {techName}
+        </option>
+      ))}
+    </select>
+  )}
+</div>
 
       <div className="space-y-2">
         <label htmlFor="technicianContact" className="block text-sm font-medium">

@@ -69,6 +69,17 @@ function TrackerPendingTable() {
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
   };
+
+  // Add this function after formatDateString function
+const getPriorityColor = (priority) => {
+  switch(priority?.toLowerCase()) {
+    case "urgent": return "bg-red-500"
+    case "high": return "bg-orange-500"
+    case "medium": return "bg-blue-500"
+    case "low": return "bg-green-500"
+    default: return "bg-gray-500"
+  }
+}
   
   // Function to fetch data from Google Sheets
   useEffect(() => {
@@ -103,15 +114,48 @@ function TrackerPendingTable() {
               if (hasColumnAJ && isColumnAKEmpty) {
                 const task = {
                   rowIndex: index + 6, // Actual row index in the sheet (1-indexed, +5 for header rows, +1 for 1-indexing)
+  
+                  // All columns from B to AI (excluding Planned, Actual, and Delay)
+                  complaintNo: row.c[1] ? row.c[1].v : "", // Column B - Complaint No.
+                  date: row.c[2] ? formatDateString(row.c[2].v) : "", // Column C - Date
+                  head: row.c[3] ? row.c[3].v : "", // Column D - Head
+                  companyName: row.c[4] ? row.c[4].v : "", // Column E - Company Name
+                  modeOfCall: row.c[5] ? row.c[5].v : "", // Column F - Mode Of Call
+                  idNumber: row.c[6] ? row.c[6].v : "", // Column G - ID Number
+                  projectName: row.c[7] ? row.c[7].v : "", // Column H - Project Name
+                  complaintNumber: row.c[8] ? row.c[8].v : "", // Column I - Complaint Number
+                  complaintDate: row.c[9] ? formatDateString(row.c[9].v) : "", // Column J - Complaint Date
+                  beneficiaryName: row.c[10] ? row.c[10].v : "", // Column K - Beneficiary Name
+                  contactNumber: row.c[11] ? row.c[11].v : "", // Column L - Contact Number
+                  village: row.c[12] ? row.c[12].v : "", // Column M - Village
+                  block: row.c[13] ? row.c[13].v : "", // Column N - Block
+                  district: row.c[14] ? row.c[14].v : "", // Column O - District
+                  product: row.c[15] ? row.c[15].v : "", // Column P - Product
+                  make: row.c[16] ? row.c[16].v : "", // Column Q - Make
+                  systemVoltage: row.c[17] ? row.c[17].v : "", // Column R - System Voltage
+                  rating: row.c[18] ? row.c[18].v : "", // Column S - Rating
+                  qty: row.c[19] ? row.c[19].v : "", // Column T - Qty
+                  acDc: row.c[20] ? row.c[20].v : "", // Column U - AC/DC
+                  priority: row.c[21] ? row.c[21].v : "", // Column V - Priority
+                  insuranceType: row.c[22] ? row.c[22].v : "", // Column W - Insurance Type
+                  natureOfComplaint: row.c[23] ? row.c[23].v : "", // Column X - Nature Of Complaint
+                  // Skip Y (Planned), Z (Actual), and AA (Delay) columns as requested
+                  technicianName: row.c[27] ? row.c[27].v : "", // Column AB - Technician Name
+                  technicianContact: row.c[28] ? row.c[28].v : "", // Column AC - Technician Contact
+                  assigneeName: row.c[29] ? row.c[29].v : "", // Column AD - Assignee Name
+                  assigneeWhatsApp: row.c[30] ? row.c[30].v : "", // Column AE - Assignee WhatsApp Number
+                  location: row.c[31] ? row.c[31].v : "", // Column AF - Location
+                  complaintDetails: row.c[32] ? row.c[32].v : "", // Column AG - Complaint Details
+                  expectedCompletionDate: row.c[33] ? formatDateString(row.c[33].v) : "", // Column AH - Expected Completion Date
+                  notesForTechnician: row.c[34] ? row.c[34].v : "", // Column AI - Notes for Technician
+                  
+                  // Keep these for backward compatibility with existing functionality
                   id: row.c[1] ? row.c[1].v : `COMP-${index + 1}`,
-                  assignee: row.c[27] ? row.c[27].v : "", // AA - Assignee Name
-                  technician: row.c[28] ? row.c[28].v : "", // AB - Technician Name
-                  details: row.c[29] ? row.c[29].v : "", // AF - Complaint Details
-                  location: row.c[31] ? row.c[31].v : "", // AE - Location
-                  targetDate: row.c[33] ? formatDateString(row.c[33].v) : "", // AG - Expected Completion Date
-                  beneficiaryName: row.c[10] ? row.c[10].v : "",
-                  village: row.c[12] ? row.c[12].v : "",
-                  district: row.c[14] ? row.c[14].v : "",
+                  assignee: row.c[29] ? row.c[29].v : "", // AD - Assignee Name
+                  technician: row.c[27] ? row.c[27].v : "", // AB - Technician Name
+                  details: row.c[32] ? row.c[32].v : "", // AG - Complaint Details
+                  targetDate: row.c[33] ? formatDateString(row.c[33].v) : "", // AH - Expected Completion Date
+                  
                   // Store the complete row data for future reference
                   fullRowData: row.c
                 }
@@ -367,12 +411,14 @@ const addToTrackerHistory = async (task, completionDate, remarks, documentUrl, p
   // Filter tasks based on search term
   const filteredTasks = pendingTasks.filter(
     (task) =>
-      task.assignee?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      task.technician?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      task.id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      task.assigneeName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      task.technicianName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      task.complaintNo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       task.village?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       task.district?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      task.beneficiaryName?.toLowerCase().includes(searchTerm.toLowerCase())
+      task.beneficiaryName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      task.companyName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      task.product?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   if (isLoading) {
@@ -390,6 +436,7 @@ const addToTrackerHistory = async (task, completionDate, remarks, documentUrl, p
       </div>
     )
   }
+  
 
   return (
     <div className="p-4">
@@ -425,77 +472,168 @@ const addToTrackerHistory = async (task, completionDate, remarks, documentUrl, p
           ) : (
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-100">
-                <tr>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
-                  >
-                    Complaints ID
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
-                  >
-                    Technician Name
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
-                  >
-                    Technician Contact
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
-                  >
-                    Assignee Name
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
-                  >
-                    Location
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
-                  >
-                    Expected Completion Date
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
-                  >
-                    Actions
-                  </th>
-                </tr>
-              </thead>
+  <tr>
+    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+      Actions
+    </th>
+    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+      Complaint No.
+    </th>
+    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+      Date
+    </th>
+    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+      Head
+    </th>
+    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+      Company Name
+    </th>
+    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+      Mode Of Call
+    </th>
+    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+      ID Number
+    </th>
+    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+      Project Name
+    </th>
+    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+      Complaint Number
+    </th>
+    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+      Complaint Date
+    </th>
+    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+      Beneficiary Name
+    </th>
+    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+      Contact Number
+    </th>
+    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+      Village
+    </th>
+    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+      Block
+    </th>
+    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+      District
+    </th>
+    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+      Product
+    </th>
+    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+      Make
+    </th>
+    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+      System Voltage
+    </th>
+    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+      Rating
+    </th>
+    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+      Qty
+    </th>
+    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+      AC/DC
+    </th>
+    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+      Priority
+    </th>
+    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+      Insurance Type
+    </th>
+    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+      Nature Of Complaint
+    </th>
+    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+      Technician Name
+    </th>
+    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+      Technician Contact
+    </th>
+    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+      Assignee Name
+    </th>
+    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+      Assignee WhatsApp
+    </th>
+    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+      Location
+    </th>
+    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+      Complaint Details
+    </th>
+    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+      Expected Completion
+    </th>
+    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+      Notes for Technician
+    </th>
+  </tr>
+</thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredTasks.map((task) => (
-                  <tr key={task.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap font-medium">{task.id}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{task.assignee}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{task.technician}</td>
-                    <td className="px-6 py-4 max-w-[200px] truncate">{task.details}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{task.location}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{task.targetDate}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <button
-                        className="bg-gradient-to-r from-amber-400 to-orange-500 text-white hover:from-amber-500 hover:to-orange-600 border-0 py-1 px-3 rounded-md"
-                        onClick={() => {
-                          setSelectedTask(task.id)
-                          setSelectedTaskData(task)
-                          setIsDialogOpen(true)
-                          setUploadedDocument(null)
-                          setUploadedPhoto(null)
-                          setDate(null)
-                          setStatus("pending")
-                        }}
-                      >
-                        Update
-                      </button>
-                    </td>
-                  </tr>
+                 <tr key={task.complaintNo || index} className="hover:bg-gray-50">
+                 <td className="px-3 py-4 whitespace-nowrap">
+                   <button
+                     className="bg-gradient-to-r from-amber-400 to-orange-500 text-white hover:from-amber-500 hover:to-orange-600 border-0 py-1 px-3 rounded-md"
+                     onClick={() => {
+                       setSelectedTask(task.id)
+                       setSelectedTaskData(task)
+                       setIsDialogOpen(true)
+                       setUploadedDocument(null)
+                       setUploadedPhoto(null)
+                       setDate(null)
+                       setStatus("pending")
+                     }}
+                   >
+                     Update
+                   </button>
+                 </td>
+                 <td className="px-3 py-4 whitespace-nowrap font-medium text-sm">{task.complaintNo}</td>
+                 <td className="px-3 py-4 whitespace-nowrap text-sm">{task.date}</td>
+                 <td className="px-3 py-4 whitespace-nowrap text-sm">{task.head}</td>
+                 <td className="px-3 py-4 whitespace-nowrap text-sm">{task.companyName}</td>
+                 <td className="px-3 py-4 whitespace-nowrap text-sm">{task.modeOfCall}</td>
+                 <td className="px-3 py-4 whitespace-nowrap text-sm">{task.idNumber}</td>
+                 <td className="px-3 py-4 whitespace-nowrap text-sm">{task.projectName}</td>
+                 <td className="px-3 py-4 whitespace-nowrap text-sm">{task.complaintNumber}</td>
+                 <td className="px-3 py-4 whitespace-nowrap text-sm">{task.complaintDate}</td>
+                 <td className="px-3 py-4 whitespace-nowrap text-sm font-medium">{task.beneficiaryName}</td>
+                 <td className="px-3 py-4 whitespace-nowrap text-sm">{task.contactNumber}</td>
+                 <td className="px-3 py-4 whitespace-nowrap text-sm">{task.village}</td>
+                 <td className="px-3 py-4 whitespace-nowrap text-sm">{task.block}</td>
+                 <td className="px-3 py-4 whitespace-nowrap text-sm">{task.district}</td>
+                 <td className="px-3 py-4 whitespace-nowrap text-sm">{task.product}</td>
+                 <td className="px-3 py-4 whitespace-nowrap text-sm">{task.make}</td>
+                 <td className="px-3 py-4 whitespace-nowrap text-sm">{task.systemVoltage}</td>
+                 <td className="px-3 py-4 whitespace-nowrap text-sm">{task.rating}</td>
+                 <td className="px-3 py-4 whitespace-nowrap text-sm">{task.qty}</td>
+                 <td className="px-3 py-4 whitespace-nowrap text-sm">{task.acDc}</td>
+                 <td className="px-3 py-4 whitespace-nowrap text-sm">
+                   {task.priority && (
+                     <span className={`px-2 py-1 text-xs font-semibold rounded-full text-white ${getPriorityColor(task.priority)}`}>
+                       {task.priority}
+                     </span>
+                   )}
+                 </td>
+                 <td className="px-3 py-4 whitespace-nowrap text-sm">{task.insuranceType}</td>
+                 <td className="px-3 py-4 whitespace-nowrap text-sm max-w-xs truncate" title={task.natureOfComplaint}>
+                   {task.natureOfComplaint}
+                 </td>
+                 <td className="px-3 py-4 whitespace-nowrap text-sm font-medium">{task.technicianName}</td>
+                 <td className="px-3 py-4 whitespace-nowrap text-sm">{task.technicianContact}</td>
+                 <td className="px-3 py-4 whitespace-nowrap text-sm">{task.assigneeName}</td>
+                 <td className="px-3 py-4 whitespace-nowrap text-sm">{task.assigneeWhatsApp}</td>
+                 <td className="px-3 py-4 whitespace-nowrap text-sm">{task.location}</td>
+                 <td className="px-3 py-4 whitespace-nowrap text-sm max-w-xs truncate" title={task.complaintDetails}>
+                   {task.complaintDetails}
+                 </td>
+                 <td className="px-3 py-4 whitespace-nowrap text-sm">{task.expectedCompletionDate}</td>
+                 <td className="px-3 py-4 whitespace-nowrap text-sm max-w-xs truncate" title={task.notesForTechnician}>
+                   {task.notesForTechnician}
+                 </td>
+               </tr>
                 ))}
               </tbody>
             </table>

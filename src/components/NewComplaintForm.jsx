@@ -19,6 +19,7 @@ function NewComplaintForm() {
   const [insuranceTypeOptions, setInsuranceTypeOptions] = useState([])
   const [pumpTypeOptions, setPumpTypeOptions] = useState([])
   const [isLoading, setIsLoading] = useState(true)
+  const [districtOptions, setDistrictOptions] = useState([])
 
   const [formData, setFormData] = useState({
     head: "",
@@ -71,6 +72,7 @@ function NewComplaintForm() {
         const priority = []
         const insuranceType = []
         const pumpType = []
+        const districts = [] // New array for districts
         
         // Extract values from specific columns
         data.table.rows.slice(1).forEach(row => {
@@ -99,6 +101,9 @@ function NewComplaintForm() {
             if (row.c[4] && row.c[4].v !== null && row.c[4].v !== "") {
               pumpType.push(row.c[4].v)
             }
+            if (row.c[6] && row.c[6].v !== null && row.c[6].v !== "") {
+              districts.push(row.c[6].v)
+            }
           }
         })
         
@@ -108,6 +113,7 @@ function NewComplaintForm() {
         setPriorityOptions(priority)
         setInsuranceTypeOptions(insuranceType)
         setPumpTypeOptions(pumpType)
+        setDistrictOptions(districts) 
       }
     } catch (error) {
       console.error('Error fetching dropdown options:', error)
@@ -117,6 +123,7 @@ function NewComplaintForm() {
       setPriorityOptions(['Low', 'Medium', 'High', 'Urgent'])
       setInsuranceTypeOptions(['Insuranced', 'Without Insuranced'])
       setPumpTypeOptions(['Centrifugal', 'Submersible', 'Jet', 'Diaphragm'])
+      setDistrictOptions(['District 1', 'District 2', 'District 3']) // Fallback districts
     } finally {
       setIsLoading(false)
     }
@@ -168,15 +175,15 @@ const fetchLastSerialNumber = async () => {
       const lastNumber = data.lastSerialNumber;
       let newSerialNumber;
       
-      if (lastNumber && lastNumber.toString().includes('CT-')) {
+      if (lastNumber && lastNumber.toString().includes('SSY-')) {
         const numPart = parseInt(lastNumber.toString().split('-')[1]);
         if (!isNaN(numPart)) {
-          newSerialNumber = `CT-${(numPart + 1).toString().padStart(3, '0')}`;
+          newSerialNumber = `SSY-${(numPart + 1).toString().padStart(3, '0')}`;
         } else {
-          newSerialNumber = 'CT-001';
+          newSerialNumber = 'SSY-001';
         }
       } else {
-        newSerialNumber = 'CT-001';
+        newSerialNumber = 'SSY-001';
       }
       
       console.log('Generated serial number:', newSerialNumber);
@@ -194,15 +201,15 @@ const fetchLastSerialNumber = async () => {
     const lastNumber = localStorage.getItem('lastSerialNumber');
     let newSerialNumber;
     
-    if (lastNumber && lastNumber.includes('CT-')) {
+    if (lastNumber && lastNumber.includes('SSY-')) {
       const numPart = parseInt(lastNumber.split('-')[1]);
       if (!isNaN(numPart)) {
-        newSerialNumber = `CT-${(numPart + 1).toString().padStart(3, '0')}`;
+        newSerialNumber = `SSY-${(numPart + 1).toString().padStart(3, '0')}`;
       } else {
-        newSerialNumber = 'CT-001';
+        newSerialNumber = 'SSY-001';
       }
     } else {
-      newSerialNumber = 'CT-001';
+      newSerialNumber = 'SSY-001';
     }
     
     console.log('Fallback serial number:', newSerialNumber);
@@ -341,7 +348,7 @@ const fetchLastSerialNumber = async () => {
       ) : (
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid gap-6 md:grid-cols-3">
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <label htmlFor="date" className="block text-sm font-medium">
               Date
             </label>
@@ -376,7 +383,7 @@ const fetchLastSerialNumber = async () => {
                 wrapperClassName="w-full"
               />
             </div>
-          </div>
+          </div> */}
 
             <div className="space-y-2">
               <label htmlFor="head" className="block text-sm font-medium">
@@ -571,19 +578,24 @@ const fetchLastSerialNumber = async () => {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="district" className="block text-sm font-medium">
-                District
-              </label>
-              <input
-                id="district"
-                name="district"
-                placeholder="Enter district"
-                value={formData.district}
-                onChange={handleChange}
-                required
-                className="w-full border border-gray-300 rounded-md py-2 px-3"
-              />
-            </div>
+  <label htmlFor="district" className="block text-sm font-medium">
+    District
+  </label>
+  <select
+    id="district"
+    name="district"
+    value={formData.district}
+    onChange={(e) => handleSelectChange("district", e.target.value)}
+    className="w-full border border-gray-300 rounded-md py-2 px-3"
+  >
+    <option value="">Select district</option>
+    {districtOptions.map((option, index) => (
+      <option key={`district-${index}`} value={option}>
+        {option}
+      </option>
+    ))}
+  </select>
+</div>
 
             <div className="space-y-2">
               <label htmlFor="product" className="block text-sm font-medium">
