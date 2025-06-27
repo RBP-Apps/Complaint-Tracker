@@ -7,6 +7,8 @@ function AssignmentHistoryTable() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
   const [searchTerm, setSearchTerm] = useState("")
+  const [companyFilter, setCompanyFilter] = useState("")
+const [modeOfCallFilter, setModeOfCallFilter] = useState("")
 
   const formatDateString = (dateValue) => {
     if (!dateValue) return "";
@@ -52,6 +54,20 @@ function AssignmentHistoryTable() {
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
   };
+
+  const getUniqueCompanyNames = () => {
+    const companies = assignmentHistory
+      .map(assignment => assignment.companyName)
+      .filter(name => name && name.trim() !== "")
+    return [...new Set(companies)].sort()
+  }
+  
+  const getUniqueModeOfCalls = () => {
+    const modes = assignmentHistory
+      .map(assignment => assignment.modeOfCall)
+      .filter(mode => mode && mode.trim() !== "")
+    return [...new Set(modes)].sort()
+  }
 
   // Function to fetch data from Google Sheets
   useEffect(() => {
@@ -157,15 +173,75 @@ function AssignmentHistoryTable() {
 
   // Filter assignments based on search term
   const filteredAssignments = assignmentHistory.filter(
-    (assignment) =>
-      assignment.beneficiaryName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      assignment.complaintNo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      assignment.technicianName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      assignment.village?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      assignment.district?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      assignment.product?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      assignment.companyName?.toLowerCase().includes(searchTerm.toLowerCase())
+    (assignment) => {
+      // Enhanced search functionality - searches across ALL fields
+      const searchFields = [
+        assignment.complaintNo,
+        assignment.date,
+        assignment.head,
+        assignment.companyName,
+        assignment.modeOfCall,
+        assignment.idNumber,
+        assignment.projectName,
+        assignment.complaintNumber,
+        assignment.complaintDate,
+        assignment.beneficiaryName,
+        assignment.contactNumber,
+        assignment.village,
+        assignment.block,
+        assignment.district,
+        assignment.product,
+        assignment.make,
+        assignment.systemVoltage,
+        assignment.rating,
+        assignment.qty,
+        assignment.acDc,
+        assignment.priority,
+        assignment.insuranceType,
+        assignment.natureOfComplaint,
+        assignment.delay,
+        assignment.technicianName,
+        assignment.technicianContact,
+        assignment.assigneeName,
+        assignment.assigneeWhatsApp,
+        assignment.location,
+        assignment.complaintDetails,
+        assignment.expectedCompletionDate,
+        assignment.notesForTechnician
+      ]
+      
+      // Function to normalize text for better searching
+      const normalizeText = (text) => {
+        if (!text) return ""
+        return text.toString().toLowerCase().trim()
+      }
+      
+      // Function to check if search term matches any field
+      const matchesSearch = () => {
+        if (!searchTerm || searchTerm.trim() === "") return true
+        
+        const normalizedSearchTerm = normalizeText(searchTerm)
+        
+        // Split search term by spaces to allow multiple word search
+        const searchWords = normalizedSearchTerm.split(/\s+/).filter(word => word.length > 0)
+        
+        // Check if all search words are found in at least one field
+        return searchWords.every(word => 
+          searchFields.some(field => 
+            normalizeText(field).includes(word)
+          )
+        )
+      }
+      
+      // Filter conditions
+      const matchesSearchTerm = matchesSearch()
+      const matchesCompany = companyFilter === "" || assignment.companyName === companyFilter
+      const matchesModeOfCall = modeOfCallFilter === "" || assignment.modeOfCall === modeOfCallFilter
+      
+      return matchesSearchTerm && matchesCompany && matchesModeOfCall
+    }
   )
+  
 
   if (isLoading) {
     return (
@@ -189,23 +265,62 @@ function AssignmentHistoryTable() {
         <h1 className="text-2xl font-bold">Assignment History</h1>
         
         <div className="relative">
-          <input
-            type="search"
-            placeholder="Search assignments..."
-            className="pl-8 w-[200px] md:w-[300px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <svg 
-            className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500"
-            xmlns="http://www.w3.org/2000/svg" 
-            fill="none" 
-            viewBox="0 0 24 24" 
-            stroke="currentColor"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      <input
+        type="search"
+        placeholder="Search across all fields (assignments, technicians, etc.)"
+        className="pl-8 w-full sm:w-[280px] lg:w-[320px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+      />
+      <svg 
+        className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500"
+        xmlns="http://www.w3.org/2000/svg" 
+        fill="none" 
+        viewBox="0 0 24 24" 
+        stroke="currentColor"
+      >
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
+      {searchTerm && (
+        <button
+          onClick={() => setSearchTerm("")}
+          className="absolute right-2 top-2 h-6 w-6 text-gray-400 hover:text-gray-600 flex items-center justify-center rounded-full hover:bg-gray-100"
+          title="Clear search"
+        >
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
-        </div>
+        </button>
+      )}
+    </div>
+
+    {/* Company Name Filter */}
+    <select
+      className="w-full sm:w-[180px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+      value={companyFilter}
+      onChange={(e) => setCompanyFilter(e.target.value)}
+    >
+      <option value="">All Companies</option>
+      {getUniqueCompanyNames().map((company) => (
+        <option key={company} value={company}>
+          {company}
+        </option>
+      ))}
+    </select>
+
+    {/* Mode of Call Filter */}
+    <select
+      className="w-full sm:w-[180px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+      value={modeOfCallFilter}
+      onChange={(e) => setModeOfCallFilter(e.target.value)}
+    >
+      <option value="">All Modes</option>
+      {getUniqueModeOfCalls().map((mode) => (
+        <option key={mode} value={mode}>
+          {mode}
+        </option>
+      ))}
+    </select>
       </div>
 
       <div className="overflow-x-auto -mx-4 sm:mx-0">
@@ -218,12 +333,18 @@ function AssignmentHistoryTable() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-100">
                 <tr>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                  {/* <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     Complaint No.
-                  </th>
+                  </th> */}
                   {/* <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     Date
-                  </th> */}
+                    </th> */}
+                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                      Complaint Number
+                    </th>
+                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                      Complaint Date
+                    </th>
                   <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     Head
                   </th>
@@ -238,12 +359,6 @@ function AssignmentHistoryTable() {
                   </th>
                   <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     Project Name
-                  </th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    Complaint Number
-                  </th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    Complaint Date
                   </th>
                   <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     Beneficiary Name
@@ -319,15 +434,15 @@ function AssignmentHistoryTable() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredAssignments.map((assignment, index) => (
                   <tr key={assignment.complaintNo || index} className="hover:bg-gray-50">
-                    <td className="px-3 py-4 whitespace-nowrap font-medium text-sm">{assignment.complaintNo}</td>
+                    {/* <td className="px-3 py-4 whitespace-nowrap font-medium text-sm">{assignment.complaintNo}</td> */}
                     {/* <td className="px-3 py-4 whitespace-nowrap text-sm">{assignment.date}</td> */}
+                    <td className="px-3 py-4 whitespace-nowrap text-sm">{assignment.complaintNumber}</td>
+                    <td className="px-3 py-4 whitespace-nowrap text-sm">{assignment.complaintDate}</td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm">{assignment.head}</td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm">{assignment.companyName}</td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm">{assignment.modeOfCall}</td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm">{assignment.idNumber}</td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm">{assignment.projectName}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm">{assignment.complaintNumber}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm">{assignment.complaintDate}</td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm font-medium">{assignment.beneficiaryName}</td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm">{assignment.contactNumber}</td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm">{assignment.village}</td>

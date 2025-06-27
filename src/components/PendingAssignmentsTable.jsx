@@ -11,6 +11,8 @@ function PendingAssignmentsTable() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
   const [searchTerm, setSearchTerm] = useState("")
+  const [companyFilter, setCompanyFilter] = useState("")
+const [modeOfCallFilter, setModeOfCallFilter] = useState("")
 
   // Google Apps Script Web App URL - Replace with your actual deployed script URL
   const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkBpcYMupYQi6gSURT_tqDfeQrGtbS6DwiRvmjw0s2kAIGmHlkjnVJDddXOy0v6ur7rw/exec"
@@ -87,7 +89,21 @@ function PendingAssignmentsTable() {
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
   };
+
+  const getUniqueCompanyNames = () => {
+    const companies = pendingComplaints
+      .map(complaint => complaint.companyName)
+      .filter(name => name && name.trim() !== "")
+    return [...new Set(companies)].sort()
+  }
   
+  const getUniqueModeOfCalls = () => {
+    const modes = pendingComplaints
+      .map(complaint => complaint.modeOfCall)
+      .filter(mode => mode && mode.trim() !== "")
+    return [...new Set(modes)].sort()
+  }
+
   // Function to fetch data from Google Sheets
   useEffect(() => {
     const fetchComplaints = async () => {
@@ -261,12 +277,65 @@ function PendingAssignmentsTable() {
 
   // Filter complaints based on search term
   const filteredComplaints = pendingComplaints.filter(
-    (complaint) =>
-      complaint.beneficiaryName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      complaint.complaintNo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      complaint.village?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      complaint.district?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      complaint.projectName?.toLowerCase().includes(searchTerm.toLowerCase())
+    (complaint) => {
+      // Enhanced search functionality - searches across ALL fields
+      const searchFields = [
+        complaint.complaintNo,
+        complaint.date,
+        complaint.head,
+        complaint.companyName,
+        complaint.modeOfCall,
+        complaint.idNumber,
+        complaint.projectName,
+        complaint.complaintNumber,
+        complaint.complaintDate,
+        complaint.beneficiaryName,
+        complaint.contactNumber,
+        complaint.village,
+        complaint.block,
+        complaint.district,
+        complaint.product,
+        complaint.make,
+        complaint.system,
+        complaint.voltageRating,
+        complaint.qty,
+        complaint.acDc,
+        complaint.priority,
+        complaint.insuranceType,
+        complaint.natureOfComplaint,
+        complaint.status
+      ]
+      
+      // Function to normalize text for better searching
+      const normalizeText = (text) => {
+        if (!text) return ""
+        return text.toString().toLowerCase().trim()
+      }
+      
+      // Function to check if search term matches any field
+      const matchesSearch = () => {
+        if (!searchTerm || searchTerm.trim() === "") return true
+        
+        const normalizedSearchTerm = normalizeText(searchTerm)
+        
+        // Split search term by spaces to allow multiple word search
+        const searchWords = normalizedSearchTerm.split(/\s+/).filter(word => word.length > 0)
+        
+        // Check if all search words are found in at least one field
+        return searchWords.every(word => 
+          searchFields.some(field => 
+            normalizeText(field).includes(word)
+          )
+        )
+      }
+      
+      // Filter conditions
+      const matchesSearchTerm = matchesSearch()
+      const matchesCompany = companyFilter === "" || complaint.companyName === companyFilter
+      const matchesModeOfCall = modeOfCallFilter === "" || complaint.modeOfCall === modeOfCallFilter
+      
+      return matchesSearchTerm && matchesCompany && matchesModeOfCall
+    }
   )
 
   // Handle opening the assignment dialog
@@ -298,23 +367,62 @@ function PendingAssignmentsTable() {
         <h1 className="text-xl font-bold">Pending Complaint Assignments</h1>
         
         <div className="relative">
-          <input
-            type="search"
-            placeholder="Search complaints..."
-            className="pl-8 w-[200px] md:w-[300px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <svg 
-            className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500"
-            xmlns="http://www.w3.org/2000/svg" 
-            fill="none" 
-            viewBox="0 0 24 24" 
-            stroke="currentColor"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-        </div>
+  <input
+    type="search"
+    placeholder="Search across all fields (complaint no, name, village, etc.)"
+    className="pl-8 w-full sm:w-[280px] lg:w-[320px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
+    value={searchTerm}
+    onChange={(e) => setSearchTerm(e.target.value)}
+  />
+  <svg 
+    className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500"
+    xmlns="http://www.w3.org/2000/svg" 
+    fill="none" 
+    viewBox="0 0 24 24" 
+    stroke="currentColor"
+  >
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+  </svg>
+  {searchTerm && (
+    <button
+      onClick={() => setSearchTerm("")}
+      className="absolute right-2 top-2 h-6 w-6 text-gray-400 hover:text-gray-600 flex items-center justify-center rounded-full hover:bg-gray-100"
+      title="Clear search"
+    >
+      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+  )}
+</div>
+
+    {/* Company Name Filter */}
+    <select
+      className="w-full sm:w-[180px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+      value={companyFilter}
+      onChange={(e) => setCompanyFilter(e.target.value)}
+    >
+      <option value="">All Companies</option>
+      {getUniqueCompanyNames().map((company) => (
+        <option key={company} value={company}>
+          {company}
+        </option>
+      ))}
+    </select>
+
+    {/* Mode of Call Filter */}
+    <select
+      className="w-full sm:w-[180px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+      value={modeOfCallFilter}
+      onChange={(e) => setModeOfCallFilter(e.target.value)}
+    >
+      <option value="">All Modes</option>
+      {getUniqueModeOfCalls().map((mode) => (
+        <option key={mode} value={mode}>
+          {mode}
+        </option>
+      ))}
+    </select>
       </div>
 
       <div className="overflow-x-auto -mx-4 sm:mx-0">
@@ -327,12 +435,18 @@ function PendingAssignmentsTable() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-100">
                 <tr>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                  {/* <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     Complaint No.
+                  </th> */}
+                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                    Complaint Number
                   </th>
                   <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    Date
+                    Complaint Date
                   </th>
+                  {/* <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                    Date
+                  </th> */}
                   <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     Head
                   </th>
@@ -347,12 +461,6 @@ function PendingAssignmentsTable() {
                   </th>
                   <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     Project Name
-                  </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    Complaint Number
-                  </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    Complaint Date
                   </th>
                   <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     Beneficiary Name
@@ -407,15 +515,15 @@ function PendingAssignmentsTable() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredComplaints.map((complaint, index) => (
                   <tr key={`complaint-${complaint.complaintNo}-${index}`} className="hover:bg-gray-50">
-                    <td className="px-3 py-4 whitespace-nowrap font-medium text-sm">{complaint.complaintNo}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.date}</td>
+                    {/* <td className="px-3 py-4 whitespace-nowrap font-medium text-sm">{complaint.complaintNo}</td> */}
+                    {/* <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.date}</td> */}
+                    <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.complaintNumber}</td>
+                    <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.complaintDate}</td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.head}</td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.companyName}</td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.modeOfCall}</td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.idNumber}</td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.projectName}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.complaintNumber}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.complaintDate}</td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.beneficiaryName}</td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.contactNumber}</td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.village}</td>
@@ -468,7 +576,7 @@ function PendingAssignmentsTable() {
                 <div className="sm:flex sm:items-start">
                   <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
                     <h3 className="text-lg leading-6 font-medium text-gray-900">
-                      Assign Complaint: {selectedComplaint}
+                      Assign Complaint: {selectedComplaintData?.complaintNumber || selectedComplaint}
                     </h3>
                     <div className="mt-4 max-h-[60vh] overflow-auto">
                       <AssignComplaintForm 

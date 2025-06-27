@@ -232,71 +232,123 @@ function PendingComplaintsTable() {
             </div>
           ) : (
             <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    Complaint No.
-                  </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    Date
-                  </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    Head
-                  </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    Beneficiary Name
-                  </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    Contact Number
-                  </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    Village
-                  </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    District
-                  </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    Product
-                  </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    Priority
-                  </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    Nature Of Complaint
-                  </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    Status
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredComplaints.map((complaint, index) => (
-                  <tr key={`complaint-${complaint.complaintNo}-${index}`} className="hover:bg-gray-50">
-                    <td className="px-3 py-4 whitespace-nowrap font-medium text-sm">{complaint.complaintNo}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.date}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.head}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.beneficiaryName}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.contactNumber}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.village}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.district}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.product}</td>
-                    <td className="px-3 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 text-xs font-semibold rounded-full text-white ${getPriorityColor(complaint.priority)}`}>
-                        {complaint.priority}
-                      </span>
-                    </td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm max-w-xs truncate" title={complaint.natureOfComplaint}>
-                      {complaint.natureOfComplaint}
-                    </td>
-                    <td className="px-3 py-4 whitespace-nowrap">
-                      <span className="px-2 py-1 text-xs font-semibold rounded-full border border-gray-400 text-gray-600">
-                        {complaint.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+  <thead className="bg-gray-100">
+    <tr>
+      {/* <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+        Complaint No.
+        </th> */}
+        <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+          Complaint Number
+        </th>
+        <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+          Complaint Date
+        </th>
+      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+        Date
+      </th>
+      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+        Head
+      </th>
+      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+        Company Name
+      </th>
+      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+        Mode Of Call
+      </th>
+      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+        ID Number
+      </th>
+      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+        Project Name
+      </th>
+      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+        Beneficiary Name
+      </th>
+      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+        Contact Number
+      </th>
+      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+        Village
+      </th>
+      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+        Block
+      </th>
+      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+        District
+      </th>
+      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+        Product
+      </th>
+      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+        Make
+      </th>
+      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+        System
+      </th>
+      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+        Voltage Rating
+      </th>
+      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+        Qty
+      </th>
+      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+        AC/DC
+      </th>
+      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+        Priority
+      </th>
+      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+        Insurance Type
+      </th>
+      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+        Nature Of Complaint
+      </th>
+      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+        Status
+      </th>
+    </tr>
+  </thead>
+  <tbody className="bg-white divide-y divide-gray-200">
+    {filteredComplaints.map((complaint, index) => (
+      <tr key={`complaint-${complaint.complaintNo}-${index}`} className="hover:bg-gray-50">
+        {/* <td className="px-3 py-4 whitespace-nowrap font-medium text-sm">{complaint.complaintNo}</td> */}
+        <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.complaintNumber}</td>
+        <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.complaintDate}</td>
+        <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.date}</td>
+        <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.head}</td>
+        <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.companyName}</td>
+        <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.modeOfCall}</td>
+        <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.idNumber}</td>
+        <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.projectName}</td>
+        <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.beneficiaryName}</td>
+        <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.contactNumber}</td>
+        <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.village}</td>
+        <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.block}</td>
+        <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.district}</td>
+        <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.product}</td>
+        <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.make}</td>
+        <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.system}</td>
+        <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.voltageRating}</td>
+        <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.qty}</td>
+        <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.acDc}</td>
+        <td className="px-3 py-4 whitespace-nowrap">
+          <span className={`px-2 py-1 text-xs font-semibold rounded-full text-white ${getPriorityColor(complaint.priority)}`}>
+            {complaint.priority}
+          </span>
+        </td>
+        <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.insuranceType}</td>
+        <td className="px-3 py-4 whitespace-nowrap text-sm max-w-xs truncate" title={complaint.natureOfComplaint}>
+          {complaint.natureOfComplaint}
+        </td>
+        <td className="px-3 py-4 whitespace-nowrap">
+          <span className="px-2 py-1 text-xs font-semibold rounded-full border border-gray-400 text-gray-600">
+            {complaint.status}
+          </span>
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
           )}
         </div>
       </div>

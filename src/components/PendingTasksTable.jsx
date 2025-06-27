@@ -19,6 +19,9 @@ function TrackerPendingTable() {
   const [uploadedDocument, setUploadedDocument] = useState(null)
   const [uploadedPhoto, setUploadedPhoto] = useState(null)
   const [uploadStatus, setUploadStatus] = useState("")
+  const [companyFilter, setCompanyFilter] = useState("")
+const [modeOfCallFilter, setModeOfCallFilter] = useState("")
+const [technicianFilter, setTechnicianFilter] = useState("")
 
   // Google Apps Script Web App URL - Replace with your actual deployed script URL
   const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkBpcYMupYQi6gSURT_tqDfeQrGtbS6DwiRvmjw0s2kAIGmHlkjnVJDddXOy0v6ur7rw/exec"
@@ -409,17 +412,103 @@ const addToTrackerHistory = async (task, completionDate, remarks, documentUrl, p
   };
 
   // Filter tasks based on search term
+  const getUniqueCompanyNames = () => {
+    const companies = pendingTasks
+      .map(task => task.companyName)
+      .filter(name => name && name.trim() !== "")
+    return [...new Set(companies)].sort()
+  }
+  
+  const getUniqueModeOfCalls = () => {
+    const modes = pendingTasks
+      .map(task => task.modeOfCall)
+      .filter(mode => mode && mode.trim() !== "")
+    return [...new Set(modes)].sort()
+  }
+  
+  const getUniqueTechnicianNames = () => {
+    const technicians = pendingTasks
+      .map(task => task.technicianName)
+      .filter(name => name && name.trim() !== "")
+    return [...new Set(technicians)].sort()
+  }
+  
+  // 3. Replace your existing filteredTasks logic with this enhanced version:
   const filteredTasks = pendingTasks.filter(
-    (task) =>
-      task.assigneeName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      task.technicianName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      task.complaintNo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      task.village?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      task.district?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      task.beneficiaryName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      task.companyName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      task.product?.toLowerCase().includes(searchTerm.toLowerCase())
+    (task) => {
+      // Enhanced search functionality - searches across ALL fields
+      const searchFields = [
+        task.complaintNo,
+        task.date,
+        task.head,
+        task.companyName,
+        task.modeOfCall,
+        task.idNumber,
+        task.projectName,
+        task.complaintNumber,
+        task.complaintDate,
+        task.beneficiaryName,
+        task.contactNumber,
+        task.village,
+        task.block,
+        task.district,
+        task.product,
+        task.make,
+        task.systemVoltage,
+        task.rating,
+        task.qty,
+        task.acDc,
+        task.priority,
+        task.insuranceType,
+        task.natureOfComplaint,
+        task.technicianName,
+        task.technicianContact,
+        task.assigneeName,
+        task.assigneeWhatsApp,
+        task.location,
+        task.complaintDetails,
+        task.expectedCompletionDate,
+        task.notesForTechnician,
+        task.id,
+        task.assignee,
+        task.technician,
+        task.details,
+        task.targetDate
+      ]
+      
+      // Function to normalize text for better searching
+      const normalizeText = (text) => {
+        if (!text) return ""
+        return text.toString().toLowerCase().trim()
+      }
+      
+      // Function to check if search term matches any field
+      const matchesSearch = () => {
+        if (!searchTerm || searchTerm.trim() === "") return true
+        
+        const normalizedSearchTerm = normalizeText(searchTerm)
+        
+        // Split search term by spaces to allow multiple word search
+        const searchWords = normalizedSearchTerm.split(/\s+/).filter(word => word.length > 0)
+        
+        // Check if all search words are found in at least one field
+        return searchWords.every(word => 
+          searchFields.some(field => 
+            normalizeText(field).includes(word)
+          )
+        )
+      }
+      
+      // Filter conditions
+      const matchesSearchTerm = matchesSearch()
+      const matchesCompany = companyFilter === "" || task.companyName === companyFilter
+      const matchesModeOfCall = modeOfCallFilter === "" || task.modeOfCall === modeOfCallFilter
+      const matchesTechnician = technicianFilter === "" || task.technicianName === technicianFilter
+      
+      return matchesSearchTerm && matchesCompany && matchesModeOfCall && matchesTechnician
+    }
   )
+  
 
   if (isLoading) {
     return (
@@ -444,23 +533,76 @@ const addToTrackerHistory = async (task, completionDate, remarks, documentUrl, p
         <h1 className="text-xl font-bold">Tracker Pending Tasks</h1>
         
         <div className="relative">
-          <input
-            type="search"
-            placeholder="Search tasks..."
-            className="pl-8 w-[200px] md:w-[300px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <svg 
-            className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500"
-            xmlns="http://www.w3.org/2000/svg" 
-            fill="none" 
-            viewBox="0 0 24 24" 
-            stroke="currentColor"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      <input
+        type="search"
+        placeholder="Search across all fields (tasks, technicians, etc.)"
+        className="pl-8 w-full sm:w-[280px] lg:w-[320px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+      />
+      <svg 
+        className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500"
+        xmlns="http://www.w3.org/2000/svg" 
+        fill="none" 
+        viewBox="0 0 24 24" 
+        stroke="currentColor"
+      >
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
+      {searchTerm && (
+        <button
+          onClick={() => setSearchTerm("")}
+          className="absolute right-2 top-2 h-6 w-6 text-gray-400 hover:text-gray-600 flex items-center justify-center rounded-full hover:bg-gray-100"
+          title="Clear search"
+        >
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
-        </div>
+        </button>
+      )}
+    </div>
+
+    {/* Company Name Filter */}
+    <select
+      className="w-full sm:w-[160px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+      value={companyFilter}
+      onChange={(e) => setCompanyFilter(e.target.value)}
+    >
+      <option value="">All Companies</option>
+      {getUniqueCompanyNames().map((company) => (
+        <option key={company} value={company}>
+          {company}
+        </option>
+      ))}
+    </select>
+
+    {/* Mode of Call Filter */}
+    <select
+      className="w-full sm:w-[140px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+      value={modeOfCallFilter}
+      onChange={(e) => setModeOfCallFilter(e.target.value)}
+    >
+      <option value="">All Modes</option>
+      {getUniqueModeOfCalls().map((mode) => (
+        <option key={mode} value={mode}>
+          {mode}
+        </option>
+      ))}
+    </select>
+
+    {/* Technician Name Filter */}
+    <select
+      className="w-full sm:w-[160px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+      value={technicianFilter}
+      onChange={(e) => setTechnicianFilter(e.target.value)}
+    >
+      <option value="">All Technicians</option>
+      {getUniqueTechnicianNames().map((technician) => (
+        <option key={technician} value={technician}>
+          {technician}
+        </option>
+      ))}
+    </select>
       </div>
 
       <div className="overflow-x-auto -mx-4 sm:mx-0">
@@ -476,12 +618,18 @@ const addToTrackerHistory = async (task, completionDate, remarks, documentUrl, p
     <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
       Actions
     </th>
-    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+    {/* <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
       Complaint No.
-    </th>
-    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+      </th> */}
+      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+        Complaint Number
+      </th>
+      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+        Complaint Date
+      </th>
+    {/* <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
       Date
-    </th>
+    </th> */}
     <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
       Head
     </th>
@@ -496,12 +644,6 @@ const addToTrackerHistory = async (task, completionDate, remarks, documentUrl, p
     </th>
     <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
       Project Name
-    </th>
-    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-      Complaint Number
-    </th>
-    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-      Complaint Date
     </th>
     <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
       Beneficiary Name
@@ -590,15 +732,15 @@ const addToTrackerHistory = async (task, completionDate, remarks, documentUrl, p
                      Update
                    </button>
                  </td>
-                 <td className="px-3 py-4 whitespace-nowrap font-medium text-sm">{task.complaintNo}</td>
-                 <td className="px-3 py-4 whitespace-nowrap text-sm">{task.date}</td>
+                 {/* <td className="px-3 py-4 whitespace-nowrap font-medium text-sm">{task.complaintNo}</td> */}
+                 {/* <td className="px-3 py-4 whitespace-nowrap text-sm">{task.date}</td> */}
+                 <td className="px-3 py-4 whitespace-nowrap text-sm">{task.complaintNumber}</td>
+                 <td className="px-3 py-4 whitespace-nowrap text-sm">{task.complaintDate}</td>
                  <td className="px-3 py-4 whitespace-nowrap text-sm">{task.head}</td>
                  <td className="px-3 py-4 whitespace-nowrap text-sm">{task.companyName}</td>
                  <td className="px-3 py-4 whitespace-nowrap text-sm">{task.modeOfCall}</td>
                  <td className="px-3 py-4 whitespace-nowrap text-sm">{task.idNumber}</td>
                  <td className="px-3 py-4 whitespace-nowrap text-sm">{task.projectName}</td>
-                 <td className="px-3 py-4 whitespace-nowrap text-sm">{task.complaintNumber}</td>
-                 <td className="px-3 py-4 whitespace-nowrap text-sm">{task.complaintDate}</td>
                  <td className="px-3 py-4 whitespace-nowrap text-sm font-medium">{task.beneficiaryName}</td>
                  <td className="px-3 py-4 whitespace-nowrap text-sm">{task.contactNumber}</td>
                  <td className="px-3 py-4 whitespace-nowrap text-sm">{task.village}</td>
@@ -653,7 +795,7 @@ const addToTrackerHistory = async (task, completionDate, remarks, documentUrl, p
               <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div className="sm:flex sm:items-start">
                   <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900">Update Task: {selectedTask}</h3>
+                    <h3 className="text-lg leading-6 font-medium text-gray-900">Update Task: {selectedTaskData?.complaintNumber || selectedTask}</h3>
                     <div className="mt-4 max-h-[60vh] overflow-auto">
                       <div className="grid gap-4">
                       <div className="space-y-2">
