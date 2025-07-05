@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Link, useLocation } from "react-router-dom"
-import { Clipboard, Home, CheckCircle, Clock, LogOut, Menu, FileText, UserCheck, DollarSign } from "react-feather"
+import { Clipboard, Home, CheckCircle, Clock, LogOut, Menu, FileText, UserCheck, DollarSign, BarChart } from "react-feather";
 
 function DashboardLayout({ children }) {
   const location = useLocation()
@@ -80,6 +80,7 @@ function DashboardLayout({ children }) {
       badgeColor: "bg-blue-500 hover:bg-blue-600",
       permissionKey: "tracker",
     },
+     
     // {
     //   name: "Verification",
     //   href: "/dashboard/verification",
@@ -100,6 +101,13 @@ function DashboardLayout({ children }) {
       icon: DollarSign,
       badgeColor: "bg-green-500 hover:bg-green-600",
       permissionKey: "petrol expenses",
+    },
+    {
+      name: "Report",
+      href: "/dashboard/Report",
+      icon: BarChart,
+      badgeColor: "bg-blue-500 hover:bg-blue-600",
+      permissionKey: "assign complaint",
     },
   ]
 

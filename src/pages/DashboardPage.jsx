@@ -26,7 +26,6 @@ function DashboardPage() {
             <RecentComplaints />
           </div>
         </div>
-
         <ComplaintsByRegion />
         <DasbhoardPendingTask />
       </div>
