@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Clock, CheckCircle, AlertTriangle, Check, ArrowUp, ArrowDown } from 'lucide-react'
+import { Clock, CheckCircle, AlertTriangle, Check, ArrowUp, ArrowDown, Shield } from 'lucide-react'
 
 function DashboardStats() {
   const [data, setData] = useState(null)
@@ -56,37 +56,27 @@ function DashboardStats() {
 
   // Pending complaints: column AJ is not null and column AK is null
   const pendingComplaints = data
-  ? data.filter(
-      (row) =>
-        row.c[35] &&
-        row.c[35].v !== null &&
-        row.c[35].v !== "" &&
-        (!row.c[36] || row.c[36].v === null || row.c[36].v === ""),
-    ).length
-  : 0
+    ? data.filter(
+        (row) =>
+          row.c[35] &&
+          row.c[35].v !== null &&
+          row.c[35].v !== "" &&
+          (!row.c[36] || row.c[36].v === null || row.c[36].v === ""),
+      ).length
+    : 0
 
-
-  //   const pendingComplaints = data
-  // ? data.filter(
-  //     (row) =>
-  //       row.c[39] &&
-  //       row.c[39].v !== null &&
-  //       row.c[39].v !== "" &&
-  //       row.c[39].v !== "completed"
-  //   ).length
-  // : 0
   // Completed complaints: both columns AJ and AK are not null
   const completedComplaints = data
-  ? data.filter(
-      (row) =>
-        row.c[35] &&
-        row.c[35].v !== null &&
-        row.c[35].v !== "" &&
-        row.c[36] &&
-        row.c[36].v !== null &&
-        row.c[36].v !== "",
-    ).length
-  : 0
+    ? data.filter(
+        (row) =>
+          row.c[35] &&
+          row.c[35].v !== null &&
+          row.c[35].v !== "" &&
+          row.c[36] &&
+          row.c[36].v !== null &&
+          row.c[36].v !== "",
+      ).length
+    : 0
 
   // Verified complaints: both columns 49 and 50 are not null (have values)
   const verifiedComplaints = data
@@ -98,6 +88,17 @@ function DashboardStats() {
           row.c[50] &&
           row.c[50].v !== null &&
           row.c[50].v !== "",
+      ).length
+    : 0
+
+  // Total Insurances: count rows where column 40 (index 39) has value "Inssurances"
+  const totalInsurance = data
+    ? data.filter(
+        (row) =>
+          row.c[39] &&
+          row.c[39].v !== null &&
+          row.c[39].v !== "" &&
+          row.c[39].v === "Insurance"
       ).length
     : 0
 
@@ -133,16 +134,16 @@ function DashboardStats() {
       lightColor: "bg-blue-50",
       textColor: "text-blue-600",
     },
-    // {
-    //   title: "Verified Complaints",
-    //   value: isLoading ? "-" : verifiedComplaints,
-    //   change: "+25%",
-    //   trend: "up",
-    //   icon: Check,
-    //   color: "bg-blue-600",
-    //   lightColor: "bg-blue-50",
-    //   textColor: "text-blue-600",
-    // },
+    {
+      title: "Total Insurance",
+      value: isLoading ? "-" : totalInsurance,
+      change: "+25%",
+      trend: "up",
+      icon: Shield,
+      color: "bg-blue-600",
+      lightColor: "bg-blue-50",
+      textColor: "text-blue-600",
+    },
   ]
 
   return (
