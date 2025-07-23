@@ -139,7 +139,7 @@ function PendingAssignmentsTable() {
                   // CORRECTED: Google Sheets API rows slice(1) skips first row, 
                   // but your headers are in row 6, so actual row = index + 2 + (additional offset if needed)
                   // Based on your screenshot showing data in rows 41, 46, etc.
-                  actualRowIndex: index + 5, 
+                  actualRowIndex: index + 7, 
                   
                   // Map columns according to your exact sequence from the data
                   timestamp: row.c[0] ? (row.c[0].f || formatDateString(row.c[0].v) || row.c[0].v) : "", // Column A
