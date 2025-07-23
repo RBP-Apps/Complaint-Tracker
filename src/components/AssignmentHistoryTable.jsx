@@ -96,8 +96,8 @@ const [modeOfCallFilter, setModeOfCallFilter] = useState("")
           data.table.rows.slice(0).forEach((row, index) => {
             if (row.c) {
               // Check if column Y (index 25) has data and column Z (index 26) is null/empty
-              const hasColumnY = row.c[25] && row.c[25].v !== null && row.c[25].v !== "";
-              const isColumnZEmpty = row.c[26] && row.c[26].v !== null && row.c[26].v !== "";
+              const hasColumnY = row.c[24] && row.c[24].v !== null && row.c[24].v !== "";
+              const isColumnZEmpty = row.c[25] && row.c[25].v !== null && row.c[25].v !== "";
               
               // Only include rows where column Y has data and column Z is null
               if (hasColumnY && isColumnZEmpty) {

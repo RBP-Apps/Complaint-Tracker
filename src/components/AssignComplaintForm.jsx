@@ -10,15 +10,15 @@ function AssignComplaintForm({ complaintId, onClose, onSubmit }) {
   const [technicians, setTechnicians] = useState([])
   const [isLoadingTechnicians, setIsLoadingTechnicians] = useState(true)
 
-
   const [formData, setFormData] = useState({
     technicianName: "",
     technicianContact: "",
-    assigneeName: "",
+    assigneeName: "", // Changed from "assignee" to "assigneeName"
     assigneeWhatsapp: "",
     location: "",
     complaintDetails: "",
-    notes: "",
+    expectedCompletionDate: "",
+    notesForTechnician: "",
   })
 
   const handleChange = (e) => {
@@ -75,78 +75,62 @@ function AssignComplaintForm({ complaintId, onClose, onSubmit }) {
     setIsSubmitting(true)
 
     try {
-      // Column AA to AI (indices 26 to 34 in 0-indexed system)
-      // Create a proper assignment payload
-      const assigneeData = {
-        assignee: formData.assigneeName, // Column AA (26) - Assigned To
-        technicianName: formData.technicianName, // Column AB (27) - Technician Name
-        technicianContact: formData.technicianContact, // Column AC (28) - Technician Contact
-        assigneeWhatsapp: formData.assigneeWhatsapp, // Column AD (29) - Assignee WhatsApp
-        location: formData.location, // Column AE (30) - Location
-        complaintDetails: formData.complaintDetails, // Column AF (31) - Complaint Details
-        expectedCompletionDate: expectedCompletionDate ? expectedCompletionDate.toLocaleDateString() : "", // Column AG (32) - Expected Completion Date
-        notes: formData.notes, // Column AH (33) - Notes
-        assignmentTimestamp: new Date().toLocaleString() // Column AI (34) - Assignment Timestamp
+      // Validate required fields
+      if (!formData.assigneeName.trim()) {
+        alert("Please enter the assignee name")
+        return
+      }
+      
+      if (!formData.technicianName.trim()) {
+        alert("Please select or enter a technician name")
+        return
+      }
+      
+      if (!formData.technicianContact.trim()) {
+        alert("Please enter the technician contact")
+        return
+      }
+      
+      if (!formData.location.trim()) {
+        alert("Please enter the location")
+        return
+      }
+      
+      if (!formData.complaintDetails.trim()) {
+        alert("Please enter complaint details")
+        return
+      }
+      
+      if (!expectedCompletionDate) {
+        alert("Please select an expected completion date")
+        return
       }
 
-      // If onSubmit is provided, call it with the data
+
+      // Create assignment data according to your Google Apps Script assignComplaint function
+      const assigneeData = {
+        assigneeName: formData.assigneeName, // Maps to assigneeData.assignee
+        technicianName: formData.technicianName, // Maps to assigneeData.technicianName
+        technicianContact: formData.technicianContact, // Maps to assigneeData.technicianContact
+        assigneeWhatsapp: formData.assigneeWhatsapp, // Maps to assigneeData.assigneeWhatsapp
+        location: formData.location, // Maps to assigneeData.location
+        complaintDetails: formData.complaintDetails, // Maps to assigneeData.complaintDetails
+        expectedCompletionDate: expectedCompletionDate.toISOString(),  // Maps to assigneeData.expectedCompletionDate
+        notesForTechnician: formData.notesForTechnician // Maps to assigneeData.notes
+      }
+
+      console.log("Submitting assignment data:", assigneeData)
+
+      // Call the parent component's onSubmit function
       if (onSubmit) {
         await onSubmit(complaintId, assigneeData)
       } else {
-        // Fallback to direct Google Sheets API if onSubmit is not provided
-        try {
-          // Create form data for POST request
-          const formDataPayload = new FormData()
-          formDataPayload.append('sheetName', 'FMS')
-          formDataPayload.append('action', 'update')
-
-          // Find the complaint row index (we'll need the actual row index that matches the complaintId)
-          // Since this is a fallback, we'll use a hardcoded approach for simplicity
-          const rowIndex = parseInt(complaintId.replace('CT-', '')) + 5 // Rough estimate based on ID
-          formDataPayload.append('rowIndex', rowIndex.toString())
-
-          // We need to create an array with all columns, filling in only the ones we want to update
-          // Assuming 50 columns total, with empty strings for columns we don't want to change
-          const rowDataArray = new Array(50).fill('');
-
-          // Only fill in columns AA to AI (indices 26 to 34 in 0-indexed system)
-          rowDataArray[26] = assigneeData.assignee;
-          rowDataArray[27] = assigneeData.technicianName;
-          rowDataArray[28] = assigneeData.technicianContact;
-          rowDataArray[29] = assigneeData.assigneeWhatsapp;
-          rowDataArray[30] = assigneeData.location;
-          rowDataArray[31] = assigneeData.complaintDetails;
-          rowDataArray[32] = assigneeData.expectedCompletionDate;
-          rowDataArray[33] = assigneeData.notes;
-          rowDataArray[34] = assigneeData.assignmentTimestamp;
-
-          formDataPayload.append('rowData', JSON.stringify(rowDataArray))
-
-          // Post the update
-          const response = await fetch(
-            'https://script.google.com/macros/s/AKfycbzkBpcYMupYQi6gSURT_tqDfeQrGtbS6DwiRvmjw0s2kAIGmHlkjnVJDddXOy0v6ur7rw/exec',
-            {
-              method: 'POST',
-              body: formDataPayload
-            }
-          )
-
-          // Handle response (may be limited due to CORS)
-          console.log("Assignment response:", response)
-        } catch (error) {
-          console.error("Error directly submitting to Google Sheets:", error)
-          throw error
-        }
+        throw new Error("No onSubmit function provided")
       }
 
-      // Show success message
-      alert(`Complaint ${complaintId} has been assigned to ${formData.technicianName}.`)
-
-      // Close modal
-      onClose()
     } catch (error) {
       console.error("Error submitting assignment:", error)
-      alert("Failed to assign complaint. Please try again.")
+      alert(`Failed to assign complaint: ${error.message}`)
     } finally {
       setIsSubmitting(false)
     }
@@ -158,15 +142,15 @@ function AssignComplaintForm({ complaintId, onClose, onSubmit }) {
         <label htmlFor="assigneeName" className="block text-sm font-medium">
           Assignee Name <span className="text-red-500">*</span>
         </label>
-        <input
-          id="assigneeName"
-          name="assigneeName"
-          placeholder="Enter assignee name"
-          value={formData.assigneeName}
-          onChange={handleChange}
-          required
-          className="w-full border border-gray-300 rounded-md py-2 px-3"
-        />
+          <input
+            id="assigneeName"
+            name="assigneeName"  // Changed from "assignee" to "assigneeName"
+            placeholder="Enter assignee name"
+            value={formData.assigneeName}
+            onChange={handleChange}
+            required
+            className="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
       </div>
 
       <div className="space-y-2">
@@ -293,25 +277,24 @@ function AssignComplaintForm({ complaintId, onClose, onSubmit }) {
             }
             wrapperClassName="w-full"
             required
+            minDate={new Date()} // Prevent selecting past dates
           />
         </div>
       </div>
 
-      <div className="space-y-2">
-        <label htmlFor="notes" className="block text-sm font-medium">
+    <div className="space-y-2">
+        <label htmlFor="notesForTechnician" className="block text-sm font-medium">
           Notes for Technician
         </label>
         <textarea
-          id="notes"
-          name="notes"
-          placeholder="Enter notes for the technician"
-          value={formData.notes}
+          id="notesForTechnician"
+          name="notesForTechnician"
+          value={formData.notesForTechnician}
           onChange={handleChange}
           rows={2}
           className="w-full border border-gray-300 rounded-md py-2 px-3"
         />
       </div>
-
       <div className="flex justify-end gap-2 mt-4">
         <button
           type="button"
