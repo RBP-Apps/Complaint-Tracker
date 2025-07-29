@@ -17,7 +17,6 @@ function PendingAssignmentsTable() {
   // Google Apps Script Web App URL - Replace with your actual deployed script URL
   const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkBpcYMupYQi6gSURT_tqDfeQrGtbS6DwiRvmjw0s2kAIGmHlkjnVJDddXOy0v6ur7rw/exec"
 
-
   const formatDateString = (dateValue) => {
     if (!dateValue) return "";
 
@@ -128,17 +127,22 @@ function PendingAssignmentsTable() {
           const complaintData = []
 
           // Skip the header row and process the data rows
-          data.table.rows.slice(2).forEach((row, index) => {
+          data.table.rows.slice(1).forEach((row, index) => {
             if (row.c) {
-              // Check if column Y (index 24) has data and column Z (index 25) is null/empty
-              const hasColumnY = row.c[24] && row.c[24].v !== null && row.c[24].v !== "";
-              const isColumnZEmpty = !row.c[25] || row.c[25].v === null || row.c[25].v === "";
+              // Check if column Y (Planned - index 24) has data and column Z (Actual - index 25) is null/empty
+              const hasPlannedData = row.c[24] && row.c[24].v !== null && row.c[24].v !== "";
+              const isActualEmpty = !row.c[25] || row.c[25].v === null || row.c[25].v === "";
 
-              // Only include rows where column Y has data and column Z is null
-              if (hasColumnY && isColumnZEmpty) {
+              // Only include rows where Planned has data and Actual is null (pending assignment)
+              if (hasPlannedData && isActualEmpty) {
                 const complaint = {
-                  rowIndex: index + 6, // Actual row index in the sheet (1-indexed, +5 for header rows, +1 for 1-indexing)
-                  // Columns B to X (indices 1 to 23)
+                  // CORRECTED: Google Sheets API rows slice(1) skips first row, 
+                  // but your headers are in row 6, so actual row = index + 2 + (additional offset if needed)
+                  // Based on your screenshot showing data in rows 41, 46, etc.
+                  actualRowIndex: index + 7, 
+                  
+                  // Map columns according to your exact sequence from the data
+                  timestamp: row.c[0] ? (row.c[0].f || formatDateString(row.c[0].v) || row.c[0].v) : "", // Column A
                   complaintNo: row.c[1] ? row.c[1].v : "", // Column B
                   date: row.c[2] ? (row.c[2].f || formatDateString(row.c[2].v) || row.c[2].v) : "", // Column C
                   head: row.c[3] ? row.c[3].v : "", // Column D
@@ -146,7 +150,7 @@ function PendingAssignmentsTable() {
                   modeOfCall: row.c[5] ? row.c[5].v : "", // Column F
                   idNumber: row.c[6] ? row.c[6].v : "", // Column G
                   projectName: row.c[7] ? row.c[7].v : "", // Column H
-                  complaintNumber: row.c[8] ? row.c[8].v : "", // Column I
+                  complaintNumber: row.c[8] ? row.c[8].v : "", // Column I - THIS IS THE MAIN IDENTIFIER
                   complaintDate: row.c[9] ? (row.c[9].f || formatDateString(row.c[9].v) || row.c[9].v) : "", // Column J
                   beneficiaryName: row.c[10] ? row.c[10].v : "", // Column K
                   contactNumber: row.c[11] ? row.c[11].v : "", // Column L
@@ -167,11 +171,19 @@ function PendingAssignmentsTable() {
                   fullRowData: row.c
                 }
 
-                complaintData.push(complaint)
+                // Only add if complaintNumber exists and is not empty
+                if (complaint.complaintNumber && complaint.complaintNumber.toString().trim() !== "") {
+                  complaintData.push(complaint)
+                }
               }
             }
           })
 
+          console.log("Fetched complaints with row indices:", complaintData.map(c => ({
+            complaintNumber: c.complaintNumber,
+            actualRowIndex: c.actualRowIndex
+          })));
+          
           setPendingComplaints(complaintData)
         }
       } catch (err) {
@@ -187,84 +199,79 @@ function PendingAssignmentsTable() {
     fetchComplaints()
   }, [])
 
-  // Handle assigning complaint (form submission)
-  const handleAssignComplaint = async (complaintId, assigneeData) => {
-    try {
-      // Find the complaint in our state
-      const complaintIndex = pendingComplaints.findIndex(c => c.complaintNo === complaintId)
-      if (complaintIndex === -1) throw new Error("Complaint not found")
+  // Handle assigning compl// ... (keep all existing imports and initial code)
+const handleAssignComplaint = async (complaintId, assigneeData) => {
+  try {
+    console.log("Starting assignment for complaint:", complaintId);
+    
+    // Find the complaint
+    const complaint = pendingComplaints.find(c => 
+      c.complaintNumber?.toString().trim() === complaintId.toString().trim()
+    );
 
-      const complaint = pendingComplaints[complaintIndex]
+    if (!complaint) throw new Error(`Complaint ${complaintId} not found`);
 
-      // Get the actual row index in the sheet (we stored this when fetching data)
-      const rowIndex = complaint.rowIndex + 2
+    // Prepare complete data with all required fields
+    const assignmentData = {
+      // Column Z (26) - Actual timestamp (auto-filled)
+      actualTimestamp: new Date().toISOString(),
+      
+      // Column AB (28) - Technician Name
+      technicianName: assigneeData.technicianName || "",
+      
+      // Column AC (29) - Technician Contact
+      technicianContact: assigneeData.technicianContact || "",
+      
+      // Column AD (30) - Assignee Name (fixed)
+      assigneeName: assigneeData.assigneeName || "", // Default to MOTI if empty
+      
+      // Column AE (31) - Assignee WhatsApp
+      assigneeWhatsapp: assigneeData.assigneeWhatsapp || "",
+      
+      // Column AF (32) - Location
+      location: assigneeData.location || "",
+      
+      // Column AG (33) - Complaint Details
+      complaintDetails: assigneeData.complaintDetails || "",
+      
+      // Column AH (34) - Expected Completion Date (new)
+      expectedCompletionDate: assigneeData.expectedCompletionDate || "",
+      
+      // Column AI (35) - Notes for Technician (new)
+      notesForTechnician: assigneeData.notesForTechnician || ""
+    };
 
-      // Prepare form data for the update
-      const formData = new FormData()
-      formData.append('sheetName', 'FMS')
-      formData.append('action', 'update')
-      formData.append('rowIndex', rowIndex.toString())
+    console.log("Complete assignment data:", assignmentData);
 
-      // Create an array with all columns, filled with empty strings
-      // This ensures we only update specific columns and leave others unchanged
-      const rowDataArray = new Array(50).fill('')
+    const formData = new FormData();
+    formData.append('sheetName', 'FMS');
+    formData.append('action', 'assignComplaint');
+    formData.append('rowNumber', complaint.actualRowIndex.toString());
+    formData.append('assigneeData', JSON.stringify(assignmentData));
 
-      // Fill only the columns we want to update (AA to AI, indices 26-34)
-      // Also update column Z (index 25) to indicate this complaint has been assigned
-      rowDataArray[25] = new Date().toLocaleString('en-US')
-      rowDataArray[29] = assigneeData.assignee // Column AA - Assignee Name
-      rowDataArray[27] = assigneeData.technicianName // Column AB - Technician Name
-      rowDataArray[28] = assigneeData.technicianContact // Column AC - Technician Contact
-      rowDataArray[30] = assigneeData.assigneeWhatsapp // Column AD - Assignee WhatsApp
-      rowDataArray[31] = assigneeData.location // Column AE - Location
-      rowDataArray[32] = assigneeData.complaintDetails // Column AF - Complaint Details
-      rowDataArray[33] = assigneeData.expectedCompletionDate // Column AG - Expected Completion Date
-      rowDataArray[34] = assigneeData.notes // Column AH - Notes
+    const response = await fetch(GOOGLE_SCRIPT_URL, {
+      method: 'POST',
+      body: formData
+    });
 
-      // Add the JSON string of row data to the form
-      formData.append('rowData', JSON.stringify(rowDataArray))
+    if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+    
+    const result = await response.json();
+    if (!result.success) throw new Error(result.error || "Assignment failed");
 
-      console.log("Submitting assignment for row:", rowIndex)
-      console.log("Row data:", rowDataArray)
+    // Update UI
+    setPendingComplaints(prev => 
+      prev.filter(c => c.complaintNumber !== complaintId)
+    );
+    setIsDialogOpen(false);
+    alert(`Complaint ${complaintId} assigned successfully!`);
 
-      // Post the update
-      const response = await fetch(GOOGLE_SCRIPT_URL, {
-        method: 'POST',
-        body: formData
-      })
-
-      // Log the response for debugging
-      console.log("Assignment response:", response)
-
-      // Try to parse the JSON response if available
-      try {
-        const result = await response.json()
-        console.log("Response JSON:", result)
-
-        if (result.error) {
-          throw new Error(result.error)
-        }
-      } catch (jsonError) {
-        console.log("Could not parse JSON response (likely due to CORS). This is expected.")
-      }
-
-      // Update the local state to remove this complaint from the list
-      setPendingComplaints(prev =>
-        prev.filter(complaint => complaint.complaintNo !== complaintId)
-      )
-
-      // Show success message
-      alert(`Complaint ${complaintId} has been assigned to ${assigneeData.technicianName}.`)
-
-      // Close dialog
-      setIsDialogOpen(false)
-
-    } catch (err) {
-      console.error("Error assigning complaint:", err)
-      alert("Failed to assign complaint: " + err.message)
-    }
+  } catch (error) {
+    console.error("Assignment error:", error);
+    alert(`Failed to assign: ${error.message}`);
   }
-
+};
+// ... (keep rest of the component code the same)
   // Function to get appropriate color for priority badges
   const getPriorityColor = (priority) => {
     switch (priority) {
@@ -340,10 +347,24 @@ function PendingAssignmentsTable() {
 
   // Handle opening the assignment dialog
   const handleOpenAssignDialog = (complaint) => {
-    setSelectedComplaint(complaint.complaintNo)
-    setSelectedComplaintData(complaint)
-    setIsDialogOpen(true)
-  }
+    // Use ONLY complaintNumber (Column I - "Complaint Number")
+    const complaintId = complaint.complaintNumber;
+    
+    if (!complaintId || complaintId.toString().trim() === "") {
+      alert("❌ This complaint does not have a valid Complaint Number. Cannot assign.");
+      return;
+    }
+    
+    console.log("Opening assignment dialog for Complaint Number:", complaintId);
+    console.log("Complaint data:", {
+      complaintNumber: complaint.complaintNumber,
+      actualRowIndex: complaint.actualRowIndex
+    });
+    
+    setSelectedComplaint(complaintId);
+    setSelectedComplaintData(complaint);
+    setIsDialogOpen(true);
+  };
 
   if (isLoading) {
     return (
@@ -364,7 +385,7 @@ function PendingAssignmentsTable() {
   return (
     <div className="p-4">
       <div className="mb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <h1 className="text-xl font-bold">Pending Complaint Assignments</h1>
+        <h1 className="text-xl font-bold">Pending Complaint Assignments ({filteredComplaints.length})</h1>
 
         <div className="relative">
           <input
@@ -436,7 +457,7 @@ function PendingAssignmentsTable() {
               <thead className="bg-gray-100">
                 <tr>
                   {/* <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    Complaint No.
+                    Row #
                   </th> */}
                   <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     Complaint Number
@@ -444,9 +465,6 @@ function PendingAssignmentsTable() {
                   <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     Complaint Date
                   </th>
-                  {/* <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    Date
-                  </th> */}
                   <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     Head
                   </th>
@@ -455,12 +473,6 @@ function PendingAssignmentsTable() {
                   </th>
                   <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     Mode Of Call
-                  </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    ID Number
-                  </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    Project Name
                   </th>
                   <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     Beneficiary Name
@@ -472,40 +484,16 @@ function PendingAssignmentsTable() {
                     Village
                   </th>
                   <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    Block
-                  </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     District
                   </th>
                   <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     Product
                   </th>
                   <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    Make
-                  </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    System
-                  </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    Voltage Rating
-                  </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    Qty
-                  </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    AC/DC
-                  </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     Priority
                   </th>
                   <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    Insurance Type
-                  </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     Nature Of Complaint
-                  </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    Status
                   </th>
                   <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     Actions
@@ -514,43 +502,29 @@ function PendingAssignmentsTable() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredComplaints.map((complaint, index) => (
-                  <tr key={`complaint-${complaint.complaintNo}-${index}`} className="hover:bg-gray-50">
-                    {/* <td className="px-3 py-4 whitespace-nowrap font-medium text-sm">{complaint.complaintNo}</td> */}
-                    {/* <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.date}</td> */}
-                    <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.complaintNumber}</td>
+                  <tr key={`complaint-${complaint.complaintNumber}-${index}`} className="hover:bg-gray-50">
+                    {/* <td className="px-3 py-4 whitespace-nowrap text-sm font-mono text-blue-600">{complaint.actualRowIndex}</td> */}
+                    <td className="px-3 py-4 whitespace-nowrap text-sm font-medium">{complaint.complaintNumber}</td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.complaintDate}</td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.head}</td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.companyName}</td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.modeOfCall}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.idNumber}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.projectName}</td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.beneficiaryName}</td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.contactNumber}</td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.village}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.block}</td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.district}</td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.product}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.make}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.system}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.voltageRating}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.qty}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.acDc}</td>
                     <td className="px-3 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 text-xs font-semibold rounded-full text-white ${getPriorityColor(complaint.priority)}`}>
                         {complaint.priority}
                       </span>
                     </td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.insuranceType}</td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.natureOfComplaint}</td>
-                    <td className="px-3 py-4 whitespace-nowrap">
-                      <span className="px-2 py-1 text-xs font-semibold rounded-full border border-gray-400 text-gray-600">
-                        {complaint.status}
-                      </span>
-                    </td>
                     <td className="px-3 py-4 whitespace-nowrap">
                       <button
                         className="bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded-md text-sm"
                         onClick={() => handleOpenAssignDialog(complaint)}
+                        disabled={!complaint.complaintNumber || complaint.complaintNumber.toString().trim() === ""}
                       >
                         Assign
                       </button>
@@ -577,6 +551,7 @@ function PendingAssignmentsTable() {
                   <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
                     <h3 className="text-lg leading-6 font-medium text-gray-900">
                       Assign Complaint: {selectedComplaintData?.complaintNumber || selectedComplaint}
+                      <span className="text-sm text-gray-500 ml-2">(Row: {selectedComplaintData?.actualRowIndex})</span>
                     </h3>
                     <div className="mt-4 max-h-[60vh] overflow-auto">
                       <AssignComplaintForm

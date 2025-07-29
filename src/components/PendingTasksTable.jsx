@@ -26,12 +26,7 @@ function TrackerPendingTable() {
   const [showTechnicianDropdown, setShowTechnicianDropdown] = useState(false)
   const [editingRow, setEditingRow] = useState(null)
   const [editedData, setEditedData] = useState({})
-
-  // List of technicians from your screenshot
-  const technicianOptions = [
-    { group: "Technic", names: ["Anup", "Atul", "Ente", "Banku Bihari"] },
-    { group: "Assign", names: ["Budheshwar", "Ente", "Dharmendra", "Dilip"] }
-  ]
+  const [technicianOptions, setTechnicianOptions] = useState([])
 
   const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkBpcYMupYQi6gSURT_tqDfeQrGtbS6DwiRvmjw0s2kAIGmHlkjnVJDddXOy0v6ur7rw/exec"
   const DRIVE_FOLDER_ID = "1-H5DWKRV2u_ueqtLX-ISTPvuySGYBLoT"
@@ -43,11 +38,9 @@ function TrackerPendingTable() {
     
     if (typeof dateValue === 'string' && dateValue.includes('T')) {
       date = new Date(dateValue);
-    }
-    else if (typeof dateValue === 'string' && dateValue.includes('-')) {
+    } else if (typeof dateValue === 'string' && dateValue.includes('-')) {
       date = new Date(dateValue);
-    }
-    else if (typeof dateValue === 'string' && dateValue.startsWith('Date(')) {
+    } else if (typeof dateValue === 'string' && dateValue.startsWith('Date(')) {
       const match = dateValue.match(/Date\((\d+),(\d+),(\d+)\)/);
       if (match) {
         const year = parseInt(match[1]);
@@ -57,11 +50,9 @@ function TrackerPendingTable() {
       } else {
         return dateValue;
       }
-    }
-    else if (typeof dateValue === 'object' && dateValue.getDate) {
+    } else if (typeof dateValue === 'object' && dateValue.getDate) {
       date = dateValue;
-    }
-    else {
+    } else {
       return dateValue;
     }
     
@@ -166,8 +157,31 @@ function TrackerPendingTable() {
         setIsLoading(false)
       }
     }
-    
+
+    const fetchTechnicianOptions = async () => {
+      try {
+        const sheetUrl = "https://docs.google.com/spreadsheets/d/1Vn295WmY0o6qh03rYzpCISGfMgT5RViXdYyd_ZNQ2p8/gviz/tq?tqx=out:json&sheet=master"
+        const response = await fetch(sheetUrl)
+        const text = await response.text()
+        
+        const jsonStart = text.indexOf('{')
+        const jsonEnd = text.lastIndexOf('}') + 1
+        const jsonData = text.substring(jsonStart, jsonEnd)
+        
+        const data = JSON.parse(jsonData)
+        
+        if (data && data.table && data.table.rows) {
+          const options = data.table.rows.slice(2).map(row => row.c[5]?.v || "").filter(name => name && name.trim() !== "")
+          setTechnicianOptions([...new Set(options)].sort())
+        }
+      } catch (err) {
+        console.error("Error fetching technician options:", err)
+        setTechnicianOptions([])
+      }
+    }
+
     fetchTasks()
+    fetchTechnicianOptions()
   }, [])
 
   const uploadFileToDrive = async (file, fileType) => {
@@ -384,51 +398,38 @@ function TrackerPendingTable() {
   const handleSubmitEdit = async (task) => {
     setIsSubmitting(true);
     try {
-      // Prepare the data to update
-      const rowData = [
-        task.complaintNo,
-        task.date,
-        task.head,
-        task.companyName,
-        task.modeOfCall,
-        task.idNumber,
-        task.projectName,
-        task.complaintNumber,
-        task.complaintDate,
-        task.beneficiaryName,
-        task.contactNumber,
-        task.village,
-        task.block,
-        task.district,
-        task.product,
-        task.make,
-        task.systemVoltage,
-        task.rating,
-        task.qty,
-        task.acDc,
-        task.priority,
-        task.insuranceType,
-        task.natureOfComplaint,
-        "", // Column W (empty in original data)
-        "", // Column X (empty in original data)
-        "", // Column Y (empty in original data)
-        "", // Column Z (empty in original data)
-        editedData.technicianName || task.technicianName,
-        editedData.technicianContact || task.technicianContact,
-        editedData.assigneeName || task.assigneeName,
-        editedData.assigneeWhatsApp || task.assigneeWhatsApp,
-        editedData.location || task.location,
-        editedData.complaintDetails || task.complaintDetails,
-        editedData.expectedCompletionDate || task.expectedCompletionDate,
-        editedData.notesForTechnician || task.notesForTechnician
-      ];
+      const updates = {};
+      
+      if (editedData.technicianName !== undefined) {
+        updates['technicianName'] = editedData.technicianName;
+      }
+      if (editedData.technicianContact !== undefined) {
+        updates['technicianContact'] = editedData.technicianContact;
+      }
+      if (editedData.assigneeName !== undefined) {
+        updates['assigneeName'] = editedData.assigneeName;
+      }
+      if (editedData.assigneeWhatsApp !== undefined) {
+        updates['assigneeWhatsApp'] = editedData.assigneeWhatsApp;
+      }
+      if (editedData.location !== undefined) {
+        updates['location'] = editedData.location;
+      }
+      if (editedData.complaintDetails !== undefined) {
+        updates['complaintDetails'] = editedData.complaintDetails;
+      }
+      if (editedData.expectedCompletionDate !== undefined) {
+        updates['expectedCompletionDate'] = editedData.expectedCompletionDate;
+      }
+      if (editedData.notesForTechnician !== undefined) {
+        updates['notesForTechnician'] = editedData.notesForTechnician;
+      }
 
-      // Send update to Google Sheets
       const formData = new FormData();
-      formData.append('action', 'updateRow');
+      formData.append('action', 'updateSpecificColumns');
       formData.append('sheetName', 'FMS');
-      formData.append('rowNumber', task.rowIndex);
-      formData.append('rowData', JSON.stringify(rowData));
+      formData.append('complaintNumber', task.complaintNumber);
+      formData.append('updates', JSON.stringify(updates));
 
       const response = await fetch(GOOGLE_SCRIPT_URL, {
         method: 'POST',
@@ -441,20 +442,36 @@ function TrackerPendingTable() {
         throw new Error(result.error || 'Failed to update row');
       }
 
-      // Update local state
       setPendingTasks(prev => prev.map(t => 
         t.id === task.id ? {
           ...t,
-          technicianName: editedData.technicianName || t.technicianName,
-          technicianContact: editedData.technicianContact || t.technicianContact,
-          assigneeName: editedData.assigneeName || t.assigneeName,
-          assigneeWhatsApp: editedData.assigneeWhatsApp || t.assigneeWhatsApp,
-          location: editedData.location || t.location,
-          complaintDetails: editedData.complaintDetails || t.complaintDetails,
-          expectedCompletionDate: editedData.expectedCompletionDate || t.expectedCompletionDate,
-          notesForTechnician: editedData.notesForTechnician || t.notesForTechnician
+          ...updates
         } : t
       ));
+
+      // Refetch technician options after update
+      const fetchTechnicianOptions = async () => {
+        try {
+          const sheetUrl = "https://docs.google.com/spreadsheets/d/1Vn295WmY0o6qh03rYzpCISGfMgT5RViXdYyd_ZNQ2p8/gviz/tq?tqx=out:json&sheet=master"
+          const response = await fetch(sheetUrl)
+          const text = await response.text()
+          
+          const jsonStart = text.indexOf('{')
+          const jsonEnd = text.lastIndexOf('}') + 1
+          const jsonData = text.substring(jsonStart, jsonEnd)
+          
+          const data = JSON.parse(jsonData)
+          
+          if (data && data.table && data.table.rows) {
+            const options = data.table.rows.slice(2).map(row => row.c[5]?.v || "").filter(name => name && name.trim() !== "")
+            setTechnicianOptions([...new Set(options)].sort())
+          }
+        } catch (err) {
+          console.error("Error fetching technician options:", err)
+          setTechnicianOptions([])
+        }
+      };
+      await fetchTechnicianOptions(); // Ensure this runs before proceeding
 
       setEditingRow(null);
       setEditedData({});
@@ -877,7 +894,6 @@ function TrackerPendingTable() {
                     <h3 className="text-lg leading-6 font-medium text-gray-900">Update Task: {selectedTaskData?.complaintNumber || selectedTask}</h3>
                     <div className="mt-4 max-h-[60vh] overflow-auto">
                       <div className="grid gap-4">
-                        {/* Technician Name Dropdown */}
                         <div className="space-y-2">
                           <label htmlFor="technicianName" className="block text-sm font-medium text-gray-700">
                             Technician Name *
@@ -894,20 +910,13 @@ function TrackerPendingTable() {
                             />
                             {showTechnicianDropdown && (
                               <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md border border-gray-300 max-h-60 overflow-auto">
-                                {technicianOptions.map((group, groupIndex) => (
-                                  <div key={groupIndex}>
-                                    <div className="px-3 py-1 bg-gray-100 text-sm font-medium text-gray-700">
-                                      {group.group}
-                                    </div>
-                                    {group.names.map((name, nameIndex) => (
-                                      <div
-                                        key={nameIndex}
-                                        className="px-3 py-2 hover:bg-blue-50 cursor-pointer"
-                                        onClick={() => handleTechnicianSelect(name)}
-                                      >
-                                        {name}
-                                      </div>
-                                    ))}
+                                {technicianOptions.map((name, index) => (
+                                  <div
+                                    key={index}
+                                    className="px-3 py-2 hover:bg-blue-50 cursor-pointer"
+                                    onClick={() => handleTechnicianSelect(name)}
+                                  >
+                                    {name}
                                   </div>
                                 ))}
                               </div>
