@@ -36,7 +36,7 @@ function DashboardStats() {
         // Process the data
         if (parsedData && parsedData.table && parsedData.table.rows) {
           // Skip the header rows (first 5 rows) - this gives us data starting from row 6
-          setData(parsedData.table.rows.slice(3))
+          setData(parsedData.table.rows.slice(1))
         } else {
           throw new Error("No data found in the sheet")
         }
