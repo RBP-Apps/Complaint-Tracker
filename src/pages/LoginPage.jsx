@@ -46,7 +46,6 @@ function LoginPage() {
             break;
           }
         }
-        
         if (authenticated) {
           // Store user permissions and credentials in localStorage
           localStorage.setItem('userPermissions', userPermission); 
@@ -55,7 +54,9 @@ function LoginPage() {
           // Determine which page to redirect to based on permissions
           let redirectPath = "/dashboard"; // Default redirect path
           
-          if (userPermission && userPermission.toLowerCase() !== "all") {
+          if (username.startsWith("Tech")) {
+            redirectPath = "/dashboard/tracker";
+          } else if (userPermission && userPermission.toLowerCase() !== "all") {
             // Parse permissions
             const permissions = userPermission.split(',').map(p => p.trim().toLowerCase());
             
