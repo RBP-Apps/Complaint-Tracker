@@ -111,8 +111,10 @@ function DashboardLayout({ children }) {
     },
   ]
 
-  // Filter nav items based on user permissions
-  const navItems = allNavItems.filter((item) => hasPermission(item.permissionKey))
+  // Filter nav items based on user permissions or username condition
+  const navItems = username.toLowerCase().startsWith('tech')
+    ? allNavItems.filter((item) => item.name === 'Tracker' || item.name === 'Petrol Expenses')
+    : allNavItems.filter((item) => hasPermission(item.permissionKey))
 
   const handleLogout = () => {
     localStorage.removeItem("userPermissions")

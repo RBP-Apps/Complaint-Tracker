@@ -7,6 +7,16 @@ function TrackerHistoryTable() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
   const [searchTerm, setSearchTerm] = useState("")
+  const [username, setUsername] = useState("")
+
+  useEffect(() => {
+    const u = localStorage.getItem("username") || ""
+    setUsername(u)
+  }, [])
+
+  const techDisplayName = (username || "").toLowerCase().startsWith("tech")
+    ? (username || "").substring(4).trim()
+    : ""
 
   // Function to format date string to dd/mm/yyyy
 // Function to format date string to dd/mm/yyyy
@@ -166,17 +176,24 @@ const formatDateString = (dateValue) => {
     fetchHistoryData()
   }, [])
 
-  // Filter data based on search term
+  // Filter data based on Tech user and search term
   const filteredData = historyData.filter(
-    (record) =>
-      record.columnA?.toString().toLowerCase().includes(searchTerm.toLowerCase()) ||
-      record.columnB?.toString().toLowerCase().includes(searchTerm.toLowerCase()) ||
-      record.columnC?.toString().toLowerCase().includes(searchTerm.toLowerCase())
+    (record) => {
+      const matchesSearch = !searchTerm || (
+        record.columnA?.toString().toLowerCase().includes(searchTerm.toLowerCase()) ||
+        record.columnB?.toString().toLowerCase().includes(searchTerm.toLowerCase()) ||
+        record.columnC?.toString().toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      const matchesTechUser = !techDisplayName || (
+        (record.columnU || "").toString().toLowerCase().includes(techDisplayName.toLowerCase())
+      )
+      return matchesSearch && matchesTechUser
+    }
   )
 
   if (isLoading) {
     return (
-      <div className="p-4 flex justify-center items-center h-64">
+      <div className="flex justify-center items-center p-4 h-64">
         <div className="text-gray-500">Loading tracker history data...</div>
       </div>
     )
@@ -184,7 +201,7 @@ const formatDateString = (dateValue) => {
 
   if (error) {
     return (
-      <div className="p-4 flex justify-center items-center h-64">
+      <div className="flex justify-center items-center p-4 h-64">
         <div className="text-red-500">Error loading data: {error}</div>
       </div>
     )
@@ -192,7 +209,7 @@ const formatDateString = (dateValue) => {
 
   return (
     <div className="p-4">
-      <div className="mb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="flex flex-col gap-4 justify-between items-start mb-4 md:flex-row md:items-center">
         <h1 className="text-xl font-bold">Tracker History</h1>
         
         <div className="relative">
@@ -218,34 +235,35 @@ const formatDateString = (dateValue) => {
       <div className="overflow-x-auto -mx-4 sm:mx-0">
         <div className="inline-block min-w-full align-middle">
           {filteredData.length === 0 ? (
-            <div className="text-center p-6 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="p-6 text-center bg-gray-50 rounded-lg border border-gray-200">
               <p className="text-gray-500">No history data found</p>
             </div>
           ) : (
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-100">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Timestamp</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Complaint Id</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Date Of Complete</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Tracker Status</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Remarks</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Upload Documents</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Geotag Photo</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Beneficiary Name</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Contact Number</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Village</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Block</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">District</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Product</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Make</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">System Voltage</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Rating</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Qty</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">AC/DC</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Priority</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Insurance Type</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Nature Of Complaint</th>
+                  <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase whitespace-nowrap">Timestamp</th>
+                  <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase whitespace-nowrap">Complaint Id</th>
+                  <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase whitespace-nowrap">Date Of Complete</th>
+                  <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase whitespace-nowrap">Tracker Status</th>
+                  <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase whitespace-nowrap">Remarks</th>
+                  <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase whitespace-nowrap">Upload Documents</th>
+                  <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase whitespace-nowrap">Geotag Photo</th>
+                  <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase whitespace-nowrap">Beneficiary Name</th>
+                  <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase whitespace-nowrap">Contact Number</th>
+                  <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase whitespace-nowrap">Village</th>
+                  <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase whitespace-nowrap">Block</th>
+                  <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase whitespace-nowrap">District</th>
+                  <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase whitespace-nowrap">Product</th>
+                  <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase whitespace-nowrap">Make</th>
+                  <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase whitespace-nowrap">System Voltage</th>
+                  <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase whitespace-nowrap">Rating</th>
+                  <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase whitespace-nowrap">Qty</th>
+                  <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase whitespace-nowrap">AC/DC</th>
+                  <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase whitespace-nowrap">Priority</th>
+                  <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase whitespace-nowrap">Insurance Type</th>
+                  <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase whitespace-nowrap">Nature Of Complaint</th>
+                  <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase whitespace-nowrap">Technician Name</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">

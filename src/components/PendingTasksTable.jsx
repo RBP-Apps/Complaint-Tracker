@@ -27,6 +27,16 @@ function TrackerPendingTable() {
   const [editingRow, setEditingRow] = useState(null)
   const [editedData, setEditedData] = useState({})
   const [technicianOptions, setTechnicianOptions] = useState([])
+  const [username, setUsername] = useState("")
+
+  useEffect(() => {
+    const u = localStorage.getItem("username") || ""
+    setUsername(u)
+  }, [])
+
+  const techDisplayName = (username || "").toLowerCase().startsWith("tech")
+    ? (username || "").substring(4).trim()
+    : ""
 
   const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkBpcYMupYQi6gSURT_tqDfeQrGtbS6DwiRvmjw0s2kAIGmHlkjnVJDddXOy0v6ur7rw/exec"
   const DRIVE_FOLDER_ID = "1-H5DWKRV2u_ueqtLX-ISTPvuySGYBLoT"
@@ -568,8 +578,9 @@ function TrackerPendingTable() {
       const matchesCompany = companyFilter === "" || task.companyName === companyFilter
       const matchesModeOfCall = modeOfCallFilter === "" || task.modeOfCall === modeOfCallFilter
       const matchesTechnician = technicianFilter === "" || task.technicianName === technicianFilter
+      const matchesTechUser = !techDisplayName || ((task.technicianName || "").toLowerCase().includes(techDisplayName.toLowerCase()))
       
-      return matchesSearchTerm && matchesCompany && matchesModeOfCall && matchesTechnician
+      return matchesSearchTerm && matchesCompany && matchesModeOfCall && matchesTechnician && matchesTechUser
     }
   )
 
