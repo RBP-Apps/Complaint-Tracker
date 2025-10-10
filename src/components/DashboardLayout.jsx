@@ -124,12 +124,16 @@ function DashboardLayout({ children }) {
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full bg-gray-800 text-white">
-      <div className="flex h-16 items-center justify-center border-b border-gray-700">
-        <div className="bg-gray-700 p-2 rounded-full mr-2">
-          <Clipboard className="h-6 w-6" />
-        </div>
-        <h1 className="text-xl font-bold">Complaints Tracker</h1>
-      </div>
+   <div className="flex h-16 items-center border-b border-gray-700 px-4">
+  <div className="bg-gray-700 p-1 rounded-full mr-3 flex items-center justify-center">
+    <img
+      src="/RBP-Logo.jpg"
+      alt="RBP logo"
+      className=" object-contain rounded-full shadow-md"
+    />
+  </div>
+  <h1 className="text-xl font-bold">Complaints Tracker</h1>
+</div>
 
       <div className="p-4 border-b border-gray-700">
         <div className="flex items-center gap-3">
