@@ -198,55 +198,40 @@ function PendingAssignmentsTable() {
 
     fetchComplaints()
   }, [])
-
-  // Handle assigning compl// ... (keep all existing imports and initial code)
 const handleAssignComplaint = async (complaintId, assigneeData) => {
   try {
     console.log("Starting assignment for complaint:", complaintId);
     
-    // Find the complaint
-    const complaint = pendingComplaints.find(c => 
-      c.complaintNumber?.toString().trim() === complaintId.toString().trim()
+    // ✅ STEP 1: Find the actual row number from backend
+    const findRowResponse = await fetch(
+      `${GOOGLE_SCRIPT_URL}?action=findComplaintRow&complaintNo=${encodeURIComponent(complaintId)}`
     );
-
-    if (!complaint) throw new Error(`Complaint ${complaintId} not found`);
-
-    // Prepare complete data with all required fields
+    const findRowResult = await findRowResponse.json();
+    
+    if (!findRowResult.success) {
+      throw new Error(findRowResult.error);
+    }
+    
+    const actualRowNumber = findRowResult.rowNumber;
+    console.log("Found actual row number:", actualRowNumber);
+    
+    // ✅ STEP 2: Now assign with the correct row number
     const assignmentData = {
-      // Column Z (26) - Actual timestamp (auto-filled)
       actualTimestamp: new Date().toISOString(),
-      
-      // Column AB (28) - Technician Name
       technicianName: assigneeData.technicianName || "",
-      
-      // Column AC (29) - Technician Contact
       technicianContact: assigneeData.technicianContact || "",
-      
-      // Column AD (30) - Assignee Name (fixed)
-      assigneeName: assigneeData.assigneeName || "", // Default to MOTI if empty
-      
-      // Column AE (31) - Assignee WhatsApp
+      assigneeName: assigneeData.assigneeName || "",
       assigneeWhatsapp: assigneeData.assigneeWhatsapp || "",
-      
-      // Column AF (32) - Location
       location: assigneeData.location || "",
-      
-      // Column AG (33) - Complaint Details
       complaintDetails: assigneeData.complaintDetails || "",
-      
-      // Column AH (34) - Expected Completion Date (new)
       expectedCompletionDate: assigneeData.expectedCompletionDate || "",
-      
-      // Column AI (35) - Notes for Technician (new)
       notesForTechnician: assigneeData.notesForTechnician || ""
     };
-
-    console.log("Complete assignment data:", assignmentData);
 
     const formData = new FormData();
     formData.append('sheetName', 'FMS');
     formData.append('action', 'assignComplaint');
-    formData.append('rowNumber', complaint.actualRowIndex.toString());
+    formData.append('rowNumber', actualRowNumber.toString());
     formData.append('assigneeData', JSON.stringify(assignmentData));
 
     const response = await fetch(GOOGLE_SCRIPT_URL, {
@@ -259,9 +244,8 @@ const handleAssignComplaint = async (complaintId, assigneeData) => {
     const result = await response.json();
     if (!result.success) throw new Error(result.error || "Assignment failed");
 
-    // Update UI
     setPendingComplaints(prev => 
-      prev.filter(c => c.complaintNumber !== complaintId)
+      prev.filter(c => c.complaintNo !== complaintId)
     );
     setIsDialogOpen(false);
     alert(`Complaint ${complaintId} assigned successfully!`);
@@ -346,26 +330,25 @@ const handleAssignComplaint = async (complaintId, assigneeData) => {
   )
 
   // Handle opening the assignment dialog
-  const handleOpenAssignDialog = (complaint) => {
-    // Use ONLY complaintNumber (Column I - "Complaint Number")
-    const complaintId = complaint.complaintNumber;
-    
-    if (!complaintId || complaintId.toString().trim() === "") {
-      alert("❌ This complaint does not have a valid Complaint Number. Cannot assign.");
-      return;
-    }
-    
-    console.log("Opening assignment dialog for Complaint Number:", complaintId);
-    console.log("Complaint data:", {
-      complaintNumber: complaint.complaintNumber,
-      actualRowIndex: complaint.actualRowIndex
-    });
-    
-    setSelectedComplaint(complaintId);
-    setSelectedComplaintData(complaint);
-    setIsDialogOpen(true);
-  };
-
+ const handleOpenAssignDialog = (complaint) => {
+  // ✅ CHANGED: Use complaintNo (Column B) instead of complaintNumber
+  const complaintId = complaint.complaintNo;
+  
+  if (!complaintId || complaintId.toString().trim() === "") {
+    alert("❌ This complaint does not have a valid Complaint No. Cannot assign.");
+    return;
+  }
+  
+  console.log("Opening assignment dialog for Complaint No:", complaintId);
+  console.log("Complaint data:", {
+    complaintNo: complaint.complaintNo,
+    actualRowIndex: complaint.actualRowIndex
+  });
+  
+  setSelectedComplaint(complaintId);
+  setSelectedComplaintData(complaint);
+  setIsDialogOpen(true);
+};
   if (isLoading) {
     return (
       <div className="p-4 flex justify-center items-center h-64">
