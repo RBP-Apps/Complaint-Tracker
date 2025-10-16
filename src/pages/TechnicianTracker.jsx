@@ -2776,6 +2776,9 @@ useEffect(() => {
                           Actions
                         </th>
                         <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+  Complaint No.
+</th>
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                           Complaint Number
                         </th>
                         <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
@@ -2820,9 +2823,10 @@ useEffect(() => {
                       </>
                     ) : (
                       <>
-                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                          Complaint ID
-                        </th>
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+      Complaint No.
+    </th>
+                       
                         <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                           Beneficiary Name
                         </th>
@@ -2908,6 +2912,7 @@ useEffect(() => {
                               Update
                             </button>
                           </td>
+                           <td className="px-3 py-4 whitespace-nowrap text-sm">{task.complaintNo}</td>
                           <td className="px-3 py-4 whitespace-nowrap text-sm">{task.complaintNumber}</td>
                           <td className="px-3 py-4 whitespace-nowrap text-sm font-medium">{task.beneficiaryName}</td>
                           <td className="px-3 py-4 whitespace-nowrap text-sm">{task.contactNumber}</td>
