@@ -41,7 +41,7 @@ function PetrolExpensesPage() {
 
   // Google Apps Script Web App URL - Replace with your actual deployed script URL
   const GOOGLE_SCRIPT_URL =
-    "https://script.google.com/macros/s/AKfycbzkBpcYMupYQi6gSURT_tqDfeQrGtbS6DwiRvmjw0s2kAIGmHlkjnVJDddXOy0v6ur7rw/exec";
+    "https://script.google.com/a/macros/rbpindia.com/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec";
 
   // Function to format date string to dd/mm/yyyy
   const formatDateString = (dateValue) => {
@@ -109,7 +109,7 @@ function PetrolExpensesPage() {
     try {
       // Fetch the Master sheet using Google Sheets API directly
       const sheetUrl =
-        "https://docs.google.com/spreadsheets/d/1Vn295WmY0o6qh03rYzpCISGfMgT5RViXdYyd_ZNQ2p8/gviz/tq?tqx=out:json&sheet=Master";
+        "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=Master";
       const response = await fetch(sheetUrl);
       const text = await response.text();
 
@@ -159,7 +159,7 @@ function PetrolExpensesPage() {
       try {
         // Fetch the Petrol Expenses sheet using Google Sheets API directly
         const sheetUrl =
-          "https://docs.google.com/spreadsheets/d/1Vn295WmY0o6qh03rYzpCISGfMgT5RViXdYyd_ZNQ2p8/gviz/tq?tqx=out:json&sheet=Petrol%20Expenses";
+          "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=Petrol%20Expenses";
         const response = await fetch(sheetUrl);
         const text = await response.text();
 

@@ -76,27 +76,14 @@ const allNavItems = [
     icon: FileText,
     permissionKey: "new complaint",
   },
+
   {
-    name: "Assign Complaint",
-    href: "/dashboard/assign-complaint",
-    icon: UserCheck,
-    badgeColor: "bg-blue-500 hover:bg-blue-600",
-    permissionKey: "assign complaint",
+    name: "Tracker",
+    href: "/dashboard/tracker",
+    icon: FileText,
+    permissionKey: "tracker",
   },
-  {
-    name: "Technician Dashboard",
-    href: "/dashboard/technician-dasboard",
-    icon: Tool,
-    badgeColor: "bg-blue-500 hover:bg-blue-600",
-    permissionKey: "technician dashboard",
-  },
-  {
-    name: "Technician Tracker",
-    href: "/dashboard/technician-tracker",
-    icon: MapPin,
-    badgeColor: "bg-blue-500 hover:bg-blue-600",
-    permissionKey: "technician tracker",
-  },
+
   {
     name: "Approved",
     href: "/dashboard/approved",
@@ -104,20 +91,43 @@ const allNavItems = [
     badgeColor: "bg-blue-500 hover:bg-blue-600",
     permissionKey: "approved",
   },
-  {
-    name: "Petrol Expenses",
-    href: "/dashboard/petrol-expenses",
-    icon: DollarSign,
-    badgeColor: "bg-green-500 hover:bg-green-600",
-    permissionKey: "petrol expenses",
-  },
-  {
-    name: "Report",
-    href: "/dashboard/Report",
-    icon: BarChart,
-    badgeColor: "bg-blue-500 hover:bg-blue-600",
-    permissionKey: "assign complaint",
-  },
+
+  // {
+  //   name: "Assign Complaint",
+  //   href: "/dashboard/assign-complaint",
+  //   icon: UserCheck,
+  //   badgeColor: "bg-blue-500 hover:bg-blue-600",
+  //   permissionKey: "assign complaint",
+  // },
+  // {
+  //   name: "Technician Dashboard",
+  //   href: "/dashboard/technician-dasboard",
+  //   icon: Tool,
+  //   badgeColor: "bg-blue-500 hover:bg-blue-600",
+  //   permissionKey: "technician dashboard",
+  // },
+  // {
+  //   name: "Technician Tracker",
+  //   href: "/dashboard/technician-tracker",
+  //   icon: MapPin,
+  //   badgeColor: "bg-blue-500 hover:bg-blue-600",
+  //   permissionKey: "technician tracker",
+  // },
+  
+  // {
+  //   name: "Petrol Expenses",
+  //   href: "/dashboard/petrol-expenses",
+  //   icon: DollarSign,
+  //   badgeColor: "bg-green-500 hover:bg-green-600",
+  //   permissionKey: "petrol expenses",
+  // },
+  // {
+  //   name: "Report",
+  //   href: "/dashboard/Report",
+  //   icon: BarChart,
+  //   badgeColor: "bg-blue-500 hover:bg-blue-600",
+  //   permissionKey: "assign complaint",
+  // },
 ]
 
 

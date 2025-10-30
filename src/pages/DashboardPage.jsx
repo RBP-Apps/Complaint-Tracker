@@ -17,16 +17,16 @@ function DashboardPage() {
 
         <DashboardStats />
 
-        <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
+        {/* <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
           <div className="lg:col-span-2">
             <DashboardCharts />
           </div>
-          <div className="space-y-6">
+          <div className="space-y-6"> */}
             {/* <QuickActions /> */}
-            <RecentComplaints />
-          </div>
-        </div>
-        <ComplaintsByRegion />
+            {/* <RecentComplaints /> */}
+          {/* </div> */}
+        {/* </div> */}
+        {/* // <ComplaintsByRegion /> */}
         <DasbhoardPendingTask />
       </div>
     </DashboardLayout>

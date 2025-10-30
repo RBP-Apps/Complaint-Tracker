@@ -16,7 +16,7 @@ function PendingDocumentVerificationTable() {
   const DRIVE_FOLDER_ID = "1XqVaevdcDk5xPqdC6qY8mPOsGwdPsGme"
   // Google Apps Script Web App URL
   const GOOGLE_SCRIPT_URL =
-    "https://script.google.com/macros/s/AKfycbzkBpcYMupYQi6gSURT_tqDfeQrGtbS6DwiRvmjw0s2kAIGmHlkjnVJDddXOy0v6ur7rw/exec"
+    "https://script.google.com/a/macros/rbpindia.com/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec"
 
     const formatDateString = (dateValue) => {
       if (!dateValue) return "";
@@ -72,7 +72,7 @@ function PendingDocumentVerificationTable() {
       try {
         // Fetch the entire sheet using Google Sheets API directly
         const sheetUrl =
-          "https://docs.google.com/spreadsheets/d/1Vn295WmY0o6qh03rYzpCISGfMgT5RViXdYyd_ZNQ2p8/gviz/tq?tqx=out:json&sheet=FMS"
+          "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=FMS"
         const response = await fetch(sheetUrl)
         const text = await response.text()
 

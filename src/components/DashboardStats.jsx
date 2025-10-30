@@ -7,13 +7,29 @@ function DashboardStats() {
   const [data, setData] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [user, setUser] = useState(null)
+  const [userRole, setUserRole] = useState(null)
 
   useEffect(() => {
+    const loggedInUser = localStorage.getItem('username')
+    const loggedInRole = localStorage.getItem('userRole')
+    
+    console.log('DashboardStats - Retrieved from localStorage:', { loggedInUser, loggedInRole })
+    
+    if (loggedInUser) {
+      setUser(loggedInUser)
+    }
+    
+    if (loggedInRole) {
+      setUserRole(loggedInRole)
+    }
+  }, [])
+
+useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading(true)
-        // Fetch the entire sheet using Google Sheets API directly
-        const sheetUrl = "https://docs.google.com/spreadsheets/d/1Vn295WmY0o6qh03rYzpCISGfMgT5RViXdYyd_ZNQ2p8/gviz/tq?tqx=out:json&sheet=FMS"
+        const sheetUrl = "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=FMS"
         const response = await fetch(sheetUrl)
         
         if (!response.ok) {
@@ -22,7 +38,6 @@ function DashboardStats() {
         
         const text = await response.text()
         
-        // Extract the JSON part from the response
         const jsonStart = text.indexOf('{')
         const jsonEnd = text.lastIndexOf('}') + 1
         
@@ -33,10 +48,28 @@ function DashboardStats() {
         const jsonData = text.substring(jsonStart, jsonEnd)
         const parsedData = JSON.parse(jsonData)
         
-        // Process the data
         if (parsedData && parsedData.table && parsedData.table.rows) {
-          // Skip the header rows (first 5 rows) - this gives us data starting from row 6
-          setData(parsedData.table.rows.slice(1))
+          // Get parsedNumHeaders से actual header count
+          const headerCount = parsedData.parsedNumHeaders || 0
+          
+          // Header rows को skip करें
+          const rows = parsedData.table.rows.slice(headerCount)
+          
+          console.log('Raw sheet data:', rows)
+          console.log('Header count:', headerCount)
+          console.log('Data rows after removing headers:', rows.length)
+          console.log('First data row sample:', rows[0])
+          
+          if (rows[0] && rows[0].c) {
+            console.log('Row structure - total columns:', rows[0].c.length)
+            // Print all column values to find the right ones
+            rows[0].c.forEach((col, index) => {
+              if (col && col.v !== null && col.v !== "") {
+                console.log(`Column ${index} (${String.fromCharCode(65 + index)}):`, col.v)
+              }
+            })
+          }
+          setData(rows)
         } else {
           throw new Error("No data found in the sheet")
         }
@@ -51,58 +84,91 @@ function DashboardStats() {
     fetchData()
   }, [])
 
-  // Calculate stats from sheet data - all calculations now count data starting from row 6
-  const totalComplaints = data ? data.length : 0
 
-  // Pending complaints: column AJ is not null and column AK is null
-  const pendingComplaints = data
-    ? data.filter(
-        (row) =>
-          row.c[35] &&
-          row.c[35].v !== null &&
-          row.c[35].v !== "" &&
-          (!row.c[36] || row.c[36].v === null || row.c[36].v === ""),
+  // Role-based filtering function
+  const getFilteredDataByRole = () => {
+    if (!data) return [];
+    
+    console.log('DashboardStats - Filtering with user:', user, 'role:', userRole)
+    
+    // If admin, show all data
+    if (userRole && userRole.toLowerCase() === 'admin') {
+      console.log('DashboardStats - Admin user, showing all data')
+      return data;
+    }
+    
+    // If user role and has username, filter by technician name
+    if (userRole && userRole.toLowerCase() !== 'admin' && user) {
+      console.log('DashboardStats - User role, filtering by technician name:', user)
+      const filtered = data.filter((row) => {
+        // You need to find the correct technician column index
+        const technicianName = row.c[19]?.v || "";
+        const match = technicianName === user;
+        return match;
+      });
+      console.log('DashboardStats - Filtered data count:', filtered.length)
+      return filtered;
+    }
+    
+    // If user role but no username, show empty
+    if (userRole && userRole.toLowerCase() !== 'admin' && !user) {
+      console.log('DashboardStats - User role but no username, showing empty')
+      return [];
+    }
+    
+    // Default: show all data (when no role is set)
+    console.log('DashboardStats - No role set, showing all data')
+    return data;
+  }
+
+  // Get filtered data based on role
+  const filteredData = getFilteredDataByRole()
+
+  // Calculate stats from filtered data
+  const totalComplaints = filteredData ? filteredData.length : 0
+
+  // For pending complaints, we need to find the correct column for "submitted date" 
+  // Since AJ doesn't exist, let's use a different logic
+  // Check if row has data (any meaningful data in key columns)
+  const pendingComplaints = filteredData
+    ? filteredData.filter(
+        (row) => {
+          const columnZ = row.c[25]?.v;  // Z column status
+          
+          // Check if this row has meaningful data (not all empty)
+          const hasData = row.c.some(cell => cell && cell.v !== null && cell.v !== "");
+          
+          console.log('Pending check - hasData:', hasData, 'Z:', columnZ)
+          
+          // Show as pending if: has data AND (Z is null/empty OR Z is "Reject")
+          const isPending = hasData && (!columnZ || columnZ === null || columnZ === "" || columnZ === "Reject");
+          
+          return isPending;
+        }
       ).length
     : 0
 
-  // Completed complaints: both columns AJ and AK are not null
-  const completedComplaints = data
-    ? data.filter(
-        (row) =>
-          row.c[35] &&
-          row.c[35].v !== null &&
-          row.c[35].v !== "" &&
-          row.c[36] &&
-          row.c[36].v !== null &&
-          row.c[36].v !== "",
+  // For completed complaints
+  const completedComplaints = filteredData
+    ? filteredData.filter(
+        (row) => {
+          const columnZ = row.c[25]?.v;  // Z column status
+          
+          // Check if this row has meaningful data
+          const hasData = row.c.some(cell => cell && cell.v !== null && cell.v !== "");
+          
+          console.log('Completed check - hasData:', hasData, 'Z:', columnZ)
+          
+          // Show as completed if: has data AND Z is "Approved"
+          const isCompleted = hasData && columnZ === "Approved";
+          
+          return isCompleted;
+        }
       ).length
     : 0
 
-  // Verified complaints: both columns 49 and 50 are not null (have values)
-  const verifiedComplaints = data
-    ? data.filter(
-        (row) =>
-          row.c[49] &&
-          row.c[49].v !== null &&
-          row.c[49].v !== "" &&
-          row.c[50] &&
-          row.c[50].v !== null &&
-          row.c[50].v !== "",
-      ).length
-    : 0
+  console.log('Final stats:', { totalComplaints, pendingComplaints, completedComplaints })
 
-  // Total Insurances: count rows where column 40 (index 39) has value "Inssurances"
-  const totalInsurance = data
-    ? data.filter(
-        (row) =>
-          row.c[39] &&
-          row.c[39].v !== null &&
-          row.c[39].v !== "" &&
-          row.c[39].v === "Insurance"
-      ).length
-    : 0
-
-  // Mock change percentages (in a real app, you'd calculate these from historical data)
   const stats = [
     {
       title: "Total Complaints",
@@ -115,7 +181,7 @@ function DashboardStats() {
       textColor: "text-blue-600",
     },
     {
-      title: "Pending Complaints",
+      title: "Pending Complaints", 
       value: isLoading ? "-" : pendingComplaints,
       change: "-5%",
       trend: "down",
@@ -134,20 +200,10 @@ function DashboardStats() {
       lightColor: "bg-blue-50",
       textColor: "text-blue-600",
     },
-    {
-      title: "Total Insurance",
-      value: isLoading ? "-" : totalInsurance,
-      change: "+25%",
-      trend: "up",
-      icon: Shield,
-      color: "bg-blue-600",
-      lightColor: "bg-blue-50",
-      textColor: "text-blue-600",
-    },
   ]
 
   return (
-    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
       {stats.map((stat, index) => (
         <div key={index} className="rounded-lg border-0 shadow-lg overflow-hidden bg-white">
           <div className={`${stat.color} rounded-t-lg p-4 text-white`}>

@@ -21,110 +21,9 @@ function ComplaintTracker() {
   const [checked, setChecked] = useState("")
   const [remark, setRemark] = useState("")
 
-  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkBpcYMupYQi6gSURT_tqDfeQrGtbS6DwiRvmjw0s2kAIGmHlkjnVJDddXOy0v6ur7rw/exec"
+  const GOOGLE_SCRIPT_URL = "https://script.google.com/a/macros/rbpindia.com/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec"
 
-//   useEffect(() => {
-//     const fetchTasks = async () => {
-//       setIsLoading(true)
-//       setError(null)
-      
-//       try {
-//         console.log("Fetching Tracker sheet data...")
-//         const trackerSheetUrl = "https://docs.google.com/spreadsheets/d/1Vn295WmY0o6qh03rYzpCISGfMgT5RViXdYyd_ZNQ2p8/gviz/tq?tqx=out:json&sheet=Tracker"
-//         const response = await fetch(trackerSheetUrl)
-//         const text = await response.text()
-//         console.log("Raw response received, length:", text.length)
-        
-//         const jsonStart = text.indexOf('{')
-//         const jsonEnd = text.lastIndexOf('}') + 1
-//         const jsonData = text.substring(jsonStart, jsonEnd)
-        
-//         const data = JSON.parse(jsonData)
-//         console.log("Parsed data:", data)
-        
-//         const pendingData = []
-//         const historyData = []
-        
-//         if (data && data.table && data.table.rows) {
-//           console.log("Total rows found:", data.table.rows.length)
-          
-//          data.table.rows.forEach((row, index) => {
-//   if (row.c && row.c.length > 0) {
-//     // Header rows को skip करें - only first row
-//     const firstCell = row.c[0] ? row.c[0].v : ""
-//     if (index === 0 || firstCell === "Timestamp") {
-//       console.log("Skipping header row:", index)
-//       return
-//     }
-    
-//     // Column R (index 17) और Column S (index 18) check करें
-//     const columnR = row.c[17] ? row.c[17].v : null
-//     const columnS = row.c[18] ? row.c[18].v : null
-    
-//     console.log(`Row ${index}: Column R = "${columnR}", Column S = "${columnS}"`)
-    
-//     const task = {
-//       id: row.c[1] ? row.c[1].v : `TRACK-${index + 1}`,
-//       serialNo: row.c[1] ? row.c[1].v : "",
-//       complaintId: row.c[2] ? row.c[2].v : "",
-//       technicianName: row.c[3] ? row.c[3].v : "",
-//       beneficiaryName: row.c[4] ? row.c[4].v : "",
-//       contactNumber: row.c[5] ? row.c[5].v : "",
-//       village: row.c[6] ? row.c[6].v : "",
-//       block: row.c[7] ? row.c[7].v : "",
-//       district: row.c[8] ? row.c[8].v : "",
-//       product: row.c[9] ? row.c[9].v : "",
-//       make: row.c[10] ? row.c[10].v : "",
-//       systemVoltage: row.c[11] ? row.c[11].v : "",
-//       natureOfComplaint: row.c[12] ? row.c[12].v : "",
-//       uploadDocuments: row.c[13] ? row.c[13].v : "",
-//       geotagPhoto: row.c[14] ? row.c[14].v : "",
-//       remarks: row.c[15] ? row.c[15].v : "",
-//       trackerStatus: row.c[16] ? row.c[16].v : "",
-//       assigneeName: columnR,
-//       checked: columnS,
-//       remark: row.c[19] ? row.c[19].v : "",
-//       rowIndex: index + 1
-//     }
-    
-//     // Simplified logic - check only Column R and S values
-//     const hasColumnR = columnR !== null && columnR !== "" && columnR !== undefined
-//     const hasColumnS = columnS !== null && columnS !== "" && columnS !== undefined
-    
-//     if (hasColumnR && !hasColumnS) {
-//       console.log(`Adding to pending: Row ${index}`)
-//       pendingData.push(task)
-//     } else if (hasColumnR && hasColumnS) {
-//       console.log(`Adding to history: Row ${index}`)
-//       historyData.push(task)
-//     } else {
-//       console.log(`Skipping row ${index}: Column R = "${columnR}", Column S = "${columnS}"`)
-//     }
-//   }
-// })
-//         }
-        
-//         console.log("Final pending data:", pendingData.length)
-//         console.log("Final history data:", historyData.length)
-        
-//         setPendingTasks(pendingData)
-//         setHistoryTasks(historyData)
-        
-//       } catch (err) {
-//         console.error("Error fetching tasks data:", err)
-//         setError(err.message)
-//         setPendingTasks([])
-//         setHistoryTasks([])
-//       } finally {
-//         setIsLoading(false)
-//       }
-//     }
-
-//     fetchTasks()
-//   }, [])
-
-
-useEffect(() => {
+  useEffect(() => {
   const fetchTasks = async () => {
     setIsLoading(true)
     setError(null)
@@ -132,7 +31,7 @@ useEffect(() => {
     try {
       console.log("%c[DEBUG] Step 1: Fetching Tracker sheet data...", "color: cyan")
       const trackerSheetUrl =
-        "https://docs.google.com/spreadsheets/d/1Vn295WmY0o6qh03rYzpCISGfMgT5RViXdYyd_ZNQ2p8/gviz/tq?tqx=out:json&sheet=Tracker"
+        "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=Tracker"
 
       const response = await fetch(trackerSheetUrl)
       const text = await response.text()
@@ -155,48 +54,60 @@ useEffect(() => {
 
         data.table.rows.forEach((row, index) => {
           if (row.c && row.c.length > 0) {
-            // const firstCell = row.c[0]?.v || ""
-            // if (index === 0 || firstCell === "Timestamp") {
-            //   console.log("%cSkipping header row " + index, "color: gray")
-            //   return
-            // }
+            // Skip header row if needed
+            if (index === 0) {
+              const firstCell = row.c[0]?.v || ""
+              if (firstCell === "Timestamp" || firstCell.toString().toLowerCase().includes("timestamp")) {
+                console.log("%cSkipping header row " + index, "color: gray")
+                return
+              }
+            }
 
-            const columnR = row.c[17]?.v || null
-            const columnS = row.c[18]?.v || null
+            // NEW LOGIC: Column V (index 21) and Column W (index 22)
+            const columnV = row.c[21]?.v || null  // Column V
+            const columnW = row.c[22]?.v || null  // Column W
+            const columnX = row.c[23]?.v || null  // Column X (Checked)
+            const columnY = row.c[24]?.v || null  // Column Y (Remark)
 
-            console.log(`%cRow ${index}: R="${columnR}" S="${columnS}"`, "color: violet")
+            console.log(`%cRow ${index}: V="${columnV}" W="${columnW}" X="${columnX}" Y="${columnY}"`, "color: violet")
 
             const task = {
               id: row.c[1]?.v || `TRACK-${index}`,
               serialNo: row.c[1]?.v || "",
               complaintId: row.c[2]?.v || "",
               technicianName: row.c[3]?.v || "",
-              beneficiaryName: row.c[4]?.v || "",
-              contactNumber: row.c[5]?.v || "",
-              village: row.c[6]?.v || "",
-              block: row.c[7]?.v || "",
-              district: row.c[8]?.v || "",
-              product: row.c[9]?.v || "",
-              make: row.c[10]?.v || "",
-              systemVoltage: row.c[11]?.v || "",
-              natureOfComplaint: row.c[12]?.v || "",
-              uploadDocuments: row.c[13]?.v || "",
-              geotagPhoto: row.c[14]?.v || "",
-              remarks: row.c[15]?.v || "",
-              trackerStatus: row.c[16]?.v || "",
-              assigneeName: columnR,
-              checked: columnS,
-              remark: row.c[19]?.v || "",
+              technicianContact: row.c[4]?.v || "",
+              beneficiaryName: row.c[5]?.v || "",
+              contactNumber: row.c[6]?.v || "",
+              village: row.c[7]?.v || "",
+              block: row.c[8]?.v || "",
+              district: row.c[9]?.v || "",
+              product: row.c[10]?.v || "",
+              make: row.c[11]?.v || "",
+              systemVoltage: row.c[12]?.v || "",
+              natureOfComplaint: row.c[13]?.v || "",
+              uploadDocuments: row.c[14]?.v || "",
+              geotagPhoto: row.c[15]?.v || "",
+              remarks: row.c[16]?.v || "",
+              trackerStatus: row.c[17]?.v || "",
+              assigneeName: row.c[18]?.v || "",    // Column R
+              plannedDate: row.c[19]?.v || "",     // Column S  
+              // NEW FIELDS
+              columnV: columnV,                    // Column V
+              actualDate: columnW,                 // Column W (Actual Date)
+              checked: columnX,                    // Column X (Checked)
+              remark: columnY,                     // Column Y (Remark)
               rowIndex: index + 1,
             }
 
-            const hasColumnR = columnR !== null && columnR !== ""
-            const hasColumnS = columnS !== null && columnS !== ""
+            // NEW PENDING/HISTORY LOGIC
+            const hasColumnV = columnV !== null && columnV !== ""
+            const hasColumnW = columnW !== null && columnW !== ""
 
-            if (hasColumnR && !hasColumnS) {
+            if (hasColumnV && !hasColumnW) {
               console.log("%c→ Pending:", "color: orange", task)
               pendingData.push(task)
-            } else if (hasColumnR && hasColumnS) {
+            } else if (hasColumnV && hasColumnW) {
               console.log("%c→ History:", "color: lightblue", task)
               historyData.push(task)
             } else {
@@ -209,8 +120,20 @@ useEffect(() => {
       console.log("%c[DEBUG] Step 6: Final Pending Count = " + pendingData.length, "color: orange")
       console.log("%c[DEBUG] Step 7: Final History Count = " + historyData.length, "color: lightblue")
 
-      setPendingTasks(pendingData)
-      setHistoryTasks(historyData)
+      // Remove duplicates based on serialNo
+      const uniquePending = pendingData.filter((task, index, self) =>
+        index === self.findIndex(t => t.serialNo === task.serialNo)
+      )
+      
+      const uniqueHistory = historyData.filter((task, index, self) =>
+        index === self.findIndex(t => t.serialNo === task.serialNo)
+      )
+      
+      console.log("%c[DEBUG] After deduplication: Pending = " + uniquePending.length + ", History = " + uniqueHistory.length, "color: magenta")
+
+      setPendingTasks(uniquePending)
+      setHistoryTasks(uniqueHistory)
+      
     } catch (err) {
       console.error("%c[ERROR] Failed fetching tasks:", "color: red", err)
       setError(err.message)
@@ -225,30 +148,34 @@ useEffect(() => {
   fetchTasks()
 }, [])
 
-
 const handleUpdateTask = async () => {
   setIsSubmitting(true)
   
   try {
-    const currentTasks = pendingTasks
+    const currentTasks = [...pendingTasks] // Create a copy
     const taskIndex = currentTasks.findIndex(t => t.id === selectedTask)
     if (taskIndex === -1) throw new Error("Task not found")
     
-    const task = currentTasks[taskIndex]
+    const task = { ...currentTasks[taskIndex] } // Create a copy of task object
     
     const formData = new FormData()
     formData.append('action', 'updateTrackerRecord')
     formData.append('serialNo', task.serialNo)
-    
-    // ✅ FIXED: Parameter names ko backend ke साथ match करो
-    formData.append('checkedValue', checked) // "Approved" या "Reject"
+    formData.append('checkedValue', checked)
     formData.append('remarkValue', remark || "")
+    
+    let actualDate = ""
+    if (checked === "Approved" || checked === "Reject") {
+      actualDate = new Date().toLocaleDateString('en-GB')
+    }
+    formData.append('actualDate', actualDate)
 
     console.log('Submitting data:', {
       action: 'updateTrackerRecord',
       serialNo: task.serialNo,
       checkedValue: checked,
-      remarkValue: remark
+      remarkValue: remark,
+      actualDate: actualDate
     })
 
     const response = await fetch(GOOGLE_SCRIPT_URL, {
@@ -263,19 +190,39 @@ const handleUpdateTask = async () => {
       throw new Error(result.error || 'Failed to update task')
     }
 
-    if (checked === "Approved") {
-      // Approved case: Move to history
-      setPendingTasks(prev => prev.filter(t => t.id !== selectedTask))
-      setHistoryTasks(prev => [...prev, { 
+    // FIXED: Update states properly without mutations
+    if (checked === "Approved" || checked === "Reject") {
+      // Create updated task object
+      const updatedTask = { 
         ...task, 
         checked: checked, 
         remark: remark,
-        actualDate: new Date().toISOString().split('T')[0]
-      }])
-      alert(`Task ${selectedTask} has been approved and moved to history.`)
-    } else if (checked === "Reject") {
-      // Reject case: Keep in pending
-      alert(`Task ${selectedTask} has been rejected and will remain in pending.`)
+        actualDate: actualDate
+      }
+      
+      // Remove from pending using serialNo for better uniqueness
+      setPendingTasks(prev => prev.filter(t => t.serialNo !== task.serialNo))
+      
+      // Add to history (check if not already exists)
+      setHistoryTasks(prev => {
+        const exists = prev.some(t => t.serialNo === task.serialNo)
+        if (exists) {
+          // Update existing entry
+          return prev.map(t => t.serialNo === task.serialNo ? updatedTask : t)
+        }
+        // Add new entry
+        return [...prev, updatedTask]
+      })
+      
+      alert(`Task ${selectedTask} has been ${checked === "Approved" ? "approved" : "rejected"} and moved to history.`)
+    } else {
+      // Just update remark in pending
+      setPendingTasks(prev => prev.map(t => 
+        t.serialNo === task.serialNo 
+          ? { ...t, remark: remark }
+          : t
+      ))
+      alert(`Task ${selectedTask} has been updated.`)
     }
     
     setIsDialogOpen(false)
@@ -288,7 +235,6 @@ const handleUpdateTask = async () => {
     setIsSubmitting(false)
   }
 }
-
 
   const resetDialogState = () => {
     setSelectedTask(null)
@@ -308,6 +254,7 @@ const handleUpdateTask = async () => {
       task.serialNo,
       task.complaintId,
       task.technicianName,
+      task.technicianContact,
       task.beneficiaryName,
       task.contactNumber,
       task.village,
@@ -393,7 +340,6 @@ const handleUpdateTask = async () => {
           </nav>
         </div>
 
-
         {/* Search */}
         <div className="mb-4">
           <div className="relative">
@@ -446,6 +392,9 @@ const handleUpdateTask = async () => {
                     <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                       Technician Name
                     </th>
+                     <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                      Technician Contact
+                    </th>
                     <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                       Beneficiary Name
                     </th>
@@ -488,6 +437,9 @@ const handleUpdateTask = async () => {
                     {activeTab === "history" && (
                       <>
                         <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                          Actual Date
+                        </th>
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                           Checked
                         </th>
                         <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
@@ -508,8 +460,8 @@ const handleUpdateTask = async () => {
                               setSelectedTask(task.id)
                               setSelectedTaskData(task)
                               setIsDialogOpen(true)
-                              setChecked("")
-                              setRemark("")
+                              setChecked(task.checked || "")
+                              setRemark(task.remark || "")
                             }}
                           >
                             Review
@@ -519,6 +471,7 @@ const handleUpdateTask = async () => {
                       <td className="px-3 py-4 whitespace-nowrap text-sm font-medium">{task.serialNo}</td>
                       <td className="px-3 py-4 whitespace-nowrap text-sm">{task.complaintId}</td>
                       <td className="px-3 py-4 whitespace-nowrap text-sm">{task.technicianName}</td>
+                      <td className="px-3 py-4 whitespace-nowrap text-sm">{task.technicianContact}</td>
                       <td className="px-3 py-4 whitespace-nowrap text-sm">{task.beneficiaryName}</td>
                       <td className="px-3 py-4 whitespace-nowrap text-sm">{task.contactNumber}</td>
                       <td className="px-3 py-4 whitespace-nowrap text-sm">{task.village}</td>
@@ -550,10 +503,11 @@ const handleUpdateTask = async () => {
                       <td className="px-3 py-4 whitespace-nowrap text-sm">{task.trackerStatus}</td>
                       {activeTab === "history" && (
                         <>
+                          <td className="px-3 py-4 whitespace-nowrap text-sm">{task.actualDate}</td>
                           <td className="px-3 py-4 whitespace-nowrap text-sm">
                             <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
                               task.checked === 'Approved' ? 'bg-green-100 text-green-800' : 
-                              task.checked === 'Rejected' ? 'bg-red-100 text-red-800' : 
+                              task.checked === 'Reject' ? 'bg-red-100 text-red-800' : 
                               'bg-gray-100 text-gray-800'
                             }`}>
                               {task.checked}
@@ -592,7 +546,7 @@ const handleUpdateTask = async () => {
                           {/* Pre-filled fields - read only */}
                           <div className="space-y-2">
                             <label className="block text-sm font-medium text-gray-700">
-                              Serial No (Column B: {selectedTaskData?.serialNo})
+                              Serial No 
                             </label>
                             <input
                               type="text"
@@ -604,7 +558,7 @@ const handleUpdateTask = async () => {
 
                           <div className="space-y-2">
                             <label className="block text-sm font-medium text-gray-700">
-                              Complaint Id (Column C: {selectedTaskData?.complaintId})
+                              Complaint Id 
                             </label>
                             <input
                               type="text"
@@ -629,7 +583,7 @@ const handleUpdateTask = async () => {
                           {/* Form fields - no required validation */}
                           <div className="space-y-2">
                             <label htmlFor="checked" className="block text-sm font-medium text-gray-700">
-                              Checked (Optional)
+                              Checked 
                             </label>
                             <select
                               id="checked"
@@ -641,11 +595,12 @@ const handleUpdateTask = async () => {
                               <option value="Approved">Approved</option>
                               <option value="Reject">Reject</option>
                             </select>
+                          
                           </div>
 
                           <div className="space-y-2">
                             <label htmlFor="remark" className="block text-sm font-medium text-gray-700">
-                              Remark (Optional)
+                              Remark 
                             </label>
                             <textarea
                               id="remark"
