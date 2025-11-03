@@ -84,42 +84,41 @@ useEffect(() => {
     fetchData()
   }, [])
 
-
-  // Role-based filtering function
-  const getFilteredDataByRole = () => {
-    if (!data) return [];
-    
-    console.log('DashboardStats - Filtering with user:', user, 'role:', userRole)
-    
-    // If admin, show all data
-    if (userRole && userRole.toLowerCase() === 'admin') {
-      console.log('DashboardStats - Admin user, showing all data')
-      return data;
-    }
-    
-    // If user role and has username, filter by technician name
-    if (userRole && userRole.toLowerCase() !== 'admin' && user) {
-      console.log('DashboardStats - User role, filtering by technician name:', user)
-      const filtered = data.filter((row) => {
-        // You need to find the correct technician column index
-        const technicianName = row.c[19]?.v || "";
-        const match = technicianName === user;
-        return match;
-      });
-      console.log('DashboardStats - Filtered data count:', filtered.length)
-      return filtered;
-    }
-    
-    // If user role but no username, show empty
-    if (userRole && userRole.toLowerCase() !== 'admin' && !user) {
-      console.log('DashboardStats - User role but no username, showing empty')
-      return [];
-    }
-    
-    // Default: show all data (when no role is set)
-    console.log('DashboardStats - No role set, showing all data')
+// Role-based filtering function
+const getFilteredDataByRole = () => {
+  if (!data) return [];
+  
+  console.log('DashboardStats - Filtering with user:', user, 'role:', userRole)
+  
+  // If admin or user, show all data
+  if (userRole && (userRole.toLowerCase() === 'admin' || userRole.toLowerCase() === 'user')) {
+    console.log('DashboardStats - Admin/User role, showing all data')
     return data;
   }
+  
+  // If tech role and has username, filter by technician name
+  if (userRole && userRole.toLowerCase() === 'tech' && user) {
+    console.log('DashboardStats - Tech role, filtering by technician name:', user)
+    const filtered = data.filter((row) => {
+      // Column T (index 19) - Technician Name
+      const technicianName = row.c[19]?.v || "";
+      const match = technicianName === user;
+      return match;
+    });
+    console.log('DashboardStats - Filtered data count:', filtered.length)
+    return filtered;
+  }
+  
+  // If tech role but no username, show empty
+  if (userRole && userRole.toLowerCase() === 'tech' && !user) {
+    console.log('DashboardStats - Tech role but no username, showing empty')
+    return [];
+  }
+  
+  // Default: show all data (when no role is set)
+  console.log('DashboardStats - No role set, showing all data')
+  return data;
+}
 
   // Get filtered data based on role
   const filteredData = getFilteredDataByRole()

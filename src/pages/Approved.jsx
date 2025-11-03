@@ -164,11 +164,11 @@ const handleUpdateTask = async () => {
     formData.append('checkedValue', checked)
     formData.append('remarkValue', remark || "")
     
-    let actualDate = ""
-    if (checked === "Approved" || checked === "Reject") {
-      actualDate = new Date().toLocaleDateString('en-GB')
-    }
-    formData.append('actualDate', actualDate)
+   let actualDate = ""
+if (checked === "Approved" || checked === "Reject" || checked === "Ok") {
+  actualDate = new Date().toLocaleDateString('en-GB')
+}
+formData.append('actualDate', actualDate)
 
     console.log('Submitting data:', {
       action: 'updateTrackerRecord',
@@ -190,40 +190,31 @@ const handleUpdateTask = async () => {
       throw new Error(result.error || 'Failed to update task')
     }
 
-    // FIXED: Update states properly without mutations
-    if (checked === "Approved" || checked === "Reject") {
-      // Create updated task object
-      const updatedTask = { 
-        ...task, 
-        checked: checked, 
-        remark: remark,
-        actualDate: actualDate
-      }
-      
-      // Remove from pending using serialNo for better uniqueness
-      setPendingTasks(prev => prev.filter(t => t.serialNo !== task.serialNo))
-      
-      // Add to history (check if not already exists)
-      setHistoryTasks(prev => {
-        const exists = prev.some(t => t.serialNo === task.serialNo)
-        if (exists) {
-          // Update existing entry
-          return prev.map(t => t.serialNo === task.serialNo ? updatedTask : t)
-        }
-        // Add new entry
-        return [...prev, updatedTask]
-      })
-      
-      alert(`Task ${selectedTask} has been ${checked === "Approved" ? "approved" : "rejected"} and moved to history.`)
-    } else {
-      // Just update remark in pending
-      setPendingTasks(prev => prev.map(t => 
-        t.serialNo === task.serialNo 
-          ? { ...t, remark: remark }
-          : t
-      ))
-      alert(`Task ${selectedTask} has been updated.`)
+if (checked === "Approved" || checked === "Reject" || checked === "Ok") {
+  // Create updated task object
+  const updatedTask = { 
+    ...task, 
+    checked: checked, 
+    remark: remark,
+    actualDate: actualDate
+  }
+  
+  // Remove from pending using serialNo for better uniqueness
+  setPendingTasks(prev => prev.filter(t => t.serialNo !== task.serialNo))
+  
+  // Add to history (check if not already exists)
+  setHistoryTasks(prev => {
+    const exists = prev.some(t => t.serialNo === task.serialNo)
+    if (exists) {
+      // Update existing entry
+      return prev.map(t => t.serialNo === task.serialNo ? updatedTask : t)
     }
+    // Add new entry
+    return [...prev, updatedTask]
+  })
+  
+  alert(`Task ${selectedTask} has been ${checked === "Approved" ? "approved" : checked === "Reject" ? "rejected" : "marked as Ok"} and moved to history.`)
+}
     
     setIsDialogOpen(false)
     resetDialogState()
@@ -365,164 +356,254 @@ const handleUpdateTask = async () => {
         {/* Table */}
         <div className="overflow-x-auto -mx-4 sm:mx-0">
           <div className="inline-block min-w-full align-middle">
-            {filteredTasks.length === 0 ? (
-              <div className="text-center p-6 bg-gray-50 rounded-lg border border-gray-200">
-                <p className="text-gray-500">
-                  {activeTab === "pending" 
-                    ? "No pending complaints found" 
-                    : "No complaint history found"
-                  }
-                </p>
+           {filteredTasks.length === 0 ? (
+  <div className="text-center p-6 bg-gray-50 rounded-lg border border-gray-200">
+    <p className="text-gray-500">
+      {activeTab === "pending" 
+        ? "No pending complaints found" 
+        : "No complaint history found"
+      }
+    </p>
+  </div>
+) : (
+  <>
+    {/* Mobile Card View */}
+    <div className="block md:hidden space-y-3">
+      {filteredTasks.map((task, index) => (
+        <div key={task.serialNo || index} className="bg-gradient-to-br from-white to-gray-50 border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex justify-between items-center mb-2 pb-2 border-b border-gray-200">
+            <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">{task.serialNo}</span>
+            <span className="text-xs px-2 py-1 bg-purple-50 text-purple-700 rounded">{task.trackerStatus}</span>
+          </div>
+          
+          <div className="space-y-1">
+            <div className="flex justify-between text-xs">
+              <span className="text-gray-500">Complaint ID</span>
+              <span className="text-gray-900 font-medium">{task.complaintId}</span>
+            </div>
+            <div className="flex justify-between text-xs">
+              <span className="text-gray-500">Beneficiary</span>
+              <span className="text-gray-900">{task.beneficiaryName}</span>
+            </div>
+            <div className="flex justify-between text-xs">
+              <span className="text-gray-500">Village</span>
+              <span className="text-gray-900">{task.village}</span>
+            </div>
+            <div className="flex justify-between text-xs">
+              <span className="text-gray-500">Product</span>
+              <span className="text-gray-900">{task.product}</span>
+            </div>
+            
+            {/* Technician Info */}
+            <div className="mt-2 pt-2 border-t border-gray-100 flex justify-between text-xs">
+              <span className="text-gray-500">Technician</span>
+              <span className="text-gray-900">{task.technicianName}</span>
+            </div>
+            
+            {/* Documents & Photos */}
+            {(task.uploadDocuments || task.geotagPhoto) && (
+              <div className="flex gap-2 mt-2">
+                {task.uploadDocuments && (
+                  <a href={task.uploadDocuments} target="_blank" rel="noopener noreferrer" 
+                     className="flex-1 text-center bg-blue-50 text-blue-600 px-2 py-1 rounded text-xs">
+                    📄 Doc
+                  </a>
+                )}
+                {task.geotagPhoto && (
+                  <a href={task.geotagPhoto} target="_blank" rel="noopener noreferrer" 
+                     className="flex-1 text-center bg-green-50 text-green-600 px-2 py-1 rounded text-xs">
+                    📷 Photo
+                  </a>
+                )}
               </div>
-            ) : (
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-100">
-                  <tr>
-                    {activeTab === "pending" && (
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                        Actions
-                      </th>
-                    )}
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                      Serial No
-                    </th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                      Complaint Id
-                    </th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                      Technician Name
-                    </th>
-                     <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                      Technician Contact
-                    </th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                      Beneficiary Name
-                    </th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                      Contact Number
-                    </th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                      Village
-                    </th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                      Block
-                    </th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                      District
-                    </th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                      Product
-                    </th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                      Make
-                    </th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                      System Voltage
-                    </th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                      Nature Of Complaint
-                    </th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                      Upload Documents
-                    </th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                      Geotag Photo
-                    </th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                      Remarks
-                    </th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                      Tracker Status
-                    </th>
-                    {activeTab === "history" && (
-                      <>
-                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                          Actual Date
-                        </th>
-                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                          Checked
-                        </th>
-                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                          Remark
-                        </th>
-                      </>
-                    )}
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredTasks.map((task, index) => (
-                    <tr key={task.serialNo || index} className="hover:bg-gray-50">
-                      {activeTab === "pending" && (
-                        <td className="px-3 py-4 whitespace-nowrap">
-                          <button
-                            className="bg-gradient-to-r from-amber-400 to-orange-500 text-white hover:from-amber-500 hover:to-orange-600 border-0 py-1 px-3 rounded-md"
-                            onClick={() => {
-                              setSelectedTask(task.id)
-                              setSelectedTaskData(task)
-                              setIsDialogOpen(true)
-                              setChecked(task.checked || "")
-                              setRemark(task.remark || "")
-                            }}
-                          >
-                            Review
-                          </button>
-                        </td>
-                      )}
-                      <td className="px-3 py-4 whitespace-nowrap text-sm font-medium">{task.serialNo}</td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm">{task.complaintId}</td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm">{task.technicianName}</td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm">{task.technicianContact}</td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm">{task.beneficiaryName}</td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm">{task.contactNumber}</td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm">{task.village}</td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm">{task.block}</td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm">{task.district}</td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm">{task.product}</td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm">{task.make}</td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm">{task.systemVoltage}</td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm max-w-xs truncate" title={task.natureOfComplaint}>
-                        {task.natureOfComplaint}
-                      </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm">
-                        {task.uploadDocuments && (
-                          <a href={task.uploadDocuments} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800">
-                            View
-                          </a>
-                        )}
-                      </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm">
-                        {task.geotagPhoto && (
-                          <a href={task.geotagPhoto} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800">
-                            View
-                          </a>
-                        )}
-                      </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm max-w-xs truncate" title={task.remarks}>
-                        {task.remarks}
-                      </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm">{task.trackerStatus}</td>
-                      {activeTab === "history" && (
-                        <>
-                          <td className="px-3 py-4 whitespace-nowrap text-sm">{task.actualDate}</td>
-                          <td className="px-3 py-4 whitespace-nowrap text-sm">
-                            <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                              task.checked === 'Approved' ? 'bg-green-100 text-green-800' : 
-                              task.checked === 'Reject' ? 'bg-red-100 text-red-800' : 
-                              'bg-gray-100 text-gray-800'
-                            }`}>
-                              {task.checked}
-                            </span>
-                          </td>
-                          <td className="px-3 py-4 whitespace-nowrap text-sm max-w-xs truncate" title={task.remark}>
-                            {task.remark}
-                          </td>
-                        </>
-                      )}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
             )}
+            
+            {/* History specific fields */}
+            {activeTab === "history" && (
+              <div className="mt-2 pt-2 border-t border-gray-100">
+                <div className="flex justify-between text-xs items-center">
+                  <span className="text-gray-500">Status</span>
+                  <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
+                    task.checked === 'Approved' ? 'bg-green-100 text-green-800' : 
+                    task.checked === 'Reject' ? 'bg-red-100 text-red-800' : 
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {task.checked}
+                  </span>
+                </div>
+              </div>
+            )}
+            
+            {/* Action button for pending */}
+            {activeTab === "pending" && (
+              <div className="mt-2">
+                <button
+                  className="w-full bg-gradient-to-r from-amber-400 to-orange-500 text-white py-1.5 rounded-md text-xs font-medium"
+                  onClick={() => {
+                    setSelectedTask(task.id)
+                    setSelectedTaskData(task)
+                    setIsDialogOpen(true)
+                    setChecked(task.checked || "")
+                    setRemark(task.remark || "")
+                  }}
+                >
+                  Review
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+
+    {/* Desktop Table View */}
+    <div className="hidden md:block overflow-x-auto">
+      <table className="min-w-full divide-y divide-gray-200">
+        <thead className="bg-gray-100">
+          <tr>
+            {activeTab === "pending" && (
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                Actions
+              </th>
+            )}
+            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+              Serial No
+            </th>
+            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+              Complaint Id
+            </th>
+            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+              Technician Name
+            </th>
+             <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+              Technician Contact
+            </th>
+            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+              Beneficiary Name
+            </th>
+            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+              Contact Number
+            </th>
+            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+              Village
+            </th>
+            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+              Block
+            </th>
+            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+              District
+            </th>
+            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+              Product
+            </th>
+            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+              Make
+            </th>
+            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+              Nature Of Complaint
+            </th>
+            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+              Upload Documents
+            </th>
+            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+              Geotag Photo
+            </th>
+            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+              Action Taken
+            </th>
+            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+              Tracker Status
+            </th>
+            {activeTab === "history" && (
+              <>
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                  Actual Date
+                </th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                  Checked
+                </th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                  Remark
+                </th>
+              </>
+            )}
+          </tr>
+        </thead>
+        <tbody className="bg-white divide-y divide-gray-200">
+          {filteredTasks.map((task, index) => (
+            <tr key={task.serialNo || index} className="hover:bg-gray-50">
+              {activeTab === "pending" && (
+                <td className="px-3 py-4 whitespace-nowrap">
+                  <button
+                    className="bg-gradient-to-r from-amber-400 to-orange-500 text-white hover:from-amber-500 hover:to-orange-600 border-0 py-1 px-3 rounded-md"
+                    onClick={() => {
+                      setSelectedTask(task.id)
+                      setSelectedTaskData(task)
+                      setIsDialogOpen(true)
+                      setChecked(task.checked || "")
+                      setRemark(task.remark || "")
+                    }}
+                  >
+                    Review
+                  </button>
+                </td>
+              )}
+              <td className="px-3 py-4 whitespace-nowrap text-sm font-medium">{task.serialNo}</td>
+              <td className="px-3 py-4 whitespace-nowrap text-sm">{task.complaintId}</td>
+              <td className="px-3 py-4 whitespace-nowrap text-sm">{task.technicianName}</td>
+              <td className="px-3 py-4 whitespace-nowrap text-sm">{task.technicianContact}</td>
+              <td className="px-3 py-4 whitespace-nowrap text-sm">{task.beneficiaryName}</td>
+              <td className="px-3 py-4 whitespace-nowrap text-sm">{task.contactNumber}</td>
+              <td className="px-3 py-4 whitespace-nowrap text-sm">{task.village}</td>
+              <td className="px-3 py-4 whitespace-nowrap text-sm">{task.block}</td>
+              <td className="px-3 py-4 whitespace-nowrap text-sm">{task.district}</td>
+              <td className="px-3 py-4 whitespace-nowrap text-sm">{task.product}</td>
+              <td className="px-3 py-4 whitespace-nowrap text-sm">{task.make}</td>
+              <td className="px-3 py-4 whitespace-nowrap text-sm max-w-xs truncate" title={task.natureOfComplaint}>
+                {task.natureOfComplaint}
+              </td>
+              <td className="px-3 py-4 whitespace-nowrap text-sm">
+                {task.uploadDocuments && (
+                  <a href={task.uploadDocuments} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800">
+                    View
+                  </a>
+                )}
+              </td>
+              <td className="px-3 py-4 whitespace-nowrap text-sm">
+                {task.geotagPhoto && (
+                  <a href={task.geotagPhoto} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800">
+                    View
+                  </a>
+                )}
+              </td>
+              <td className="px-3 py-4 whitespace-nowrap text-sm max-w-xs truncate" title={task.remarks}>
+                {task.remarks}
+              </td>
+              <td className="px-3 py-4 whitespace-nowrap text-sm">{task.trackerStatus}</td>
+              {activeTab === "history" && (
+                <>
+                  <td className="px-3 py-4 whitespace-nowrap text-sm">{task.actualDate}</td>
+                  <td className="px-3 py-4 whitespace-nowrap text-sm">
+                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                      task.checked === 'Approved' ? 'bg-green-100 text-green-800' : 
+                      task.checked === 'Reject' ? 'bg-red-100 text-red-800' : 
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {task.checked}
+                    </span>
+                  </td>
+                  <td className="px-3 py-4 whitespace-nowrap text-sm max-w-xs truncate" title={task.remark}>
+                    {task.remark}
+                  </td>
+                </>
+              )}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </>
+)}
           </div>
         </div>
 
@@ -580,23 +661,22 @@ const handleUpdateTask = async () => {
                             />
                           </div>
 
-                          {/* Form fields - no required validation */}
-                          <div className="space-y-2">
-                            <label htmlFor="checked" className="block text-sm font-medium text-gray-700">
-                              Checked 
-                            </label>
-                            <select
-                              id="checked"
-                              value={checked}
-                              onChange={(e) => setChecked(e.target.value)}
-                              className="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            >
-                              <option value="">Select option (optional)</option>
-                              <option value="Approved">Approved</option>
-                              <option value="Reject">Reject</option>
-                            </select>
-                          
-                          </div>
+                       <div className="space-y-2">
+  <label htmlFor="checked" className="block text-sm font-medium text-gray-700">
+    Checked 
+  </label>
+  <select
+    id="checked"
+    value={checked}
+    onChange={(e) => setChecked(e.target.value)}
+    className="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+  >
+    <option value="">Select option (optional)</option>
+    <option value="Approved">Approved</option>
+    <option value="Reject">Reject</option>
+    <option value="Ok">Ok</option>
+  </select>
+</div>
 
                           <div className="space-y-2">
                             <label htmlFor="remark" className="block text-sm font-medium text-gray-700">

@@ -38,7 +38,7 @@ const [userRole, setUserRole] = useState(null)
     systemVoltage: "",
     natureOfComplaint: "",
     remarks: "",
-    trackerStatus: "pending"
+    trackerStatus: ""
   })
 
 useEffect(() => {
@@ -249,7 +249,10 @@ const generateNextRBPSTId = async () => {
                   make: row.c[14] ? row.c[14].v : "",
                   systemVoltage: row.c[16] ? row.c[16].v : "",
                   natureOfComplaint: row.c[22] ? row.c[22].v : "",
-                  
+                  ContollerRIDNo: row.c[27] ? row.c[27].v : "",
+                  ProductSLNo: row.c[28] ? row.c[28].v : "",
+                  ChallanDate: row.c[29] ? formatDateString(row.c[29].v) : "",
+                  CloseDate: row.c[30] ? formatDateString(row.c[30].v) : "", 
                   // Display fields
                   timestamp: row.c[0] ? formatDateString(row.c[0].v) : "",
                   date: row.c[7] ? formatDateString(row.c[7].v) : "",
@@ -662,15 +665,15 @@ const getFilteredTasksByRole = () => {
     return pendingTasks;
   }
   
-  // If admin, show all tasks
-  if (userRole.toLowerCase() === 'admin') {
-    console.log('TrackerPendingTable - Admin user, showing all tasks')
+  // If admin or user, show all tasks
+  if (userRole.toLowerCase() === 'admin' || userRole.toLowerCase() === 'user') {
+    console.log('TrackerPendingTable - Admin/User role, showing all tasks')
     return pendingTasks;
   }
   
-  // If user role and has username, filter by technician name
-  if (username) {
-    console.log('TrackerPendingTable - User role, filtering by technician name:', username)
+  // If tech role and has username, filter by technician name
+  if (userRole.toLowerCase() === 'tech' && username) {
+    console.log('TrackerPendingTable - Tech role, filtering by technician name:', username)
     const filtered = pendingTasks.filter((task) => {
       const match = task.technicianName === username;
       return match;
@@ -679,9 +682,15 @@ const getFilteredTasksByRole = () => {
     return filtered;
   }
   
-  // If user role but no username, show empty
-  console.log('TrackerPendingTable - User role but no username, showing empty')
-  return [];
+  // If tech role but no username, show empty
+  if (userRole.toLowerCase() === 'tech' && !username) {
+    console.log('TrackerPendingTable - Tech role but no username, showing empty')
+    return [];
+  }
+  
+  // Default: show all tasks
+  console.log('TrackerPendingTable - Default, showing all tasks')
+  return pendingTasks;
 }
 
 
@@ -748,7 +757,8 @@ const getFilteredTasksByRole = () => {
   return (
     <div className="p-4">
       <div className="mb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <h1 className="text-xl font-bold">Tracker Pending Tasks</h1>
+        <h1 className="text-sm font-bold">Tracker Pending Tasks</h1>
+
         
         <div className="relative">
           <input
@@ -809,91 +819,142 @@ const getFilteredTasksByRole = () => {
         </select>
       </div>
 
-      <div className="overflow-x-auto -mx-4 sm:mx-0">
-        <div className="inline-block min-w-full align-middle">
-          {filteredTasks.length === 0 ? (
-            <div className="text-center p-6 bg-gray-50 rounded-lg border border-gray-200">
-              <p className="text-gray-500">No pending tracker tasks found</p>
-            </div>
-          ) : (
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    Actions
-                  </th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    Complaint ID
-                  </th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    Technician Name
-                  </th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    Technician Number
-                  </th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    Beneficiary Name
-                  </th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    Contact Number
-                  </th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    Village
-                  </th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    Block
-                  </th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    District
-                  </th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    Product
-                  </th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                    Make
-                  </th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                  Rating  
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredTasks.map((task, index) => (
-                  <tr key={task.complaintId || index} className="hover:bg-gray-50">
-                    <td className="px-3 py-4 whitespace-nowrap">
-                      <button
-                        className="bg-gradient-to-r from-amber-400 to-orange-500 text-white hover:from-amber-500 hover:to-orange-600 border-0 py-1 px-3 rounded-md"
-                        onClick={() => handleTaskSelection(task)}
-                      >
-                        Update
-                      </button>
-                    </td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm font-medium">{task.complaintId}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm">{task.technicianName}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm">{task.technicianNumber}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm">{task.beneficiaryName}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm">{task.contactNumber}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm">{task.village}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm">{task.block}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm">{task.district}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm">{task.product}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm">{task.make}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm">
-                      {task.priority && (
-                        <span className={`px-2 py-1 text-xs font-semibold rounded-full text-white ${getPriorityColor(task.priority)}`}>
-                          {task.priority}
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+<div className="overflow-x-auto -mx-4 sm:mx-0">
+  <div className="inline-block min-w-full align-middle">
+    {filteredTasks.length === 0 ? (
+      <div className="text-center p-6 bg-gray-50 rounded-lg border border-gray-200">
+        <p className="text-gray-500">No pending tracker tasks found</p>
       </div>
+    ) : (
+      <>
+        {/* Mobile Card View */}
+        <div className="block md:hidden space-y-3">
+          {filteredTasks.map((task, index) => (
+            <div key={task.complaintId || index} className="bg-gradient-to-br from-white to-gray-50 border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex justify-between items-center mb-2 pb-2 border-b border-gray-200">
+                <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">{task.complaintId}</span>
+                {task.priority && (
+                  <span className={`px-2 py-1 text-xs font-semibold rounded-full text-white ${getPriorityColor(task.priority)}`}>
+                    {task.priority}
+                  </span>
+                )}
+              </div>
+              <div className="space-y-1.5">
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-500">Beneficiary</span>
+                  <span className="text-gray-900 font-medium">{task.beneficiaryName}</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-500">Contact</span>
+                  <span className="text-gray-900">{task.contactNumber}</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-500">Village</span>
+                  <span className="text-gray-900">{task.village}</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-500">Block</span>
+                  <span className="text-gray-900">{task.block}</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-500">District</span>
+                  <span className="text-gray-900">{task.district}</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-500">Product</span>
+                  <span className="text-gray-900 font-medium">{task.product}</span>
+                </div>
+                <div className="mt-2 pt-2 border-t border-gray-100">
+                  <button
+                    className="w-full bg-gradient-to-r from-amber-400 to-orange-500 text-white hover:from-amber-500 hover:to-orange-600 border-0 py-2 px-3 rounded-md text-sm font-medium"
+                    onClick={() => handleTaskSelection(task)}
+                  >
+                    Update
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
 
-      {isDialogOpen && (
+        {/* Desktop Table View */}
+        <div className="hidden md:block overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                  Actions
+                </th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                  Complaint ID
+                </th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                  Beneficiary Name
+                </th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                  Contact Number
+                </th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                  Village
+                </th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                  Block
+                </th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                  District
+                </th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                  Product
+                </th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                  Rating  
+                </th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Contoller RID No.</th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Product SL No.</th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Challan Date </th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Close Date</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredTasks.map((task, index) => (
+                <tr key={task.complaintId || index} className="hover:bg-gray-50">
+                  <td className="px-3 py-4 whitespace-nowrap">
+                    <button
+                      className="bg-gradient-to-r from-amber-400 to-orange-500 text-white hover:from-amber-500 hover:to-orange-600 border-0 py-1 px-3 rounded-md"
+                      onClick={() => handleTaskSelection(task)}
+                    >
+                      Update
+                    </button>
+                  </td>
+                  <td className="px-3 py-4 whitespace-nowrap text-sm font-medium">{task.complaintId}</td>
+                  <td className="px-3 py-4 whitespace-nowrap text-sm">{task.beneficiaryName}</td>
+                  <td className="px-3 py-4 whitespace-nowrap text-sm">{task.contactNumber}</td>
+                  <td className="px-3 py-4 whitespace-nowrap text-sm">{task.village}</td>
+                  <td className="px-3 py-4 whitespace-nowrap text-sm">{task.block}</td>
+                  <td className="px-3 py-4 whitespace-nowrap text-sm">{task.district}</td>
+                  <td className="px-3 py-4 whitespace-nowrap text-sm">{task.product}</td>
+                  <td className="px-3 py-4 whitespace-nowrap text-sm">
+                    {task.priority && (
+                      <span className={`px-2 py-1 text-xs font-semibold rounded-full text-white ${getPriorityColor(task.priority)}`}>
+                        {task.priority}
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-3 py-4 whitespace-nowrap text-sm">{task.ContollerRIDNo}</td>
+                  <td className="px-3 py-4 whitespace-nowrap text-sm">{task.ProductSLNo}</td>
+                  <td className="px-3 py-4 whitespace-nowrap text-sm">{task.ChallanDate}</td>
+                  <td className="px-3 py-4 whitespace-nowrap text-sm">{task.CloseDate}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </>
+    )}
+  </div>
+</div>
+
+    {isDialogOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div className="fixed inset-0 transition-opacity" aria-hidden="true">
@@ -904,15 +965,15 @@ const getFilteredTasksByRole = () => {
               <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div className="sm:flex sm:items-start">
                   <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900">Update Task: {selectedTaskData?.complaintId || selectedTask}</h3>
+                   
                     
                    {selectedTaskData && (
   <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-    <h4 className="font-medium text-gray-700 mb-4">Pre-filled Information (from FMS)</h4>
+    
     <div className="grid grid-cols-2 gap-4">
       
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700">Complaint ID</label>
+        <label className="block text-sm font-medium text-gray-700">शिकायत आईडी</label>
         <input
           type="text"
           className="w-full border border-gray-300 rounded-md py-2 px-3 bg-gray-100 text-gray-600"
@@ -922,7 +983,7 @@ const getFilteredTasksByRole = () => {
       </div>
 
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700">Technician Name</label>
+        <label className="block text-sm font-medium text-gray-700">तकनीशियन का नाम</label>
         <input
           type="text"
           className="w-full border border-gray-300 rounded-md py-2 px-3 bg-gray-100 text-gray-600"
@@ -931,18 +992,10 @@ const getFilteredTasksByRole = () => {
         />
       </div>
 
-      <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700">Technician Number</label>
-        <input
-          type="text"
-          className="w-full border border-gray-300 rounded-md py-2 px-3 bg-gray-100 text-gray-600"
-          value={selectedTaskData.technicianNumber}
-          readOnly
-        />
-      </div>
+     
 
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700">Beneficiary Name</label>
+        <label className="block text-sm font-medium text-gray-700">लाभार्थी का नाम</label>
         <input
           type="text"
           className="w-full border border-gray-300 rounded-md py-2 px-3 bg-gray-100 text-gray-600"
@@ -951,18 +1004,10 @@ const getFilteredTasksByRole = () => {
         />
       </div>
 
-      <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700">Contact Number</label>
-        <input
-          type="text"
-          className="w-full border border-gray-300 rounded-md py-2 px-3 bg-gray-100 text-gray-600"
-          value={selectedTaskData.contactNumber}
-          readOnly
-        />
-      </div>
+   
 
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700">Village</label>
+        <label className="block text-sm font-medium text-gray-700">गाँव</label>
         <input
           type="text"
           className="w-full border border-gray-300 rounded-md py-2 px-3 bg-gray-100 text-gray-600"
@@ -971,18 +1016,10 @@ const getFilteredTasksByRole = () => {
         />
       </div>
 
-      <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700">Block</label>
-        <input
-          type="text"
-          className="w-full border border-gray-300 rounded-md py-2 px-3 bg-gray-100 text-gray-600"
-          value={selectedTaskData.block}
-          readOnly
-        />
-      </div>
+     
 
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700">District</label>
+        <label className="block text-sm font-medium text-gray-700">जिला</label>
         <input
           type="text"
           className="w-full border border-gray-300 rounded-md py-2 px-3 bg-gray-100 text-gray-600"
@@ -992,7 +1029,7 @@ const getFilteredTasksByRole = () => {
       </div>
 
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700">Product</label>
+        <label className="block text-sm font-medium text-gray-700">उत्पाद</label>
         <input
           type="text"
           className="w-full border border-gray-300 rounded-md py-2 px-3 bg-gray-100 text-gray-600"
@@ -1001,15 +1038,6 @@ const getFilteredTasksByRole = () => {
         />
       </div>
 
-      <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700">Make</label>
-        <input
-          type="text"
-          className="w-full border border-gray-300 rounded-md py-2 px-3 bg-gray-100 text-gray-600"
-          value={selectedTaskData.make}
-          readOnly
-        />
-      </div>
 
     </div>
   </div>
@@ -1017,12 +1045,12 @@ const getFilteredTasksByRole = () => {
 
                     
                     <div className="mt-4 max-h-[60vh] overflow-auto">
-                      <h4 className="font-medium text-gray-700 mb-4">Tracker Form Fields</h4>
+                      <h4 className="font-medium text-gray-700 mb-4">ट्रैकर फॉर्म फील्ड्स</h4>
                       <div className="grid gap-4">
                         
-                        <div className="space-y-2">
+                        {/* <div className="space-y-2">
                           <label htmlFor="systemVoltage" className="block text-sm font-medium text-gray-700">
-                            System Voltage
+                            सिस्टम वोल्टेज
                           </label>
                           <input
                             type="text"
@@ -1030,13 +1058,34 @@ const getFilteredTasksByRole = () => {
                             className="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             value={formData.systemVoltage}
                             onChange={(e) => handleFormChange('systemVoltage', e.target.value)}
-                            placeholder="Enter system voltage"
+                            placeholder="सिस्टम वोल्टेज दर्ज करें"
                           />
-                        </div>
+                        </div> */}
+
+                        <div className="space-y-2">
+  <label htmlFor="trackerStatus" className="block text-sm font-medium text-gray-700">
+    ट्रैकर स्थिति *
+  </label>
+  <select
+    id="trackerStatus"
+    name="trackerStatus"
+    value={formData.trackerStatus}
+    onChange={(e) => handleFormChange("trackerStatus", e.target.value)}
+    required
+    className="w-full border border-gray-300 rounded-md py-2 px-3"
+  >
+    <option value="">स्थिति चुनें</option>
+    <option value="beneficiary_visit">लाभार्थी का दौरा</option>
+    <option value="service_centre">सेवा केंद्र</option>
+    <option value="closed">बंद</option>
+    <option value="repair">मरम्मत</option>
+  </select>
+</div>
+
 
                         <div className="space-y-2">
                           <label htmlFor="natureOfComplaint" className="block text-sm font-medium text-gray-700">
-                            Nature Of Complaint
+                            शिकायत की प्रकृति
                           </label>
                           <textarea
                             id="natureOfComplaint"
@@ -1044,13 +1093,13 @@ const getFilteredTasksByRole = () => {
                             rows="3"
                             value={formData.natureOfComplaint}
                             onChange={(e) => handleFormChange('natureOfComplaint', e.target.value)}
-                            placeholder="Enter nature of complaint"
+                            placeholder="शिकायत की प्रकृति दर्ज करें"
                           />
                         </div>
 
                         <div className="space-y-2">
                           <label htmlFor="documents" className="block text-sm font-medium text-gray-700">
-                            Upload Documents
+                            दस्तावेज़ अपलोड करें
                           </label>
                           <div className="flex items-center gap-2">
                             <input
@@ -1069,14 +1118,14 @@ const getFilteredTasksByRole = () => {
                           </div>
                           {uploadedDocument && (
                             <div className="text-sm text-green-600">
-                              Selected: {uploadedDocument.name}
+                              चयनित: {uploadedDocument.name}
                             </div>
                           )}
                         </div>
 
                         <div className="space-y-2">
                           <label htmlFor="geotagPhoto" className="block text-sm font-medium text-gray-700">
-                            Geotag Photo
+                            जियोटैग फोटो
                           </label>
                           <div className="flex items-center gap-2">
                             <input
@@ -1098,14 +1147,14 @@ const getFilteredTasksByRole = () => {
                           
                           {uploadedPhoto && (
                             <div className="text-sm text-green-600">
-                              ✓ Selected: {uploadedPhoto.name}
+                              ✓ चयनित: {uploadedPhoto.name}
                             </div>
                           )}
                           
                           {isCapturingLocation && (
                             <div className="flex items-center gap-2 text-sm text-blue-600">
                               <Loader className="h-4 w-4 animate-spin" />
-                              Capturing location...
+                              स्थान कैप्चर किया जा रहा है...
                             </div>
                           )}
                           
@@ -1113,11 +1162,11 @@ const getFilteredTasksByRole = () => {
                             <div className="text-sm text-green-600 space-y-1">
                               <div className="flex items-center gap-2">
                                 <MapPin className="h-4 w-4" />
-                                Location captured successfully
+                                स्थान सफलतापूर्वक कैप्चर किया गया
                               </div>
                               <div className="text-xs text-gray-600 ml-6">
-                                📍 Lat: {photoLocation.latitude.toFixed(6)}, 
-                                Lng: {photoLocation.longitude.toFixed(6)}
+                                📍 अक्षांश: {photoLocation.latitude.toFixed(6)}, 
+                                देशांतर: {photoLocation.longitude.toFixed(6)}
                               </div>
                               <div className="text-xs text-gray-500 ml-6 truncate">
                                 📌 {photoLocation.formattedAddress}
@@ -1127,44 +1176,31 @@ const getFilteredTasksByRole = () => {
                           
                           {locationError && !isCapturingLocation && (
                             <div className="text-sm text-amber-600">
-                              ⚠️ Location unavailable: {locationError}
+                              ⚠️ स्थान उपलब्ध नहीं है: {locationError}
                               <div className="text-xs text-gray-600 mt-1">
-                                Photo will be uploaded without location data
+                                फोटो बिना स्थान डेटा के अपलोड की जाएगी
                               </div>
                             </div>
                           )}
                         </div>
 
-                        <div className="space-y-2">
-                          <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">
-                            Remarks
-                          </label>
-                          <textarea
-                            id="remarks"
-                            className="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            rows="3"
-                            value={formData.remarks}
-                            onChange={(e) => handleFormChange('remarks', e.target.value)}
-                            placeholder="Enter remarks"
-                          />
-                        </div>
+                      <div className="space-y-2">
+  <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">
+    की गई कार्रवाई
+  </label>
+  <textarea
+    id="remarks"
+    className="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+    rows="3"
+    value={formData.remarks}
+    onChange={(e) => handleFormChange('remarks', e.target.value)}
+    placeholder="की गई कार्रवाई दर्ज करें"
+  />
+</div>
 
-                        <div className="space-y-2">
-                          <label htmlFor="trackerStatus" className="block text-sm font-medium text-gray-700">
-                            Tracker Status
-                          </label>
-                          <select
-                            id="trackerStatus"
-                            value={formData.trackerStatus}
-                            onChange={(e) => handleFormChange('trackerStatus', e.target.value)}
-                            className="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          >
-                            <option value="pending">Pending</option>
-                            <option value="in_progress">In Progress</option>
-                            <option value="completed">Completed</option>
-                            <option value="on_hold">On Hold</option>
-                          </select>
-                        </div>
+
+
+
                         
                         {uploadStatus && (
                           <div className="mt-2 p-2 bg-blue-50 text-blue-700 rounded-md">
@@ -1181,7 +1217,7 @@ const getFilteredTasksByRole = () => {
                         className="py-2 px-4 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50"
                         disabled={isSubmitting}
                       >
-                        Cancel
+                        रद्द करें
                       </button>
                       <button
                         type="button"
@@ -1192,10 +1228,10 @@ const getFilteredTasksByRole = () => {
                         {isSubmitting ? (
                           <>
                             <Loader className="mr-2 h-4 w-4 animate-spin" />
-                            Saving...
+                            सहेजा जा रहा है...
                           </>
                         ) : (
-                          "Save Changes"
+                          "परिवर्तन सहेजें"
                         )}
                       </button>
                     </div>

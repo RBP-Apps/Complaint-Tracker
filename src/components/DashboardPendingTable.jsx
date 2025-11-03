@@ -186,39 +186,44 @@ function ComplaintsTable() {
     }
   }
 
+
   // Role-based filtering function
-  const getFilteredComplaintsByRole = () => {
-    console.log('Current user:', user, 'Current role:', userRole) // Debug log
-    
-    let roleFilteredComplaints = complaints;
+const getFilteredComplaintsByRole = () => {
+  console.log('Current user:', user, 'Current role:', userRole) // Debug log
+  
+  let roleFilteredComplaints = complaints;
 
-    // If no role is set, show all complaints
-    if (!userRole) {
-      console.log('No role set - showing all complaints') // Debug log
-      return roleFilteredComplaints;
-    }
-
-    // If user is not admin, filter by technician name
-    if (userRole.toLowerCase() !== 'admin') {
-      if (user) {
-        console.log('Filtering for user:', user) // Debug log
-        roleFilteredComplaints = complaints.filter((complaint) => {
-          const match = complaint.technicianName === user;
-          console.log(`Comparing: "${complaint.technicianName}" === "${user}" = ${match}`) // Debug log
-          return match;
-        });
-        console.log('Filtered complaints count:', roleFilteredComplaints.length) // Debug log
-      } else {
-        // Non-admin user with no username - show empty results
-        console.log('Non-admin user with no username - showing no complaints') // Debug log
-        roleFilteredComplaints = [];
-      }
-    } else {
-      console.log('Admin user - showing all complaints') // Debug log
-    }
-
+  // If no role is set, show all complaints
+  if (!userRole) {
+    console.log('No role set - showing all complaints') // Debug log
     return roleFilteredComplaints;
   }
+
+  // If user is admin or user, show all complaints
+  if (userRole.toLowerCase() === 'admin' || userRole.toLowerCase() === 'user') {
+    console.log('Admin/User role - showing all complaints') // Debug log
+    return roleFilteredComplaints;
+  }
+
+  // If user is tech, filter by technician name
+  if (userRole.toLowerCase() === 'tech') {
+    if (user) {
+      console.log('Tech role - filtering for user:', user) // Debug log
+      roleFilteredComplaints = complaints.filter((complaint) => {
+        const match = complaint.technicianName === user;
+        console.log(`Comparing: "${complaint.technicianName}" === "${user}" = ${match}`) // Debug log
+        return match;
+      });
+      console.log('Filtered complaints count:', roleFilteredComplaints.length) // Debug log
+    } else {
+      // Tech user with no username - show empty results
+      console.log('Tech user with no username - showing no complaints') // Debug log
+      roleFilteredComplaints = [];
+    }
+  }
+
+  return roleFilteredComplaints;
+}
 
   const filteredComplaints = getFilteredComplaintsByRole().filter((complaint) => {
     const search = searchTerm.toLowerCase();
@@ -303,35 +308,66 @@ function ComplaintsTable() {
 
       <div className="overflow-x-auto -mx-4 sm:mx-0">
         <div className="inline-block min-w-full align-middle">
-          {filteredComplaints.length === 0 ? (
-            <div className="text-center p-6 bg-gray-50 rounded-lg border border-gray-200">
-              <p className="text-gray-500">No complaints found matching your criteria</p>
-            </div>
-          ) : (
+         {filteredComplaints.length === 0 ? (
+        <div className="text-center p-6 bg-gray-50 rounded-lg border border-gray-200">
+          <p className="text-gray-500">No complaints found matching your criteria</p>
+        </div>
+      ) : (
+        <>
+          {/* Mobile Card View */}
+          <div className="block md:hidden space-y-3">
+            {filteredComplaints.map((complaint, index) => (
+              <div key={`complaint-${complaint.complaintId}-${index}`} className="bg-gradient-to-br from-white to-gray-50 border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex justify-between items-center mb-2 pb-2 border-b border-gray-200">
+                  <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">{complaint.complaintId}</span>
+                  <span className="text-xs px-2 py-1 rounded">{complaint.status}</span>
+                </div>
+                <div className="space-y-1.5">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-500">Company</span>
+                    <span className="text-gray-900 font-medium">{complaint.companyName}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-500">Complaint No</span>
+                    <span className="text-gray-900">{complaint.complaintNumber}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-500">Date</span>
+                    <span className="text-gray-900">{complaint.complaintDate}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-500">Beneficiary</span>
+                    <span className="text-gray-900 font-medium">{complaint.beneficiaryName}</span>
+                  </div>
+                  <div className="mt-2 pt-2 border-t border-gray-100">
+                    <div className="flex items-center justify-between text-xs">
+                      <div className="flex-1">
+                        <div className="text-gray-500 mb-0.5">Technician</div>
+                        <div className="text-gray-900 font-medium">{complaint.technicianName}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-gray-500 mb-0.5">Contact</div>
+                        <div className="text-gray-900">{complaint.technicianContact}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-100">
                 <tr>
                   <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Complaint ID</th>
                   <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company Name</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mode Of Call</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Number</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project Name</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Complaint Number</th>
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Complaint Number</th> 
                   <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Complaint Date</th>
                   <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Beneficiary Name</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact Number</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Village</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Block</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">District</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Make</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rating</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Qty</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Insurance Type</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nature Of Complaint</th>
                   <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Technician Name</th>
                   <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Technician Contact</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assignee WhatsApp Number</th>
                   <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 </tr>
               </thead>
@@ -340,31 +376,19 @@ function ComplaintsTable() {
                   <tr key={`complaint-${complaint.complaintId}-${index}`} className="hover:bg-gray-50">
                     <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{complaint.complaintId}</td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{complaint.companyName}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{complaint.modeOfCall}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{complaint.idNumber}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{complaint.projectName}</td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{complaint.complaintNumber}</td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{complaint.complaintDate}</td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{complaint.beneficiaryName}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{complaint.contactNumber}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{complaint.village}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{complaint.block}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{complaint.district}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{complaint.product}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{complaint.make}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{complaint.rating}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{complaint.qty}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{complaint.insuranceType}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{complaint.natureOfComplaint}</td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{complaint.technicianName}</td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{complaint.technicianContact}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{complaint.assigneeWhatsApp}</td>
                     <td className="px-3 py-4 whitespace-nowrap">{complaint.status}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          )}
+          </div>
+        </>
+      )}
         </div>
       </div>
 
