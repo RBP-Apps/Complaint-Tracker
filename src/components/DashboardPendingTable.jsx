@@ -361,13 +361,18 @@ const getFilteredComplaintsByRole = () => {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-100">
                 <tr>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Complaint ID</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company Name</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Complaint Number</th> 
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Auto Complaint ID</th>
                   <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Complaint Date</th>
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Number </th>
+            
                   <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Beneficiary Name</th>
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact Number</th>
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Village</th>
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Block</th>
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">District</th>
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project Name</th>
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nature of Complaint</th>
                   <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Technician Name</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Technician Contact</th>
                   <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 </tr>
               </thead>
@@ -375,12 +380,18 @@ const getFilteredComplaintsByRole = () => {
                 {filteredComplaints.map((complaint, index) => (
                   <tr key={`complaint-${complaint.complaintId}-${index}`} className="hover:bg-gray-50">
                     <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{complaint.complaintId}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{complaint.companyName}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{complaint.complaintNumber}</td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{complaint.complaintDate}</td>
+                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{complaint.idNumber}</td>
+
+                   
                     <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{complaint.beneficiaryName}</td>
+                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{complaint.contactNumber}</td>
+                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{complaint.village}</td>
+                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{complaint.block}</td>
+                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{complaint.district}</td>
+                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{complaint.projectName}</td>
+                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{complaint.natureOfComplaint}</td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{complaint.technicianName}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{complaint.technicianContact}</td>
                     <td className="px-3 py-4 whitespace-nowrap">{complaint.status}</td>
                   </tr>
                 ))}

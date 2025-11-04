@@ -209,106 +209,114 @@ const generateNextRBPSTId = async () => {
     }
   }
 
-  useEffect(() => {
-    const fetchTasks = async () => {
-      setIsLoading(true)
-      setError(null)
+// ✅ FIXED fetchTasks function - natureOfComplaint Column S (index 18) से fetch करता है
+useEffect(() => {
+  const fetchTasks = async () => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const sheetUrl = `https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=FMS`;
+      const response = await fetch(sheetUrl);
+      const text = await response.text();
       
-      try {
-        const sheetUrl = "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=FMS"
-        const response = await fetch(sheetUrl)
-        const text = await response.text()
+      const jsonStart = text.indexOf('{');
+      const jsonEnd = text.lastIndexOf('}') + 1;
+      const jsonData = text.substring(jsonStart, jsonEnd);
+      const data = JSON.parse(jsonData);
+      
+      if (data && data.table && data.table.rows) {
+        const taskData = [];
         
-        const jsonStart = text.indexOf('{')
-        const jsonEnd = text.lastIndexOf('}') + 1
-        const jsonData = text.substring(jsonStart, jsonEnd)
-        
-        const data = JSON.parse(jsonData)
-        
-        if (data && data.table && data.table.rows) {
-          const taskData = []
-          
-          data.table.rows.forEach((row, index) => {
-            if (row.c && index >= 0) {
-              // Column W (index 22) not null and Column X (index 23) null
-              const hasColumnW = row.c[22] && row.c[22].v !== null && row.c[22].v !== "";
-              const isColumnXEmpty = !row.c[23] || row.c[23].v === null || row.c[23].v === "";
-              
-              if (hasColumnW && isColumnXEmpty) {
-                const task = {
-                  rowIndex: index + 1,
-                  complaintId: row.c[1] ? row.c[1].v : "",
-                  technicianName: row.c[19] ? row.c[19].v : "",
-                  technicianNumber: row.c[20] ? row.c[20].v : "",
-                  beneficiaryName: row.c[8] ? row.c[8].v : "",
-                  contactNumber: row.c[9] ? row.c[9].v : "",
-                  village: row.c[10] ? row.c[10].v : "",
-                  block: row.c[11] ? row.c[11].v : "",
-                  district: row.c[12] ? row.c[12].v : "",
-                  product: row.c[13] ? row.c[13].v : "",
-                  make: row.c[14] ? row.c[14].v : "",
-                  systemVoltage: row.c[16] ? row.c[16].v : "",
-                  natureOfComplaint: row.c[22] ? row.c[22].v : "",
-                  ContollerRIDNo: row.c[27] ? row.c[27].v : "",
-                  ProductSLNo: row.c[28] ? row.c[28].v : "",
-                  ChallanDate: row.c[29] ? formatDateString(row.c[29].v) : "",
-                  CloseDate: row.c[30] ? formatDateString(row.c[30].v) : "", 
-                  // Display fields
-                  timestamp: row.c[0] ? formatDateString(row.c[0].v) : "",
-                  date: row.c[7] ? formatDateString(row.c[7].v) : "",
-                  head: row.c[0] ? row.c[0].v : "",
-                  companyName: row.c[2] ? row.c[2].v : "",
-                  modeOfCall: row.c[3] ? row.c[3].v : "",
-                  priority: row.c[15] ? row.c[15].v : "",
-                  
-                  id: row.c[1] ? row.c[1].v : `COMP-${index + 1}`,
-                  fullRowData: row.c
-                }
+        data.table.rows.forEach((row, index) => {
+          if (row.c && index > 0) {
+            // Column W (index 22) not null and Column X (index 23) null
+            const hasColumnW = row.c[22] && row.c[22].v !== null && row.c[22].v !== "";
+            const isColumnXEmpty = !row.c[23] || row.c[23].v === null || row.c[23].v === "";
+            
+            if (hasColumnW && isColumnXEmpty) {
+              const task = {
+                rowIndex: index + 1,
+                complaintId: row.c[1] ? row.c[1].v : "",
+                technicianName: row.c[19] ? row.c[19].v : "",
+                technicianNumber: row.c[20] ? row.c[20].v : "",
+                beneficiaryName: row.c[8] ? row.c[8].v : "",
+                contactNumber: row.c[9] ? row.c[9].v : "",
+                village: row.c[10] ? row.c[10].v : "",
+                block: row.c[11] ? row.c[11].v : "",
+                district: row.c[12] ? row.c[12].v : "",
+                product: row.c[13] ? row.c[13].v : "",
+                make: row.c[14] ? row.c[14].v : "",
+                systemVoltage: row.c[16] ? row.c[16].v : "",
                 
-                taskData.push(task)
-              }
+                // ✅ CORRECTED: natureOfComplaint from Column S (index 18)
+                natureOfComplaint: row.c[18] && row.c[18].v ? row.c[18].v.toString() : "",
+                
+                ContollerRIDNo: row.c[27] ? row.c[27].v : "",
+                ProductSLNo: row.c[28] ? row.c[28].v : "",
+                ChallanDate: row.c[29] ? formatDateString(row.c[29].v) : "",
+                CloseDate: row.c[30] ? formatDateString(row.c[30].v) : "",
+                
+                // Display fields
+                timestamp: row.c[0] ? formatDateString(row.c[0].v) : "",
+                date: row.c[7] ? formatDateString(row.c[7].v) : "",
+                head: row.c[0] ? row.c[0].v : "",
+                companyName: row.c[2] ? row.c[2].v : "",
+                modeOfCall: row.c[3] ? row.c[3].v : "",
+                priority: row.c[15] ? row.c[15].v : "",
+                id: row.c[1] ? row.c[1].v : `COMP-${index + 1}`,
+                fullRowData: row.c
+              };
+              
+              taskData.push(task);
             }
-          })
-          
-          console.log("Total pending tasks found:", taskData.length);
-          setPendingTasks(taskData)
-        }
-      } catch (err) {
-        console.error("Error fetching tasks data:", err)
-        setError(err.message)
-        setPendingTasks([])
-      } finally {
-        setIsLoading(false)
+          }
+        });
+        
+        console.log('Total pending tasks found:', taskData.length);
+        console.log('Sample natureOfComplaint data from Column S:', taskData.slice(0, 3).map(t => ({
+          id: t.complaintId,
+          natureOfComplaint: t.natureOfComplaint
+        })));
+        
+        setPendingTasks(taskData);
       }
+    } catch (err) {
+      console.error('Error fetching tasks data:', err);
+      setError(err.message);
+      setPendingTasks([]);
+    } finally {
+      setIsLoading(false);
     }
+  };
 
-    const fetchTechnicianOptions = async () => {
-      try {
-        const sheetUrl = "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=master"
-        const response = await fetch(sheetUrl)
-        const text = await response.text()
-        
-        const jsonStart = text.indexOf('{')
-        const jsonEnd = text.lastIndexOf('}') + 1
-        const jsonData = text.substring(jsonStart, jsonEnd)
-        
-        const data = JSON.parse(jsonData)
-        
-        if (data && data.table && data.table.rows) {
-          const options = data.table.rows.slice(2)
-            .map(row => row.c[5]?.v || "")
-            .filter(name => name && typeof name === 'string' && name.trim() !== "")
-          setTechnicianOptions([...new Set(options)].sort())
-        }
-      } catch (err) {
-        console.error("Error fetching technician options:", err)
-        setTechnicianOptions([])
+  const fetchTechnicianOptions = async () => {
+    try {
+      const sheetUrl = `https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=master`;
+      const response = await fetch(sheetUrl);
+      const text = await response.text();
+      
+      const jsonStart = text.indexOf('{');
+      const jsonEnd = text.lastIndexOf('}') + 1;
+      const jsonData = text.substring(jsonStart, jsonEnd);
+      const data = JSON.parse(jsonData);
+      
+      if (data && data.table && data.table.rows) {
+        const options = data.table.rows.slice(2)
+          .map(row => row.c[5]?.v)
+          .filter(name => name && typeof name === 'string' && name.trim() !== '');
+        setTechnicianOptions([...new Set(options)].sort());
       }
+    } catch (err) {
+      console.error('Error fetching technician options:', err);
+      setTechnicianOptions([]);
     }
+  };
 
-    fetchTasks()
-    fetchTechnicianOptions()
-  }, [])
+  fetchTasks();
+  fetchTechnicianOptions();
+}, []);
+
 
   const uploadFileToDrive = async (file, fileType) => {
     if (!file) return null;
@@ -523,7 +531,7 @@ const generateNextRBPSTId = async () => {
         task.product,                   // Column K - Product
         task.make,                      // Column L - Make                       
         formData.systemVoltage,         // Column M - System Voltage
-        formData.natureOfComplaint,     // Column N - Nature Of Complaint
+        // formData.natureOfComplaint,     // Column N - Nature Of Complaint
         documentUrl || "",              // Column O - Upload Documents
         photoUrl || "",                 // Column P - Geotag Photo
         formData.remarks,               // Column Q - Remarks
@@ -602,7 +610,7 @@ const generateNextRBPSTId = async () => {
   const resetForm = () => {
     setFormData({
       systemVoltage: "",
-      natureOfComplaint: "",
+      // natureOfComplaint: "",
       remarks: "",
       trackerStatus: "pending"
     });
@@ -614,23 +622,30 @@ const generateNextRBPSTId = async () => {
     setIsCapturingLocation(false);
   };
 
-  // Pre-fill form when task is selected
-  const handleTaskSelection = (task) => {
-    setSelectedTask(task.id);
-    setSelectedTaskData(task);
-    setIsDialogOpen(true);
-    
-    // Pre-fill form with task data
-    setFormData({
-      systemVoltage: task.systemVoltage || "",
-      natureOfComplaint: task.natureOfComplaint || "",
-      remarks: "",
-      trackerStatus: "pending"
-    });
-    
-    // Reset other fields
-    resetForm();
-  };
+// ✅ FIXED handleTaskSelection function
+const handleTaskSelection = (task) => {
+  console.log('Selected task data:', task);
+  console.log('natureOfComplaint from task:', task.natureOfComplaint);
+  
+  setSelectedTask(task.id);
+  setSelectedTaskData(task);
+  setIsDialogOpen(true);
+  
+  // ✅ Pre-fill form with task data including natureOfComplaint
+  setFormData(prevData => ({
+    ...prevData,
+    systemVoltage: task.systemVoltage || "",
+    natureOfComplaint: task.natureOfComplaint || "", // ✅ Set from task data
+    remarks: "",
+    trackerStatus: "pending"
+  }));
+  
+  console.log('FormData after setting:', {
+    systemVoltage: task.systemVoltage,
+    natureOfComplaint: task.natureOfComplaint
+  });
+};
+
 
   const getUniqueCompanyNames = () => {
     const companies = pendingTasks
@@ -886,7 +901,7 @@ const getFilteredTasksByRole = () => {
                   Actions
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                  Complaint ID
+                  Auto Complaint ID
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                   Beneficiary Name
@@ -1075,7 +1090,7 @@ const getFilteredTasksByRole = () => {
     className="w-full border border-gray-300 rounded-md py-2 px-3"
   >
     <option value="">स्थिति चुनें</option>
-    <option value="beneficiary_visit">लाभार्थी का दौरा</option>
+    <option value="beneficiary_visit">लाभार्थी के द्वारा</option>
     <option value="service_centre">सेवा केंद्र</option>
     <option value="closed">बंद</option>
     <option value="repair">मरम्मत</option>
@@ -1083,19 +1098,21 @@ const getFilteredTasksByRole = () => {
 </div>
 
 
-                        <div className="space-y-2">
-                          <label htmlFor="natureOfComplaint" className="block text-sm font-medium text-gray-700">
-                            शिकायत की प्रकृति
-                          </label>
-                          <textarea
-                            id="natureOfComplaint"
-                            className="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            rows="3"
-                            value={formData.natureOfComplaint}
-                            onChange={(e) => handleFormChange('natureOfComplaint', e.target.value)}
-                            placeholder="शिकायत की प्रकृति दर्ज करें"
-                          />
-                        </div>
+                      {/* Nature of Complaint - Auto-filled from FMS, Read Only */}
+<div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    शिकायत की प्रकृति (Auto-filled from FMS)
+  </label>
+  <textarea
+    name="natureOfComplaint"
+    value={formData.natureOfComplaint}
+    readOnly
+    rows={4}
+    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700 cursor-not-allowed"
+    placeholder="Auto-filled from FMS data..."
+  />
+</div>
+
 
                         <div className="space-y-2">
                           <label htmlFor="documents" className="block text-sm font-medium text-gray-700">

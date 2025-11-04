@@ -502,15 +502,7 @@ if (checked === "Approved" || checked === "Reject" || checked === "Ok") {
             <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
               Nature Of Complaint
             </th>
-            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-              Upload Documents
-            </th>
-            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-              Geotag Photo
-            </th>
-            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-              Action Taken
-            </th>
+           
             <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
               Tracker Status
             </th>
@@ -562,23 +554,7 @@ if (checked === "Approved" || checked === "Reject" || checked === "Ok") {
               <td className="px-3 py-4 whitespace-nowrap text-sm max-w-xs truncate" title={task.natureOfComplaint}>
                 {task.natureOfComplaint}
               </td>
-              <td className="px-3 py-4 whitespace-nowrap text-sm">
-                {task.uploadDocuments && (
-                  <a href={task.uploadDocuments} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800">
-                    View
-                  </a>
-                )}
-              </td>
-              <td className="px-3 py-4 whitespace-nowrap text-sm">
-                {task.geotagPhoto && (
-                  <a href={task.geotagPhoto} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800">
-                    View
-                  </a>
-                )}
-              </td>
-              <td className="px-3 py-4 whitespace-nowrap text-sm max-w-xs truncate" title={task.remarks}>
-                {task.remarks}
-              </td>
+            
               <td className="px-3 py-4 whitespace-nowrap text-sm">{task.trackerStatus}</td>
               {activeTab === "history" && (
                 <>
@@ -607,124 +583,241 @@ if (checked === "Approved" || checked === "Reject" || checked === "Ok") {
           </div>
         </div>
 
-        {/* Review Dialog */}
-        {isDialogOpen && (
-          <div className="fixed inset-0 z-50 overflow-y-auto">
-            <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-              <div className="fixed inset-0 transition-opacity" aria-hidden="true">
-                <div className="absolute inset-0 bg-gray-500 opacity-75" onClick={() => setIsDialogOpen(false)}></div>
-              </div>
+      {/* Review Dialog */}
+{isDialogOpen && (
+  <div className="fixed inset-0 z-50 overflow-y-auto">
+    <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+      <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+        <div className="absolute inset-0 bg-gray-500 opacity-75" onClick={() => setIsDialogOpen(false)}></div>
+      </div>
 
-              <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                  <div className="sm:flex sm:items-start">
-                    <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                      <h3 className="text-lg leading-6 font-medium text-gray-900">
-                        Review Complaint: {selectedTaskData?.complaintId}
-                      </h3>
-                      <div className="mt-4 max-h-[60vh] overflow-auto">
-                        <div className="grid gap-4">
-                          {/* Pre-filled fields - read only */}
-                          <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700">
-                              Serial No 
-                            </label>
-                            <input
-                              type="text"
-                              value={selectedTaskData?.serialNo || ""}
-                              readOnly
-                              className="w-full border border-gray-300 rounded-md py-2 px-3 bg-gray-50 text-gray-600"
-                            />
-                          </div>
+      <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+        <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+          <div className="sm:flex sm:items-start">
+            <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+              <h3 className="text-lg leading-6 font-medium text-gray-900">
+                Review Complaint: {selectedTaskData?.complaintId}
+              </h3>
+              <div className="mt-4 max-h-[60vh] overflow-auto">
+                <div className="grid gap-4 md:grid-cols-2">
+                  {/* Pre-filled fields - read only */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Serial No 
+                    </label>
+                    <input
+                      type="text"
+                      value={selectedTaskData?.serialNo || ""}
+                      readOnly
+                      className="w-full border border-gray-300 rounded-md py-2 px-3 bg-gray-50 text-gray-600"
+                    />
+                  </div>
 
-                          <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700">
-                              Complaint Id 
-                            </label>
-                            <input
-                              type="text"
-                              value={selectedTaskData?.complaintId || ""}
-                              readOnly
-                              className="w-full border border-gray-300 rounded-md py-2 px-3 bg-gray-50 text-gray-600"
-                            />
-                          </div>
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Complaint Id 
+                    </label>
+                    <input
+                      type="text"
+                      value={selectedTaskData?.complaintId || ""}
+                      readOnly
+                      className="w-full border border-gray-300 rounded-md py-2 px-3 bg-gray-50 text-gray-600"
+                    />
+                  </div>
 
-                          <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700">
-                              Technician Name
-                            </label>
-                            <input
-                              type="text"
-                              value={selectedTaskData?.technicianName || ""}
-                              readOnly
-                              className="w-full border border-gray-300 rounded-md py-2 px-3 bg-gray-50 text-gray-600"
-                            />
-                          </div>
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Technician Name
+                    </label>
+                    <input
+                      type="text"
+                      value={selectedTaskData?.technicianName || ""}
+                      readOnly
+                      className="w-full border border-gray-300 rounded-md py-2 px-3 bg-gray-50 text-gray-600"
+                    />
+                  </div>
 
-                       <div className="space-y-2">
-  <label htmlFor="checked" className="block text-sm font-medium text-gray-700">
-    Checked 
-  </label>
-  <select
-    id="checked"
-    value={checked}
-    onChange={(e) => setChecked(e.target.value)}
-    className="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-  >
-    <option value="">Select option (optional)</option>
-    <option value="Approved">Approved</option>
-    <option value="Reject">Reject</option>
-    <option value="Ok">Ok</option>
-  </select>
-</div>
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Beneficiary Name
+                    </label>
+                    <input
+                      type="text"
+                      value={selectedTaskData?.beneficiaryName || ""}
+                      readOnly
+                      className="w-full border border-gray-300 rounded-md py-2 px-3 bg-gray-50 text-gray-600"
+                    />
+                  </div>
 
-                          <div className="space-y-2">
-                            <label htmlFor="remark" className="block text-sm font-medium text-gray-700">
-                              Remark 
-                            </label>
-                            <textarea
-                              id="remark"
-                              value={remark}
-                              onChange={(e) => setRemark(e.target.value)}
-                              placeholder="Enter your remarks here (optional)..."
-                              className="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              rows="3"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex justify-end gap-2 mt-4">
-                        <button
-                          type="button"
-                          onClick={() => setIsDialogOpen(false)}
-                          className="py-2 px-4 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50"
-                          disabled={isSubmitting}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Village
+                    </label>
+                    <input
+                      type="text"
+                      value={selectedTaskData?.village || ""}
+                      readOnly
+                      className="w-full border border-gray-300 rounded-md py-2 px-3 bg-gray-50 text-gray-600"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Product
+                    </label>
+                    <input
+                      type="text"
+                      value={selectedTaskData?.product || ""}
+                      readOnly
+                      className="w-full border border-gray-300 rounded-md py-2 px-3 bg-gray-50 text-gray-600"
+                    />
+                  </div>
+
+                  {/* NEW FIELDS - Upload Documents */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Upload Documents
+                    </label>
+                    {selectedTaskData?.uploadDocuments ? (
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="text"
+                          value="Document Available"
+                          readOnly
+                          className="flex-1 border border-gray-300 rounded-md py-2 px-3 bg-gray-50 text-gray-600"
+                        />
+                        <a
+                          href={selectedTaskData.uploadDocuments}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-md text-sm flex items-center"
                         >
-                          Cancel
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleUpdateTask}
-                          className="bg-gradient-to-r from-green-400 to-teal-500 hover:from-green-500 hover:to-teal-600 text-white py-2 px-4 rounded-md flex items-center"
-                          disabled={isSubmitting}
-                        >
-                          {isSubmitting ? (
-                            <>
-                              <Loader className="mr-2 h-4 w-4 animate-spin" />
-                              Processing...
-                            </>
-                          ) : (
-                            "Submit"
-                          )}
-                        </button>
+                          <Upload className="h-4 w-4 mr-1" />
+                          View
+                        </a>
                       </div>
-                    </div>
+                    ) : (
+                      <input
+                        type="text"
+                        value="No document uploaded"
+                        readOnly
+                        className="w-full border border-gray-300 rounded-md py-2 px-3 bg-gray-50 text-gray-600"
+                      />
+                    )}
+                  </div>
+
+                  {/* NEW FIELDS - Geotag Photo */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Geotag Photo
+                    </label>
+                    {selectedTaskData?.geotagPhoto ? (
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="text"
+                          value="Photo Available"
+                          readOnly
+                          className="flex-1 border border-gray-300 rounded-md py-2 px-3 bg-gray-50 text-gray-600"
+                        />
+                        <a
+                          href={selectedTaskData.geotagPhoto}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-md text-sm flex items-center"
+                        >
+                          <MapPin className="h-4 w-4 mr-1" />
+                          View
+                        </a>
+                      </div>
+                    ) : (
+                      <input
+                        type="text"
+                        value="No photo uploaded"
+                        readOnly
+                        className="w-full border border-gray-300 rounded-md py-2 px-3 bg-gray-50 text-gray-600"
+                      />
+                    )}
+                  </div>
+
+                  {/* NEW FIELDS - Action Taken (full width) */}
+                  <div className="space-y-2 md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Action Taken
+                    </label>
+                    <textarea
+                      value={selectedTaskData?.remarks || "No action taken yet"}
+                      readOnly
+                      className="w-full border border-gray-300 rounded-md py-2 px-3 bg-gray-50 text-gray-600"
+                      rows="3"
+                    />
+                  </div>
+
+                  {/* Editable Fields */}
+                  <div className="space-y-2">
+                    <label htmlFor="checked" className="block text-sm font-medium text-gray-700">
+                      Checked 
+                    </label>
+                    <select
+                      id="checked"
+                      value={checked}
+                      onChange={(e) => setChecked(e.target.value)}
+                      className="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">Select option (optional)</option>
+                      <option value="Approved">Approved</option>
+                      <option value="Reject">Reject</option>
+                      <option value="Ok">Ok</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label htmlFor="remark" className="block text-sm font-medium text-gray-700">
+                      Remark 
+                    </label>
+                    <textarea
+                      id="remark"
+                      value={remark}
+                      onChange={(e) => setRemark(e.target.value)}
+                      placeholder="Enter your remarks here (optional)..."
+                      className="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      rows="3"
+                    />
                   </div>
                 </div>
               </div>
+              <div className="flex justify-end gap-2 mt-4">
+                <button
+                  type="button"
+                  onClick={() => setIsDialogOpen(false)}
+                  className="py-2 px-4 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50"
+                  disabled={isSubmitting}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleUpdateTask}
+                  className="bg-gradient-to-r from-green-400 to-teal-500 hover:from-green-500 hover:to-teal-600 text-white py-2 px-4 rounded-md flex items-center"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader className="mr-2 h-4 w-4 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    "Submit"
+                  )}
+                </button>
+              </div>
             </div>
           </div>
-        )}
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
       </div>
     </DashboardLayout>
   )
