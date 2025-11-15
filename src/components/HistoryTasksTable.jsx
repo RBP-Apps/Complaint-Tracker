@@ -521,6 +521,7 @@ function TrackerHistoryTable() {
   const [photoLocation, setPhotoLocation] = useState(null)
   const [isCapturingLocation, setIsCapturingLocation] = useState(false)
   const [locationError, setLocationError] = useState(null)
+  const [trackerStatusOptions, setTrackerStatusOptions] = useState([])
   
   // Form data for editing
   const [formData, setFormData] = useState({
@@ -615,6 +616,50 @@ function TrackerHistoryTable() {
       );
     });
   };
+
+  useEffect(() => {
+  const fetchTrackerStatusOptions = async () => {
+    try {
+      const masterSheetUrl = "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=Master"
+      
+      const response = await fetch(masterSheetUrl)
+      const text = await response.text()
+      
+      const jsonStart = text.indexOf('{')
+      const jsonEnd = text.lastIndexOf('}') + 1
+      const jsonData = text.substring(jsonStart, jsonEnd)
+      const data = JSON.parse(jsonData)
+      
+      if (data && data.table && data.table.rows) {
+        const options = []
+        
+        // Column H is index 7 (0-indexed)
+        data.table.rows.forEach((row) => {
+          if (row.c && row.c[7]?.v) {
+            const value = row.c[7].v.toString().trim()
+            if (value && !options.includes(value)) {
+              options.push(value)
+            }
+          }
+        })
+        
+        console.log('Tracker Status Options from Master sheet:', options)
+        setTrackerStatusOptions(options)
+      }
+    } catch (err) {
+      console.error("Error fetching tracker status options:", err)
+      // Fallback to default options if fetch fails
+      setTrackerStatusOptions([
+        "beneficiary_visit",
+        "service_centre",
+        "closed",
+        "repair"
+      ])
+    }
+  }
+
+  fetchTrackerStatusOptions()
+}, [])
 
   // Function to format date string to dd/mm/yyyy
   const formatDateString = (dateValue) => {
@@ -1468,26 +1513,26 @@ const findRowBySerialNo = async (serialNo) => {
                       <h4 className="font-medium text-gray-700 mb-4">ट्रैकर फॉर्म फील्ड्स (Edit)</h4>
                       <div className="grid gap-4">
                         
-                        <div className="space-y-2">
-                          <label htmlFor="trackerStatus" className="block text-sm font-medium text-gray-700">
-                            ट्रैकर स्थिति *
-                          </label>
-                          <select
-                            id="trackerStatus"
-                            name="trackerStatus"
-                            value={formData.trackerStatus}
-                            onChange={(e) => handleFormChange("trackerStatus", e.target.value)}
-                            required
-                            className="w-full border border-gray-300 rounded-md py-2 px-3"
-                          >
-                            <option value="">स्थिति चुनें</option>
-                            <option value="beneficiary_visit">लाभार्थी का दौरा</option>
-                            <option value="service_centre">सेवा केंद्र</option>
-                            <option value="closed">बंद</option>
-                            <option value="repair">मरम्मत</option>
-                          </select>
-                        </div>
-
+                      <div className="space-y-2">
+  <label htmlFor="trackerStatus" className="block text-sm font-medium text-gray-700">
+    ट्रैकर स्थिति *
+  </label>
+  <select
+    id="trackerStatus"
+    name="trackerStatus"
+    value={formData.trackerStatus}
+    onChange={(e) => handleFormChange("trackerStatus", e.target.value)}
+    required
+    className="w-full border border-gray-300 rounded-md py-2 px-3"
+  >
+    <option value="">स्थिति चुनें</option>
+    {trackerStatusOptions.map((option, index) => (
+      <option key={index} value={option}>
+        {option}
+      </option>
+    ))}
+  </select>
+</div>
                         <div className="space-y-2">
                           <label htmlFor="natureOfComplaint" className="block text-sm font-medium text-gray-700">
                             शिकायत की प्रकृति
