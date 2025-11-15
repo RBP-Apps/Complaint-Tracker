@@ -1567,7 +1567,7 @@ function NewComplaintForm() {
   const [complaintDate, setComplaintDate] = useState(null)
   const [challanDate, setChallanDate] = useState(null)
   const [closeDate, setCloseDate] = useState(null)
-  const [serialNumber, setSerialNumber] = useState('')
+  const [serialNumber, setSerialNumber] = useState('CT-001')
   
   // States for inline table editing
   const [showForm, setShowForm] = useState(false)
@@ -1587,6 +1587,7 @@ function NewComplaintForm() {
   const [insuranceTypeOptions, setInsuranceTypeOptions] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [technicianMapping, setTechnicianMapping] = useState([])
+  
 
   // Auto-refresh states
   const [autoRefresh, setAutoRefresh] = useState(true)
@@ -1617,22 +1618,46 @@ function NewComplaintForm() {
     challanNo: "",
   })
 
-  // ✅ Generate serial number on component mount
-  useEffect(() => {
-    const generateSerialNumber = () => {
-      const now = new Date()
-      const year = now.getFullYear().toString().slice(-2)
-      const month = (now.getMonth() + 1).toString().padStart(2, '0')
-      const day = now.getDate().toString().padStart(2, '0')
-      const hour = now.getHours().toString().padStart(2, '0')
-      const minute = now.getMinutes().toString().padStart(2, '0')
-      const second = now.getSeconds().toString().padStart(2, '0')
-      const serial = `RBPST-${year}${month}${day}${hour}${minute}${second}`
-      setSerialNumber(serial)
+ // ✅ Generate serial number on component mount - FETCH FROM SHEET
+useEffect(() => {
+  const generateSerialNumber = async () => {
+    try {
+      // Fetch last complaint ID from sheet
+      const response = await fetch(
+        'https://script.google.com/a/macros/rbpindia.com/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec?action=getAllData&sheetName=FMS',
+        { 
+          method: 'GET',
+          headers: { 'Accept': 'application/json' }
+        }
+      )
+      
+      const responseText = await response.text()
+      const data = JSON.parse(responseText)
+      
+      if (data.success && data.data && data.data.length > 0) {
+        // Get last complaint ID from column index 2 (Complaint ID column)
+        const lastComplaintId = data.data[data.data.length - 1][2]
+        
+        if (lastComplaintId && lastComplaintId.startsWith('CT-')) {
+          // Extract number from CT-XXX format
+          const lastNumber = parseInt(lastComplaintId.split('-')[1])
+          const newNumber = lastNumber + 1
+          const newSerialNumber = `CT-${newNumber.toString().padStart(3, '0')}`
+          setSerialNumber(newSerialNumber)
+        } else {
+          setSerialNumber('CT-001') // Default if no valid ID found
+        }
+      } else {
+        setSerialNumber('CT-001') // Default for first entry
+      }
+    } catch (error) {
+      console.error('Error generating serial number:', error)
+      setSerialNumber('CT-001') // Fallback
     }
-    
-    generateSerialNumber()
-  }, [])
+  }
+  
+  generateSerialNumber()
+}, [])
 
   // Fetch dropdown options from the master sheet
   const fetchDropdownOptions = async () => {

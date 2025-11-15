@@ -178,8 +178,12 @@ const generateNextRBPSTId = async () => {
     console.log("📥 Backend response:", result)
     
     if (result.success && result.serialNo) {
-      console.log("✅ Generated unique Serial No:", result.serialNo)
-      return result.serialNo
+      // ✅ Format: RBPT-002 (3 digits with leading zeros)
+      const formattedSerial = result.serialNo.replace(/RBPST-(\d+)/, (match, num) => {
+        return `RBPT-${String(num).padStart(3, '0')}`
+      })
+      console.log("✅ Generated unique Serial No:", formattedSerial)
+      return formattedSerial
     } else {
       throw new Error(result.error || 'Failed to generate serial number from backend')
     }
@@ -188,8 +192,8 @@ const generateNextRBPSTId = async () => {
     console.error("❌ Error calling backend for serial number:", error)
     
     // Fallback: Generate timestamp-based unique ID
-    const timestamp = Date.now().toString().slice(-6)
-    const fallbackId = `RBPST-${timestamp}`
+    const timestamp = Date.now().toString().slice(-3)
+    const fallbackId = `RBPT-${timestamp.padStart(3, '0')}`
     console.log("⚠️ Using fallback timestamp-based ID:", fallbackId)
     return fallbackId
   }
@@ -246,21 +250,23 @@ useEffect(() => {
         data.table.rows.forEach((row, index) => {
           if (row.c && index > 0) {
             const hasComplaintId = row.c[1] && row.c[1].v !== null && row.c[1].v !== "";
-            const isColumnXEmpty = !row.c[23] || row.c[23].v === null || row.c[23].v === "";
+            // ✅ NEW CONDITION: Check Column Z (index 25) for "APPROVED-CLOSE"
+            const columnZValue = row.c[25] ? row.c[25].v : "";
+            const isNotApprovedClose = columnZValue !== "APPROVED-CLOSE";
             
-            // ✅ LOG EVERY ROW for debugging
-            if (index >= 555 && index <= 570) {
+            // ✅ LOG for debugging
+            if (index >= 1 && index <= 20) {
               console.log(`Row ${index}:`, {
                 complaintId: row.c[1]?.v || 'NO ID',
                 hasComplaintId,
-                columnW: row.c[22]?.v || 'empty',
-                columnX: row.c[23]?.v || 'empty',
-                isColumnXEmpty,
-                willBeAdded: hasComplaintId && isColumnXEmpty
+                columnZ: columnZValue || 'empty',
+                isNotApprovedClose,
+                willBeAdded: hasComplaintId && isNotApprovedClose
               });
             }
             
-            if (hasComplaintId && isColumnXEmpty) {
+            // ✅ UPDATED CONDITION: Show in pending unless Column Z = "APPROVED-CLOSE"
+            if (hasComplaintId && isNotApprovedClose) {
               console.log(`✅ ADDING to pending - Row ${index}:`, row.c[1].v);
               
               const task = {
@@ -588,63 +594,71 @@ const fetchTrackerStatusOptions = async () => {
     }
   };
 
-  const submitToTrackerSheet = async (task, serialNo, documentUrl, photoUrl) => {
-    try {
-      const formDataToSubmit = new FormData();
-      formDataToSubmit.append('sheetName', 'Tracker');
-      formDataToSubmit.append('action', 'insert');
-      
-      const timestamp = new Date().toLocaleString('en-US');
-      
-      // Get location data
-      const latitude = photoLocation ? photoLocation.latitude : "";
-      const longitude = photoLocation ? photoLocation.longitude : "";
-      const address = photoLocation ? photoLocation.formattedAddress : "";
-      
-      // Prepare row data for Tracker sheet (columns A to U)
-      const trackerRow = [
-        timestamp,                      // Column A - Timestamp
-        serialNo,                       // Column B - Serial No (RBPST-01 format)
-        task.complaintId,               // Column C - Complaint Id
-        task.technicianName,            // Column D - Technician Name 
-        task.technicianNumber,          // Column E - Technician Number 
-        task.beneficiaryName,           // Column F - Beneficiary Name
-        task.contactNumber,             // Column G - Contact Number
-        task.village,                   // Column H - Village
-        task.block,                     // Column I - Block
-        task.district,                  // Column J - District
-        task.product,                   // Column K - Product
-        task.make,                      // Column L - Make                       
-        formData.systemVoltage,         // Column M - System Voltage
-        formData.natureOfComplaint,     // Column N - Nature Of Complaint
-        documentUrl || "",              // Column O - Upload Documents
-        photoUrl || "",                 // Column P - Geotag Photo
-        formData.remarks,               // Column Q - Remarks
-        formData.trackerStatus,         // Column R - Tracker Status
-        latitude,                       // Column S - Latitude
-        longitude,                      // Column T - Longitude
-        address                         // Column U - Address
-      ];
-      
-      formDataToSubmit.append('rowData', JSON.stringify(trackerRow));
-      
-      const response = await fetch(GOOGLE_SCRIPT_URL, {
-        method: 'POST',
-        body: formDataToSubmit
-      });
-      
-      const result = await response.json();
-      
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to submit to Tracker sheet');
-      }
-      
-      return true;
-    } catch (error) {
-      console.error("Error submitting to Tracker sheet:", error);
-      throw error;
+ const submitToTrackerSheet = async (task, serialNo, documentUrl, photoUrl) => {
+  try {
+    const formDataToSubmit = new FormData();
+    formDataToSubmit.append('sheetName', 'Tracker');
+    formDataToSubmit.append('action', 'insert');
+    
+    // ✅ Format timestamp as DD/MM/YYYY HH:MM:SS
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const year = now.getFullYear();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    const timestamp = `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+    
+    // Get location data
+    const latitude = photoLocation ? photoLocation.latitude : "";
+    const longitude = photoLocation ? photoLocation.longitude : "";
+    const address = photoLocation ? photoLocation.formattedAddress : "";
+    
+    // Prepare row data for Tracker sheet (columns A to U)
+    const trackerRow = [
+      timestamp,                      // Column A - Timestamp (DD/MM/YYYY HH:MM:SS)
+      serialNo,                       // Column B - Serial No (RBPT-002 format)
+      task.complaintId,               // Column C - Complaint Id
+      task.technicianName,            // Column D - Technician Name 
+      task.technicianNumber,          // Column E - Technician Number 
+      task.beneficiaryName,           // Column F - Beneficiary Name
+      task.contactNumber,             // Column G - Contact Number
+      task.village,                   // Column H - Village
+      task.block,                     // Column I - Block
+      task.district,                  // Column J - District
+      task.product,                   // Column K - Product
+      task.make,                      // Column L - Make                       
+      formData.systemVoltage,         // Column M - System Voltage
+      formData.natureOfComplaint,     // Column N - Nature Of Complaint
+      documentUrl || "",              // Column O - Upload Documents
+      photoUrl || "",                 // Column P - Geotag Photo
+      formData.remarks,               // Column Q - Remarks
+      formData.trackerStatus,         // Column R - Tracker Status
+      latitude,                       // Column S - Latitude
+      longitude,                      // Column T - Longitude
+      address                         // Column U - Address
+    ];
+    
+    formDataToSubmit.append('rowData', JSON.stringify(trackerRow));
+    
+    const response = await fetch(GOOGLE_SCRIPT_URL, {
+      method: 'POST',
+      body: formDataToSubmit
+    });
+    
+    const result = await response.json();
+    
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to submit to Tracker sheet');
     }
-  };
+    
+    return true;
+  } catch (error) {
+    console.error("Error submitting to Tracker sheet:", error);
+    throw error;
+  }
+};
 
   const handleDocumentChange = (e) => {
     if (e.target.files && e.target.files[0]) {
@@ -977,78 +991,80 @@ const getFilteredTasksByRole = () => {
           ))}
         </div>
 
-        {/* Desktop Table View */}
-        <div className="hidden md:block overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                  Actions
-                </th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                  Auto Complaint ID
-                </th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                  Beneficiary Name
-                </th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                  Contact Number
-                </th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                  Village
-                </th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                  Block
-                </th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                  District
-                </th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                  Product
-                </th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                  Rating  
-                </th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Contoller RID No.</th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Product SL No.</th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Challan Date </th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Close Date</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredTasks.map((task, index) => (
-                <tr key={task.complaintId || index} className="hover:bg-gray-50">
-                  <td className="px-3 py-4 whitespace-nowrap">
-                    <button
-                      className="bg-gradient-to-r from-amber-400 to-orange-500 text-white hover:from-amber-500 hover:to-orange-600 border-0 py-1 px-3 rounded-md"
-                      onClick={() => handleTaskSelection(task)}
-                    >
-                      Update
-                    </button>
-                  </td>
-                  <td className="px-3 py-4 whitespace-nowrap text-sm font-medium">{task.complaintId}</td>
-                  <td className="px-3 py-4 whitespace-nowrap text-sm">{task.beneficiaryName}</td>
-                  <td className="px-3 py-4 whitespace-nowrap text-sm">{task.contactNumber}</td>
-                  <td className="px-3 py-4 whitespace-nowrap text-sm">{task.village}</td>
-                  <td className="px-3 py-4 whitespace-nowrap text-sm">{task.block}</td>
-                  <td className="px-3 py-4 whitespace-nowrap text-sm">{task.district}</td>
-                  <td className="px-3 py-4 whitespace-nowrap text-sm">{task.product}</td>
-                  <td className="px-3 py-4 whitespace-nowrap text-sm">
-                    {task.priority && (
-                      <span className={`px-2 py-1 text-xs font-semibold rounded-full text-white ${getPriorityColor(task.priority)}`}>
-                        {task.priority}
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-3 py-4 whitespace-nowrap text-sm">{task.ContollerRIDNo}</td>
-                  <td className="px-3 py-4 whitespace-nowrap text-sm">{task.ProductSLNo}</td>
-                  <td className="px-3 py-4 whitespace-nowrap text-sm">{task.ChallanDate}</td>
-                  <td className="px-3 py-4 whitespace-nowrap text-sm">{task.CloseDate}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+       {/* Desktop Table View */}
+<div className="hidden md:block overflow-x-auto">
+  <div className="max-h-[600px] overflow-y-auto">
+    <table className="min-w-full divide-y divide-gray-200">
+      <thead className="bg-gray-100 sticky top-0 z-10">
+        <tr>
+          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap bg-gray-100">
+            Actions
+          </th>
+          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap bg-gray-100">
+            Auto Complaint ID
+          </th>
+          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap bg-gray-100">
+            Beneficiary Name
+          </th>
+          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap bg-gray-100">
+            Contact Number
+          </th>
+          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap bg-gray-100">
+            Village
+          </th>
+          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap bg-gray-100">
+            Block
+          </th>
+          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap bg-gray-100">
+            District
+          </th>
+          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap bg-gray-100">
+            Product
+          </th>
+          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap bg-gray-100">
+            Rating  
+          </th>
+          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap bg-gray-100">Contoller RID No.</th>
+          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap bg-gray-100">Product SL No.</th>
+          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap bg-gray-100">Challan Date </th>
+          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap bg-gray-100">Close Date</th>
+        </tr>
+      </thead>
+      <tbody className="bg-white divide-y divide-gray-200">
+        {filteredTasks.map((task, index) => (
+          <tr key={task.complaintId || index} className="hover:bg-gray-50">
+            <td className="px-3 py-4 whitespace-nowrap">
+              <button
+                className="bg-gradient-to-r from-amber-400 to-orange-500 text-white hover:from-amber-500 hover:to-orange-600 border-0 py-1 px-3 rounded-md"
+                onClick={() => handleTaskSelection(task)}
+              >
+                Update
+              </button>
+            </td>
+            <td className="px-3 py-4 whitespace-nowrap text-sm font-medium">{task.complaintId}</td>
+            <td className="px-3 py-4 whitespace-nowrap text-sm">{task.beneficiaryName}</td>
+            <td className="px-3 py-4 whitespace-nowrap text-sm">{task.contactNumber}</td>
+            <td className="px-3 py-4 whitespace-nowrap text-sm">{task.village}</td>
+            <td className="px-3 py-4 whitespace-nowrap text-sm">{task.block}</td>
+            <td className="px-3 py-4 whitespace-nowrap text-sm">{task.district}</td>
+            <td className="px-3 py-4 whitespace-nowrap text-sm">{task.product}</td>
+            <td className="px-3 py-4 whitespace-nowrap text-sm">
+              {task.priority && (
+                <span className={`px-2 py-1 text-xs font-semibold rounded-full text-white ${getPriorityColor(task.priority)}`}>
+                  {task.priority}
+                </span>
+              )}
+            </td>
+            <td className="px-3 py-4 whitespace-nowrap text-sm">{task.ContollerRIDNo}</td>
+            <td className="px-3 py-4 whitespace-nowrap text-sm">{task.ProductSLNo}</td>
+            <td className="px-3 py-4 whitespace-nowrap text-sm">{task.ChallanDate}</td>
+            <td className="px-3 py-4 whitespace-nowrap text-sm">{task.CloseDate}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</div>
       </>
     )}
   </div>
