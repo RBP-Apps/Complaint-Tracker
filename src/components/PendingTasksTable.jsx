@@ -32,6 +32,9 @@ function TrackerPendingTable() {
   const [locationError, setLocationError] = useState(null)
   const [user, setUser] = useState(null)
 const [userRole, setUserRole] = useState(null)
+// ✅ Empty array - data sheet se hi fetch hoga
+const [trackerStatusOptions, setTrackerStatusOptions] = useState([]);
+
   
   // Form fields for tracker submission
   const [formData, setFormData] = useState({
@@ -209,32 +212,57 @@ const generateNextRBPSTId = async () => {
     }
   }
 
-// ✅ FIXED fetchTasks function - natureOfComplaint Column S (index 18) से fetch करता है
 useEffect(() => {
+  console.log('🚀 Component mounted - Starting data fetch...');
+  
   const fetchTasks = async () => {
+    console.log('🔄 fetchTasks function called');
     setIsLoading(true);
     setError(null);
     
     try {
       const sheetUrl = `https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=FMS`;
+      console.log('📡 Fetching from URL:', sheetUrl);
+      
       const response = await fetch(sheetUrl);
+      console.log('📥 Response received:', response.status, response.ok);
+      
       const text = await response.text();
+      console.log('📄 Response text length:', text.length);
       
       const jsonStart = text.indexOf('{');
       const jsonEnd = text.lastIndexOf('}') + 1;
       const jsonData = text.substring(jsonStart, jsonEnd);
       const data = JSON.parse(jsonData);
       
+      console.log('📊 Data parsed successfully');
+      console.log('📊 Total rows in sheet:', data?.table?.rows?.length || 0);
+      console.log('📊 First row (headers):', data?.table?.rows?.[0]?.c?.map((col, idx) => `${idx}:${col?.v || 'empty'}`));
+      
       if (data && data.table && data.table.rows) {
         const taskData = [];
+        let skippedCount = 0;
         
         data.table.rows.forEach((row, index) => {
           if (row.c && index > 0) {
-            // Column W (index 22) not null and Column X (index 23) null
-            const hasColumnW = row.c[22] && row.c[22].v !== null && row.c[22].v !== "";
+            const hasComplaintId = row.c[1] && row.c[1].v !== null && row.c[1].v !== "";
             const isColumnXEmpty = !row.c[23] || row.c[23].v === null || row.c[23].v === "";
             
-            if (hasColumnW && isColumnXEmpty) {
+            // ✅ LOG EVERY ROW for debugging
+            if (index >= 555 && index <= 570) {
+              console.log(`Row ${index}:`, {
+                complaintId: row.c[1]?.v || 'NO ID',
+                hasComplaintId,
+                columnW: row.c[22]?.v || 'empty',
+                columnX: row.c[23]?.v || 'empty',
+                isColumnXEmpty,
+                willBeAdded: hasComplaintId && isColumnXEmpty
+              });
+            }
+            
+            if (hasComplaintId && isColumnXEmpty) {
+              console.log(`✅ ADDING to pending - Row ${index}:`, row.c[1].v);
+              
               const task = {
                 rowIndex: index + 1,
                 complaintId: row.c[1] ? row.c[1].v : "",
@@ -248,16 +276,11 @@ useEffect(() => {
                 product: row.c[13] ? row.c[13].v : "",
                 make: row.c[14] ? row.c[14].v : "",
                 systemVoltage: row.c[16] ? row.c[16].v : "",
-                
-                // ✅ CORRECTED: natureOfComplaint from Column S (index 18)
                 natureOfComplaint: row.c[18] && row.c[18].v ? row.c[18].v.toString() : "",
-                
                 ContollerRIDNo: row.c[27] ? row.c[27].v : "",
                 ProductSLNo: row.c[28] ? row.c[28].v : "",
                 ChallanDate: row.c[29] ? formatDateString(row.c[29].v) : "",
                 CloseDate: row.c[30] ? formatDateString(row.c[30].v) : "",
-                
-                // Display fields
                 timestamp: row.c[0] ? formatDateString(row.c[0].v) : "",
                 date: row.c[7] ? formatDateString(row.c[7].v) : "",
                 head: row.c[0] ? row.c[0].v : "",
@@ -265,32 +288,38 @@ useEffect(() => {
                 modeOfCall: row.c[3] ? row.c[3].v : "",
                 priority: row.c[15] ? row.c[15].v : "",
                 id: row.c[1] ? row.c[1].v : `COMP-${index + 1}`,
-                fullRowData: row.c
+                fullRowData: row.c,
               };
               
               taskData.push(task);
+            } else {
+              skippedCount++;
             }
           }
         });
         
-        console.log('Total pending tasks found:', taskData.length);
-        console.log('Sample natureOfComplaint data from Column S:', taskData.slice(0, 3).map(t => ({
-          id: t.complaintId,
-          natureOfComplaint: t.natureOfComplaint
-        })));
+        console.log('✅ Pending tasks found:', taskData.length);
+        console.log('⏭️ Rows skipped:', skippedCount);
+        console.log('📋 Pending task IDs:', taskData.map(t => t.complaintId));
+        console.log('📋 First 3 tasks:', taskData.slice(0, 3));
         
         setPendingTasks(taskData);
+      } else {
+        console.error('❌ Invalid data structure:', data);
       }
     } catch (err) {
-      console.error('Error fetching tasks data:', err);
+      console.error('❌ Error fetching tasks data:', err);
+      console.error('❌ Error stack:', err.stack);
       setError(err.message);
       setPendingTasks([]);
     } finally {
       setIsLoading(false);
+      console.log('🏁 fetchTasks completed');
     }
   };
 
   const fetchTechnicianOptions = async () => {
+    console.log('👥 Fetching technician options...');
     try {
       const sheetUrl = `https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=master`;
       const response = await fetch(sheetUrl);
@@ -305,17 +334,73 @@ useEffect(() => {
         const options = data.table.rows.slice(2)
           .map(row => row.c[5]?.v)
           .filter(name => name && typeof name === 'string' && name.trim() !== '');
+        console.log('👥 Technician options loaded:', options.length);
         setTechnicianOptions([...new Set(options)].sort());
       }
     } catch (err) {
-      console.error('Error fetching technician options:', err);
+      console.error('❌ Error fetching technician options:', err);
       setTechnicianOptions([]);
     }
   };
 
   fetchTasks();
   fetchTechnicianOptions();
+  fetchTrackerStatusOptions();
 }, []);
+
+
+
+const fetchTrackerStatusOptions = async () => {
+  try {
+    const sheetUrl = `https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=master`;
+    const response = await fetch(sheetUrl);
+    const text = await response.text();
+    
+    const jsonStart = text.indexOf('{');
+    const jsonEnd = text.lastIndexOf('}') + 1;
+    const jsonData = text.substring(jsonStart, jsonEnd);
+    const data = JSON.parse(jsonData);
+    
+    if (data && data.table && data.table.rows) {
+      // ✅ FIXED: .slice(1) instead of .slice(2) to include Row 2
+      const statusOptions = data.table.rows
+        // .slice(1) // Skip only header row (Row 1)
+        .map(row => row.c[7]?.v) // Column H = index 7
+        .filter(status => status && typeof status === 'string' && status.trim() !== '');
+      
+      console.log('✅ All Status Options from Column H:', statusOptions);
+      
+      // ✅ Remove duplicates
+      const uniqueOptions = [...new Set(statusOptions)];
+      
+      console.log('✅ Unique Options:', uniqueOptions);
+      
+      // ✅ Create mapping
+      const mappedOptions = uniqueOptions.map(status => {
+        // If format is "Hindi | English"
+        if (status.includes('|')) {
+          const [label, value] = status.split('|').map(s => s.trim());
+          return { 
+            label, 
+            value: value.toLowerCase().replace(/[^a-z0-9]/g, '') 
+          };
+        }
+        // English text only - use as both label and value
+        return { 
+          label: status.trim(),
+          value: status.trim().toLowerCase().replace(/[^a-z0-9]/g, '') 
+        };
+      });
+      
+      console.log('✅ Final Mapped Options:', mappedOptions);
+      setTrackerStatusOptions(mappedOptions);
+    }
+  } catch (err) {
+    console.error('❌ Error fetching tracker status options:', err);
+  }
+};
+
+
 
 
   const uploadFileToDrive = async (file, fileType) => {
@@ -531,7 +616,7 @@ useEffect(() => {
         task.product,                   // Column K - Product
         task.make,                      // Column L - Make                       
         formData.systemVoltage,         // Column M - System Voltage
-        // formData.natureOfComplaint,     // Column N - Nature Of Complaint
+        formData.natureOfComplaint,     // Column N - Nature Of Complaint
         documentUrl || "",              // Column O - Upload Documents
         photoUrl || "",                 // Column P - Geotag Photo
         formData.remarks,               // Column Q - Remarks
@@ -1077,9 +1162,9 @@ const getFilteredTasksByRole = () => {
                           />
                         </div> */}
 
-                        <div className="space-y-2">
+                       <div className="space-y-2">
   <label htmlFor="trackerStatus" className="block text-sm font-medium text-gray-700">
-    ट्रैकर स्थिति *
+    ट्रैकर स्थिति (Tracker Status)
   </label>
   <select
     id="trackerStatus"
@@ -1089,11 +1174,12 @@ const getFilteredTasksByRole = () => {
     required
     className="w-full border border-gray-300 rounded-md py-2 px-3"
   >
-    <option value="">स्थिति चुनें</option>
-    <option value="beneficiary_visit">लाभार्थी के द्वारा</option>
-    <option value="service_centre">सेवा केंद्र</option>
-    <option value="closed">बंद</option>
-    <option value="repair">मरम्मत</option>
+    <option value="">Select Status</option>
+    {trackerStatusOptions.map((option, index) => (
+      <option key={index} value={option.value}>
+        {option.label}
+      </option>
+    ))}
   </select>
 </div>
 

@@ -20,6 +20,7 @@ function ComplaintTracker() {
   const [searchTerm, setSearchTerm] = useState("")
   const [checked, setChecked] = useState("")
   const [remark, setRemark] = useState("")
+const [checkedOptions, setCheckedOptions] = useState([])
 
   const GOOGLE_SCRIPT_URL = "https://script.google.com/a/macros/rbpindia.com/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec"
 
@@ -146,29 +147,66 @@ function ComplaintTracker() {
   }
 
   fetchTasks()
+  fetchCheckedOptions()
 }, [])
+const fetchCheckedOptions = async () => {
+  try {
+    console.log("%c[DEBUG] Fetching Master sheet Column I data...", "color: cyan")
+    
+    // Update this URL with your Master sheet URL
+    const masterSheetUrl = 
+      "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=Master&range=I:I"
+    
+    const response = await fetch(masterSheetUrl)
+    const text = await response.text()
+    
+    const jsonStart = text.indexOf("{")
+    const jsonEnd = text.lastIndexOf("}") + 1
+    const jsonData = text.substring(jsonStart, jsonEnd)
+    const data = JSON.parse(jsonData)
+    
+    const options = []
+    
+    if (data?.table?.rows) {
+      data.table.rows.forEach((row, index) => {
+        // Skip header row
+        if (index === 0) return
+        
+        const value = row.c[0]?.v
+        if (value && value !== "" && value !== null) {
+          options.push(value)
+        }
+      })
+    }
+    
+    console.log("%c[DEBUG] Fetched options from Column I:", "color: lime", options)
+    setCheckedOptions(options)
+    
+  } catch (err) {
+    console.error("%c[ERROR] Failed fetching Master sheet options:", "color: red", err)
+  }
+}
+
 
 const handleUpdateTask = async () => {
   setIsSubmitting(true)
   
   try {
-    const currentTasks = [...pendingTasks] // Create a copy
+    const currentTasks = [...pendingTasks]
     const taskIndex = currentTasks.findIndex(t => t.id === selectedTask)
     if (taskIndex === -1) throw new Error("Task not found")
     
-    const task = { ...currentTasks[taskIndex] } // Create a copy of task object
+    const task = { ...currentTasks[taskIndex] }
+    
+    // ALWAYS set actualDate when submitting
+    const actualDate = new Date().toLocaleDateString('en-GB')
     
     const formData = new FormData()
     formData.append('action', 'updateTrackerRecord')
     formData.append('serialNo', task.serialNo)
     formData.append('checkedValue', checked)
     formData.append('remarkValue', remark || "")
-    
-   let actualDate = ""
-if (checked === "Approved" || checked === "Reject" || checked === "Ok") {
-  actualDate = new Date().toLocaleDateString('en-GB')
-}
-formData.append('actualDate', actualDate)
+    formData.append('actualDate', actualDate)  // Always send actualDate
 
     console.log('Submitting data:', {
       action: 'updateTrackerRecord',
@@ -190,31 +228,25 @@ formData.append('actualDate', actualDate)
       throw new Error(result.error || 'Failed to update task')
     }
 
-if (checked === "Approved" || checked === "Reject" || checked === "Ok") {
-  // Create updated task object
-  const updatedTask = { 
-    ...task, 
-    checked: checked, 
-    remark: remark,
-    actualDate: actualDate
-  }
-  
-  // Remove from pending using serialNo for better uniqueness
-  setPendingTasks(prev => prev.filter(t => t.serialNo !== task.serialNo))
-  
-  // Add to history (check if not already exists)
-  setHistoryTasks(prev => {
-    const exists = prev.some(t => t.serialNo === task.serialNo)
-    if (exists) {
-      // Update existing entry
-      return prev.map(t => t.serialNo === task.serialNo ? updatedTask : t)
+    // Move to history regardless of checked value
+    const updatedTask = { 
+      ...task, 
+      checked: checked, 
+      remark: remark,
+      actualDate: actualDate
     }
-    // Add new entry
-    return [...prev, updatedTask]
-  })
-  
-  alert(`Task ${selectedTask} has been ${checked === "Approved" ? "approved" : checked === "Reject" ? "rejected" : "marked as Ok"} and moved to history.`)
-}
+    
+    setPendingTasks(prev => prev.filter(t => t.serialNo !== task.serialNo))
+    
+    setHistoryTasks(prev => {
+      const exists = prev.some(t => t.serialNo === task.serialNo)
+      if (exists) {
+        return prev.map(t => t.serialNo === task.serialNo ? updatedTask : t)
+      }
+      return [...prev, updatedTask]
+    })
+    
+    alert(`Task ${selectedTask} has been updated and moved to history.`)
     
     setIsDialogOpen(false)
     resetDialogState()
@@ -752,23 +784,25 @@ if (checked === "Approved" || checked === "Reject" || checked === "Ok") {
                     />
                   </div>
 
-                  {/* Editable Fields */}
-                  <div className="space-y-2">
-                    <label htmlFor="checked" className="block text-sm font-medium text-gray-700">
-                      Checked 
-                    </label>
-                    <select
-                      id="checked"
-                      value={checked}
-                      onChange={(e) => setChecked(e.target.value)}
-                      className="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="">Select option (optional)</option>
-                      <option value="Approved">Approved</option>
-                      <option value="Reject">Reject</option>
-                      <option value="Ok">Ok</option>
-                    </select>
-                  </div>
+                 <div className="space-y-2">
+  <label htmlFor="checked" className="block text-sm font-medium text-gray-700">
+    Checked 
+  </label>
+  <select
+    id="checked"
+    value={checked}
+    onChange={(e) => setChecked(e.target.value)}
+    className="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+  >
+    <option value="">Select option (optional)</option>
+    {checkedOptions.map((option, index) => (
+      <option key={index} value={option}>
+        {option}
+      </option>
+    ))}
+  </select>
+</div>
+
 
                   <div className="space-y-2">
                     <label htmlFor="remark" className="block text-sm font-medium text-gray-700">
