@@ -86,7 +86,8 @@ function ComplaintsTable() {
                 technicianName: row.c[19]?.v || "", // Column T (19) - Technician Name
                 technicianContact: row.c[20]?.v || "", // Column U (20) - Technician Contact
                 assigneeWhatsApp: row.c[21]?.v || "", // Column V (21) - Assignee WhatsApp Number
-                status: row.c[25]?.v || '', // Column Z (25) - Status
+               status: row.c[25]?.v ? row.c[25].v : "Open",
+
               };
               
               // Only add if complaint has valid data
@@ -280,9 +281,11 @@ const getFilteredComplaintsByRole = () => {
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
           >
-            <option value="All">All Statuses</option>
-            <option value="Approved">Approved</option>
-            <option value="Reject">Reject</option>
+           <option value="All">All Statuses</option>
+<option value="Open">Open</option>
+<option value="Approved">Approved</option>
+<option value="Reject">Reject</option>
+
           </select>
           
           <div className="relative flex items-center">
