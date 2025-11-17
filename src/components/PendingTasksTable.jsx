@@ -248,7 +248,7 @@ useEffect(() => {
         let skippedCount = 0;
         
         data.table.rows.forEach((row, index) => {
-          if (row.c && index > 0) {
+          if (row.c && index >= 0) {
             const hasComplaintId = row.c[1] && row.c[1].v !== null && row.c[1].v !== "";
             // ✅ NEW CONDITION: Check Column Z (index 25) for "APPROVED-CLOSE"
             const columnZValue = row.c[25] ? row.c[25].v : "";
