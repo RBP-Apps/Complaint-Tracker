@@ -1,7 +1,9 @@
 "use client"
 
+
 import { useState, useEffect } from "react"
 import { Clock, CheckCircle, AlertTriangle, Check, ArrowUp, ArrowDown, Shield } from 'lucide-react'
+
 
 function DashboardStats() {
   const [data, setData] = useState(null)
@@ -9,6 +11,7 @@ function DashboardStats() {
   const [error, setError] = useState(null)
   const [user, setUser] = useState(null)
   const [userRole, setUserRole] = useState(null)
+
 
   useEffect(() => {
     const loggedInUser = localStorage.getItem('username')
@@ -24,6 +27,7 @@ function DashboardStats() {
       setUserRole(loggedInRole)
     }
   }, [])
+
 
 useEffect(() => {
     const fetchData = async () => {
@@ -81,8 +85,10 @@ useEffect(() => {
       }
     }
 
+
     fetchData()
   }, [])
+
 
 // Role-based filtering function
 const getFilteredDataByRole = () => {
@@ -120,11 +126,14 @@ const getFilteredDataByRole = () => {
   return data;
 }
 
+
   // Get filtered data based on role
   const filteredData = getFilteredDataByRole()
 
+
   // Calculate stats from filtered data
   const totalComplaints = filteredData ? filteredData.length : 0
+
 
   // For pending complaints, we need to find the correct column for "submitted date" 
   // Since AJ doesn't exist, let's use a different logic
@@ -147,7 +156,8 @@ const getFilteredDataByRole = () => {
       ).length
     : 0
 
-  // For completed complaints
+
+  // For completed complaints - Changed to count "APPROVED-CLOSE" from column Z
   const completedComplaints = filteredData
     ? filteredData.filter(
         (row) => {
@@ -158,15 +168,34 @@ const getFilteredDataByRole = () => {
           
           console.log('Completed check - hasData:', hasData, 'Z:', columnZ)
           
-          // Show as completed if: has data AND Z is "Approved"
-          const isCompleted = hasData && columnZ === "Approved";
+          // Show as completed if: has data AND Z is "APPROVED-CLOSE"
+          const isCompleted = hasData && columnZ === "APPROVED-CLOSE";
           
           return isCompleted;
         }
       ).length
     : 0
 
-  console.log('Final stats:', { totalComplaints, pendingComplaints, completedComplaints })
+
+  // Insurance count - Count non-null values from column R (index 17)
+  const insuranceCount = filteredData
+    ? filteredData.filter(
+        (row) => {
+          const columnR = row.c[17]?.v;  // R column (index 17)
+          
+          console.log('Insurance check - R:', columnR)
+          
+          // Count if column R has a non-null, non-empty value
+          const hasInsurance = columnR !== null && columnR !== undefined && columnR !== "";
+          
+          return hasInsurance;
+        }
+      ).length
+    : 0
+
+
+  console.log('Final stats:', { totalComplaints, pendingComplaints, completedComplaints, insuranceCount })
+
 
   const stats = [
     {
@@ -199,10 +228,21 @@ const getFilteredDataByRole = () => {
       lightColor: "bg-blue-50",
       textColor: "text-blue-600",
     },
+    {
+      title: "Insurance",
+      value: isLoading ? "-" : insuranceCount,
+      change: "+8%",
+      trend: "up",
+      icon: Shield,
+      color: "bg-blue-600",
+      lightColor: "bg-blue-50",
+      textColor: "text-blue-600",
+    },
   ]
 
+
   return (
-    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
       {stats.map((stat, index) => (
         <div key={index} className="rounded-lg border-0 shadow-lg overflow-hidden bg-white">
           <div className={`${stat.color} rounded-t-lg p-4 text-white`}>
@@ -228,5 +268,6 @@ const getFilteredDataByRole = () => {
     </div>
   )
 }
+
 
 export default DashboardStats
