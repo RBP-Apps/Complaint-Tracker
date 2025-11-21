@@ -704,6 +704,17 @@ const handleUpdateTask = async () => {
                       className="w-full border border-gray-300 rounded-md py-2 px-3 bg-gray-50 text-gray-600"
                     />
                   </div>
+                  <div className="space-y-2">
+  <label className="block text-sm font-medium text-gray-700">
+    Tracker Status
+  </label>
+  <input
+    type="text"
+    value={selectedTaskData?.trackerStatus || ""}
+    readOnly
+    className="w-full border border-gray-300 rounded-md py-2 px-3 bg-gray-50 text-gray-600"
+  />
+</div>
 
                   {/* NEW FIELDS - Upload Documents */}
                   <div className="space-y-2">

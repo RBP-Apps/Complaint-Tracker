@@ -546,55 +546,61 @@ const fetchTrackerStatusOptions = async () => {
     });
   }
 
-  const handleUpdateTask = async () => {
-    setIsSubmitting(true);
-    
-    try {
-      const taskIndex = pendingTasks.findIndex(t => t.id === selectedTask);
-      if (taskIndex === -1) throw new Error("Task not found");
-      
-      const task = pendingTasks[taskIndex];
-      
-      let documentUrl = null;
-      let photoUrl = null;
-      
-      if (uploadedDocument) {
-        setUploadStatus("Uploading document...");
-        documentUrl = await uploadFileToDrive(uploadedDocument, "document");
-      }
-      
-      if (uploadedPhoto) {
-        setUploadStatus("Uploading photo...");
-        photoUrl = await uploadFileToDrive(uploadedPhoto, "photo");
-      }
-      
-      // Generate RBPST ID
-      const serialNo = await generateNextRBPSTId();
-      
-      // Submit to Tracker sheet
-      await submitToTrackerSheet(task, serialNo, documentUrl, photoUrl);
-      
-      // Remove from pending tasks if completed
-      if (formData.trackerStatus === "completed") {
-        setPendingTasks(prev => 
-          prev.filter(task => task.id !== selectedTask)
-        );
-      }
-      
-      alert(`Task ${selectedTask} has been updated successfully to Tracker sheet.`);
-      setIsDialogOpen(false);
-      resetForm();
-      
-    } catch (err) {
-      console.error("Error updating task:", err);
-      alert("Failed to update task: " + err.message);
-    } finally {
-      setIsSubmitting(false);
-      setUploadStatus("");
-    }
-  };
+ const handleUpdateTask = async () => {
+  // ✅ Check if geotag photo is uploaded
+  if (!uploadedPhoto) {
+    alert("कृपया जियोटैग फोटो अपलोड करें। यह अनिवार्य है।");
+    return;
+  }
 
- const submitToTrackerSheet = async (task, serialNo, documentUrl, photoUrl) => {
+  setIsSubmitting(true);
+  
+  try {
+    const taskIndex = pendingTasks.findIndex(t => t.id === selectedTask);
+    if (taskIndex === -1) throw new Error("Task not found");
+    
+    const task = pendingTasks[taskIndex];
+    
+    let documentUrl = null;
+    let photoUrl = null;
+    
+    if (uploadedDocument) {
+      setUploadStatus("Uploading document...");
+      documentUrl = await uploadFileToDrive(uploadedDocument, "document");
+    }
+    
+    if (uploadedPhoto) {
+      setUploadStatus("Uploading photo...");
+      photoUrl = await uploadFileToDrive(uploadedPhoto, "photo");
+    }
+    
+    // Generate RBPST ID
+    const serialNo = await generateNextRBPSTId();
+    
+    // Submit to Tracker sheet
+    await submitToTrackerSheet(task, serialNo, documentUrl, photoUrl);
+    
+    // Remove from pending tasks if completed
+    if (formData.trackerStatus === "completed") {
+      setPendingTasks(prev => 
+        prev.filter(task => task.id !== selectedTask)
+      );
+    }
+    
+    alert(`Task ${selectedTask} has been updated successfully to Tracker sheet.`);
+    setIsDialogOpen(false);
+    resetForm();
+    
+  } catch (err) {
+    console.error("Error updating task:", err);
+    alert("Failed to update task: " + err.message);
+  } finally {
+    setIsSubmitting(false);
+    setUploadStatus("");
+  }
+};
+
+const submitToTrackerSheet = async (task, serialNo, documentUrl, photoUrl) => {
   try {
     const formDataToSubmit = new FormData();
     formDataToSubmit.append('sheetName', 'Tracker');
@@ -615,6 +621,20 @@ const fetchTrackerStatusOptions = async () => {
     const longitude = photoLocation ? photoLocation.longitude : "";
     const address = photoLocation ? photoLocation.formattedAddress : "";
     
+    // ✅ FIXED: Get the original label/text format for tracker status
+    const selectedStatusOption = trackerStatusOptions.find(
+      option => option.value === formData.trackerStatus
+    );
+    
+    // ✅ Use the original label/text format (exactly as in master sheet)
+    const trackerStatusValue = selectedStatusOption ? selectedStatusOption.label : formData.trackerStatus;
+    
+    console.log('📤 Submitting Tracker Status:', {
+      selectedValue: formData.trackerStatus,
+      originalLabel: selectedStatusOption?.label,
+      finalValue: trackerStatusValue
+    });
+    
     // Prepare row data for Tracker sheet (columns A to U)
     const trackerRow = [
       timestamp,                      // Column A - Timestamp (DD/MM/YYYY HH:MM:SS)
@@ -634,7 +654,7 @@ const fetchTrackerStatusOptions = async () => {
       documentUrl || "",              // Column O - Upload Documents
       photoUrl || "",                 // Column P - Geotag Photo
       formData.remarks,               // Column Q - Remarks
-      formData.trackerStatus,         // Column R - Tracker Status
+      trackerStatusValue,             // ✅ Column R - Tracker Status (ORIGINAL FORMAT)
       latitude,                       // Column S - Latitude
       longitude,                      // Column T - Longitude
       address                         // Column U - Address
@@ -1164,19 +1184,7 @@ const getFilteredTasksByRole = () => {
                       <h4 className="font-medium text-gray-700 mb-4">ट्रैकर फॉर्म फील्ड्स</h4>
                       <div className="grid gap-4">
                         
-                        {/* <div className="space-y-2">
-                          <label htmlFor="systemVoltage" className="block text-sm font-medium text-gray-700">
-                            सिस्टम वोल्टेज
-                          </label>
-                          <input
-                            type="text"
-                            id="systemVoltage"
-                            className="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            value={formData.systemVoltage}
-                            onChange={(e) => handleFormChange('systemVoltage', e.target.value)}
-                            placeholder="सिस्टम वोल्टेज दर्ज करें"
-                          />
-                        </div> */}
+                       
 
                        <div className="space-y-2">
   <label htmlFor="trackerStatus" className="block text-sm font-medium text-gray-700">
@@ -1241,67 +1249,73 @@ const getFilteredTasksByRole = () => {
                             </div>
                           )}
                         </div>
-
-                        <div className="space-y-2">
-                          <label htmlFor="geotagPhoto" className="block text-sm font-medium text-gray-700">
-                            जियोटैग फोटो
-                          </label>
-                          <div className="flex items-center gap-2">
-                            <input
-                              id="geotagPhoto"
-                              type="file"
-                              accept="image/*"
-                              capture="environment"
-                              className="flex-1 border border-gray-300 rounded-md py-2 px-3"
-                              onChange={handlePhotoChange}
-                            />
-                            <button 
-                              type="button" 
-                              className="p-2 border border-gray-300 rounded-md"
-                              disabled={!uploadedPhoto}
-                            >
-                              <MapPin className="h-4 w-4" />
-                            </button>
-                          </div>
-                          
-                          {uploadedPhoto && (
-                            <div className="text-sm text-green-600">
-                              ✓ चयनित: {uploadedPhoto.name}
-                            </div>
-                          )}
-                          
-                          {isCapturingLocation && (
-                            <div className="flex items-center gap-2 text-sm text-blue-600">
-                              <Loader className="h-4 w-4 animate-spin" />
-                              स्थान कैप्चर किया जा रहा है...
-                            </div>
-                          )}
-                          
-                          {photoLocation && !isCapturingLocation && (
-                            <div className="text-sm text-green-600 space-y-1">
-                              <div className="flex items-center gap-2">
-                                <MapPin className="h-4 w-4" />
-                                स्थान सफलतापूर्वक कैप्चर किया गया
-                              </div>
-                              <div className="text-xs text-gray-600 ml-6">
-                                📍 अक्षांश: {photoLocation.latitude.toFixed(6)}, 
-                                देशांतर: {photoLocation.longitude.toFixed(6)}
-                              </div>
-                              <div className="text-xs text-gray-500 ml-6 truncate">
-                                📌 {photoLocation.formattedAddress}
-                              </div>
-                            </div>
-                          )}
-                          
-                          {locationError && !isCapturingLocation && (
-                            <div className="text-sm text-amber-600">
-                              ⚠️ स्थान उपलब्ध नहीं है: {locationError}
-                              <div className="text-xs text-gray-600 mt-1">
-                                फोटो बिना स्थान डेटा के अपलोड की जाएगी
-                              </div>
-                            </div>
-                          )}
-                        </div>
+<div className="space-y-2">
+  <label htmlFor="geotagPhoto" className="block text-sm font-medium text-gray-700">
+    जियोटैग फोटो <span className="text-red-500">*</span>
+  </label>
+  <div className="flex items-center gap-2">
+    <input
+      id="geotagPhoto"
+      type="file"
+      accept="image/*"
+      capture="environment"
+      className="flex-1 border border-gray-300 rounded-md py-2 px-3"
+      onChange={handlePhotoChange}
+      required
+    />
+    <button 
+      type="button" 
+      className="p-2 border border-gray-300 rounded-md"
+      disabled={!uploadedPhoto}
+    >
+      <MapPin className="h-4 w-4" />
+    </button>
+  </div>
+  
+  {!uploadedPhoto && (
+    <div className="text-sm text-red-500">
+      ⚠️ जियोटैग फोटो अनिवार्य है
+    </div>
+  )}
+  
+  {uploadedPhoto && (
+    <div className="text-sm text-green-600">
+      ✓ चयनित: {uploadedPhoto.name}
+    </div>
+  )}
+  
+  {isCapturingLocation && (
+    <div className="flex items-center gap-2 text-sm text-blue-600">
+      <Loader className="h-4 w-4 animate-spin" />
+      स्थान कैप्चर किया जा रहा है...
+    </div>
+  )}
+  
+  {photoLocation && !isCapturingLocation && (
+    <div className="text-sm text-green-600 space-y-1">
+      <div className="flex items-center gap-2">
+        <MapPin className="h-4 w-4" />
+        स्थान सफलतापूर्वक कैप्चर किया गया
+      </div>
+      <div className="text-xs text-gray-600 ml-6">
+        📍 अक्षांश: {photoLocation.latitude.toFixed(6)}, 
+        देशांतर: {photoLocation.longitude.toFixed(6)}
+      </div>
+      <div className="text-xs text-gray-500 ml-6 truncate">
+        📌 {photoLocation.formattedAddress}
+      </div>
+    </div>
+  )}
+  
+  {locationError && !isCapturingLocation && (
+    <div className="text-sm text-amber-600">
+      ⚠️ स्थान उपलब्ध नहीं है: {locationError}
+      <div className="text-xs text-gray-600 mt-1">
+        फोटो बिना स्थान डेटा के अपलोड की जाएगी
+    </div>
+    </div>
+  )}
+</div>
 
                       <div className="space-y-2">
   <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">

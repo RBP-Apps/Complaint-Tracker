@@ -97,7 +97,7 @@ useEffect(() => {
   return () => clearTimeout(timer)
 }, [filterBeneficiaryName])
 
- // ✅ Generate serial number on component mount - FETCH FROM SHEET
+// ✅ FIXED: Only CT-001 format use करें
 useEffect(() => {
   const generateSerialNumber = async () => {
     try {
@@ -540,151 +540,145 @@ useEffect(() => {
 
   // ✅ COMPLETELY FIXED handleSubmit - Uses FormData like working update
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setIsSubmitting(true)
+  e.preventDefault()
+  setIsSubmitting(true)
+  
+  try {
+    const timestamp = new Date().toLocaleString('en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true
+    })
     
-    try {
-      const timestamp = new Date().toLocaleString('en-US', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: true
-      })
-      
-      if (!serialNumber) {
-        throw new Error('Serial number not generated. Please refresh the page.')
-      }
-      
-      const rowData = new Array(60).fill('')
-
-      // Column mapping - exactly same as before
-      rowData[0] = timestamp
-      rowData[1] = serialNumber
-      rowData[2] = formData.companyName
-      rowData[3] = formData.modeOfCall
-      rowData[4] = formData.idNumber
-      rowData[5] = formData.projectName
-      rowData[6] = formData.complaintNumber
-      rowData[7] = complaintDate ? complaintDate.toLocaleDateString('en-US') : ''
-      rowData[8] = formData.beneficiaryName
-      rowData[9] = formData.contactNumber
-      rowData[10] = formData.village
-      rowData[11] = formData.block
-      rowData[12] = formData.district
-      rowData[13] = formData.product
-      rowData[14] = formData.make
-      rowData[15] = formData.rating
-      rowData[16] = formData.qty
-      rowData[17] = formData.insuranceType
-      rowData[18] = formData.natureOfComplaint
-      rowData[19] = formData.technicianName
-      rowData[20] = formData.technicianContact
-      rowData[21] = formData.assigneeWhatsapp
-      rowData[27] = formData.controllerRidNo
-      rowData[28] = formData.productSlNo
-      rowData[29] = challanDate ? challanDate.toLocaleDateString('en-US') : ''
-      rowData[30] = closeDate ? closeDate.toLocaleDateString('en-US') : ''
-      rowData[31] = formData.challanNo
-
-      // ✅ SAME METHOD as your working update code
-      const formDataToSend = new FormData()
-      formDataToSend.append('action', 'insertFMS')
-      formDataToSend.append('sheetName', 'FMS')
-      formDataToSend.append('rowData', JSON.stringify(rowData))
-
-      // ✅ Add debug logging
-      console.log('Submitting new complaint:', {
-        serialNumber,
-        timestamp,
-        rowDataLength: rowData.length,
-        action: 'insertFMS'
-      })
-
-      const response = await fetch(
-        'https://script.google.com/a/macros/rbpindia.com/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec',
-        {
-          method: 'POST',
-          body: formDataToSend,
-          redirect: 'follow'
-        }
-      )
-      
-      console.log('Response status:', response.status)
-      const responseText = await response.text()
-      console.log('Response text:', responseText.substring(0, 200) + '...')
-      
-      let result
-      try {
-        result = JSON.parse(responseText)
-        console.log('Parsed result:', result)
-      } catch (parseError) {
-        console.log('Could not parse JSON, treating as success')
-        if (responseText.includes('<!DOCTYPE') || response.ok) {
-          result = { success: true }
-        } else {
-          throw new Error('Invalid response from server')
-        }
-      }
-      
-      // ✅ Show success message
-      alert(`Complaint created successfully!\n\nComplaint ID: ${serialNumber}\nTimestamp: ${timestamp}`)
-      
-      // Reset form
-      setFormData({
-        companyName: "",
-        modeOfCall: "",
-        idNumber: "",
-        projectName: "",
-        complaintNumber: "",
-        beneficiaryName: "",
-        contactNumber: "",
-        village: "",
-        block: "",
-        district: "",
-        product: "",
-        make: "",
-        rating: "",
-        qty: "",
-        controllerRidNo: "",
-        productSlNo: "",
-        insuranceType: "",
-        natureOfComplaint: "",
-        technicianName: "",
-        technicianContact: "",
-        assigneeWhatsapp: "",
-        challanNo: "",
-      })
-      setComplaintDate(null)
-      setChallanDate(null)
-      setCloseDate(null)
-      setShowForm(false)
-      
-      // Generate new serial number
-      const now = new Date()
-      const year = now.getFullYear().toString().slice(-2)
-      const month = (now.getMonth() + 1).toString().padStart(2, '0')
-      const day = now.getDate().toString().padStart(2, '0')
-      const hour = now.getHours().toString().padStart(2, '0')
-      const minute = now.getMinutes().toString().padStart(2, '0')
-      const second = now.getSeconds().toString().padStart(2, '0')
-      setSerialNumber(`RBPST-${year}${month}${day}${hour}${minute}${second}`)
-      
-      // ✅ Force refresh table data after submission
-      setTimeout(async () => {
-        console.log('Refreshing table data after submission...')
-        await fetchTableData()
-      }, 2000)
-
-    } catch (error) {
-      console.error('Submission error:', error)
-      alert(`Failed to create complaint!\n\nError: ${error.message}`)
-    } finally {
-      setIsSubmitting(false)
+    if (!serialNumber) {
+      throw new Error('Serial number not generated. Please refresh the page.')
     }
+    
+    const rowData = new Array(60).fill('')
+
+    // Column mapping - exactly same as before
+    rowData[0] = timestamp
+    rowData[1] = serialNumber  // ✅ CT-001 format ही submit होगा
+    rowData[2] = formData.companyName
+    rowData[3] = formData.modeOfCall
+    rowData[4] = formData.idNumber
+    rowData[5] = formData.projectName
+    rowData[6] = formData.complaintNumber
+    rowData[7] = complaintDate ? complaintDate.toLocaleDateString('en-US') : ''
+    rowData[8] = formData.beneficiaryName
+    rowData[9] = formData.contactNumber
+    rowData[10] = formData.village
+    rowData[11] = formData.block
+    rowData[12] = formData.district
+    rowData[13] = formData.product
+    rowData[14] = formData.make
+    rowData[15] = formData.rating
+    rowData[16] = formData.qty
+    rowData[17] = formData.insuranceType
+    rowData[18] = formData.natureOfComplaint
+    rowData[19] = formData.technicianName
+    rowData[20] = formData.technicianContact
+    rowData[21] = formData.assigneeWhatsapp
+    rowData[27] = formData.controllerRidNo
+    rowData[28] = formData.productSlNo
+    rowData[29] = challanDate ? challanDate.toLocaleDateString('en-US') : ''
+    rowData[30] = closeDate ? closeDate.toLocaleDateString('en-US') : ''
+    rowData[31] = formData.challanNo
+
+    // ✅ SAME METHOD as your working update code
+    const formDataToSend = new FormData()
+    formDataToSend.append('action', 'insertFMS')
+    formDataToSend.append('sheetName', 'FMS')
+    formDataToSend.append('rowData', JSON.stringify(rowData))
+
+    // ✅ Add debug logging
+    console.log('Submitting new complaint:', {
+      serialNumber,
+      timestamp,
+      rowDataLength: rowData.length,
+      action: 'insertFMS'
+    })
+
+    const response = await fetch(
+      'https://script.google.com/a/macros/rbpindia.com/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec',
+      {
+        method: 'POST',
+        body: formDataToSend,
+        redirect: 'follow'
+      }
+    )
+    
+    console.log('Response status:', response.status)
+    const responseText = await response.text()
+    console.log('Response text:', responseText.substring(0, 200) + '...')
+    
+    let result
+    try {
+      result = JSON.parse(responseText)
+      console.log('Parsed result:', result)
+    } catch (parseError) {
+      console.log('Could not parse JSON, treating as success')
+      if (responseText.includes('<!DOCTYPE') || response.ok) {
+        result = { success: true }
+      } else {
+        throw new Error('Invalid response from server')
+      }
+    }
+    
+    // ✅ Show success message
+    alert(`Complaint created successfully!\n\nComplaint ID: ${serialNumber}\nTimestamp: ${timestamp}`)
+    
+    // Reset form
+    setFormData({
+      companyName: "",
+      modeOfCall: "",
+      idNumber: "",
+      projectName: "",
+      complaintNumber: "",
+      beneficiaryName: "",
+      contactNumber: "",
+      village: "",
+      block: "",
+      district: "",
+      product: "",
+      make: "",
+      rating: "",
+      qty: "",
+      controllerRidNo: "",
+      productSlNo: "",
+      insuranceType: "",
+      natureOfComplaint: "",
+      technicianName: "",
+      technicianContact: "",
+      assigneeWhatsapp: "",
+      challanNo: "",
+    })
+    setComplaintDate(null)
+    setChallanDate(null)
+    setCloseDate(null)
+    setShowForm(false)
+    
+    // ✅ NEXT CT NUMBER GENERATE KAREN (RBPST format नहीं)
+    const nextNumber = parseInt(serialNumber.split('-')[1]) + 1
+    setSerialNumber(`CT-${nextNumber.toString().padStart(3, '0')}`)
+    
+    // ✅ Force refresh table data after submission
+    setTimeout(async () => {
+      console.log('Refreshing table data after submission...')
+      await fetchTableData()
+    }, 2000)
+
+  } catch (error) {
+    console.error('Submission error:', error)
+    alert(`Failed to create complaint!\n\nError: ${error.message}`)
+  } finally {
+    setIsSubmitting(false)
   }
+}
 
   return (
     <div className="rounded-lg border-0 shadow-md bg-white">
