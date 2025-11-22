@@ -285,9 +285,11 @@ const getFilteredComplaintsByRole = () => {
             onChange={(e) => setStatusFilter(e.target.value)}
           >
            <option value="All">All Statuses</option>
-<option value="Open">Open</option>
-<option value="Approved">Approved</option>
-<option value="Reject">Reject</option>
+<option value="Open">OPEN</option>
+<option value="Approved">APPROVED-CLOSE</option>
+<option value="Approved">OK-OPEN</option>
+
+<option value="Reject">REJECT</option>
 
           </select>
           
