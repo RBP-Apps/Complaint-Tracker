@@ -26,8 +26,10 @@ function DashboardPage() {
             {/* <RecentComplaints /> */}
           {/* </div> */}
         {/* </div> */}
-        {/* // <ComplaintsByRegion /> */}
+       
         <DasbhoardPendingTask />
+        <ComplaintsByRegion />
+
       </div>
     </DashboardLayout>
   )
