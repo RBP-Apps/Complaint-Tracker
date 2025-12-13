@@ -86,24 +86,24 @@ useEffect(() => {
   const getCurrentLocation = () => {
     return new Promise((resolve, reject) => {
       if (!navigator.geolocation) {
-        reject(new Error("Geolocation is not supported by this browser"));
+        reject(new Error("आपका ब्राउज़र लोकेशन सपोर्ट नहीं करता"));
         return;
       }
-
+  
       const options = {
         enableHighAccuracy: true,
-        timeout: 15000,
-        maximumAge: 0,
+        timeout: 30000, // ✅ 30 seconds timeout
+        maximumAge: 10000, // ✅ Accept cached location up to 10 seconds old
       };
-
+  
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           const latitude = position.coords.latitude;
           const longitude = position.coords.longitude;
           const mapLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
-
+  
           const formattedAddress = await getFormattedAddress(latitude, longitude);
-
+  
           const locationInfo = {
             latitude,
             longitude,
@@ -112,17 +112,17 @@ useEffect(() => {
             timestamp: new Date().toISOString(),
             accuracy: position.coords.accuracy,
           };
-
+  
           resolve(locationInfo);
         },
         (error) => {
           const errorMessages = {
-            1: "Location access denied. Please enable location services.",
-            2: "Location information is unavailable.",
-            3: "Location request timed out.",
+            1: "लोकेशन की अनुमति नहीं है। कृपया सेटिंग्स में अनुमति दें।",
+            2: "लोकेशन की जानकारी उपलब्ध नहीं है। कृपया GPS चालू करें।",
+            3: "लोकेशन टाइमआउट। कृपया फिर से प्रयास करें।",
           };
           reject(
-            new Error(errorMessages[error.code] || "An unknown error occurred.")
+            new Error(errorMessages[error.code] || "लोकेशन एरर। कृपया फिर से प्रयास करें।")
           );
         },
         options
@@ -449,102 +449,110 @@ const fetchTrackerStatusOptions = async () => {
     }
   };
 
-  // Image location overlay function (from reference)
-  async function addLocationOverlayToImage(imageFile, latitude, longitude, address) {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      
-      img.onload = () => {
-        try {
-          const canvas = document.createElement("canvas");
-          const ctx = canvas.getContext("2d");
+ // ✅ UPDATED: Better image overlay with error handling
+async function addLocationOverlayToImage(imageFile, latitude, longitude, address) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    
+    const timeoutId = setTimeout(() => {
+      reject(new Error("Image loading timeout"));
+    }, 10000); // ✅ 10 second timeout
+    
+    img.onload = () => {
+      clearTimeout(timeoutId);
+      try {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
 
-          canvas.width = img.width;
-          canvas.height = img.height;
+        canvas.width = img.width;
+        canvas.height = img.height;
 
-          ctx.drawImage(img, 0, 0);
+        ctx.drawImage(img, 0, 0);
 
-          const minFontSize = 12;
-          const maxFontSize = 24;
-          
-          const widthBasedSize = Math.floor(img.width / 25);
-          const heightBasedSize = Math.floor(img.height / 15);
-          const fontSize = Math.max(minFontSize, Math.min(maxFontSize, Math.min(widthBasedSize, heightBasedSize)));
-          
-          const lineHeight = fontSize + 6;
-          const padding = Math.max(8, fontSize / 2);
-          
-          let numberOfLines = 2;
-          if (address && address.trim() !== "") {
-            numberOfLines = 3;
-          }
-          
-          const calculatedHeight = (numberOfLines * lineHeight) + (2 * padding);
-          const maxOverlayHeight = img.height * 0.5;
-          const overlayHeight = Math.min(calculatedHeight, maxOverlayHeight);
-          
-          ctx.fillStyle = "rgba(0, 0, 0, 0.65)";
-          ctx.fillRect(0, canvas.height - overlayHeight, canvas.width, overlayHeight);
-
-          ctx.fillStyle = "#fff";
-          ctx.font = `bold ${fontSize}px Arial`;
-          
-          const textX = padding;
-          let textY = canvas.height - overlayHeight + padding + fontSize;
-
-          ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
-          ctx.shadowBlur = 3;
-          ctx.shadowOffsetX = 1;
-          ctx.shadowOffsetY = 1;
-
-          const latText = `Lat: ${latitude.toFixed(6)}`;
-          ctx.fillText(latText, textX, textY);
-          textY += lineHeight;
-
-          const lngText = `Lng: ${longitude.toFixed(6)}`;
-          ctx.fillText(lngText, textX, textY);
-          
-          if (address && address.trim() !== "" && numberOfLines === 3) {
-            textY += lineHeight;
-            
-            let displayAddress = address;
-            const maxTextWidth = canvas.width - (2 * padding);
-            
-            if (ctx.measureText(displayAddress).width > maxTextWidth) {
-              while (displayAddress.length > 5 && ctx.measureText(displayAddress + "...").width > maxTextWidth) {
-                displayAddress = displayAddress.substring(0, displayAddress.length - 1);
-              }
-              displayAddress = displayAddress + "...";
-            }
-            
-            ctx.fillText(displayAddress, textX, textY);
-          }
-
-          ctx.shadowColor = 'transparent';
-          ctx.shadowBlur = 0;
-          ctx.shadowOffsetX = 0;
-          ctx.shadowOffsetY = 0;
-
-          canvas.toBlob((blob) => {
-            if (blob) {
-              resolve(new File([blob], imageFile.name, { type: "image/jpeg" }));
-            } else {
-              reject(new Error("Failed to create blob"));
-            }
-          }, "image/jpeg", 0.9);
-
-        } catch (error) {
-          reject(error);
+        const minFontSize = 14; // ✅ Slightly larger minimum
+        const maxFontSize = 28;
+        
+        const widthBasedSize = Math.floor(img.width / 25);
+        const heightBasedSize = Math.floor(img.height / 15);
+        const fontSize = Math.max(minFontSize, Math.min(maxFontSize, Math.min(widthBasedSize, heightBasedSize)));
+        
+        const lineHeight = fontSize + 8; // ✅ Better spacing
+        const padding = Math.max(10, fontSize / 2);
+        
+        let numberOfLines = 2;
+        if (address && address.trim() !== "") {
+          numberOfLines = 3;
         }
-      };
-      
-      img.onerror = () => {
-        reject(new Error("Failed to load image"));
-      };
-      
-      img.src = URL.createObjectURL(imageFile);
-    });
-  }
+        
+        const calculatedHeight = (numberOfLines * lineHeight) + (2 * padding);
+        const maxOverlayHeight = img.height * 0.5;
+        const overlayHeight = Math.min(calculatedHeight, maxOverlayHeight);
+        
+        // ✅ Darker overlay for better visibility
+        ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
+        ctx.fillRect(0, canvas.height - overlayHeight, canvas.width, overlayHeight);
+
+        ctx.fillStyle = "#fff";
+        ctx.font = `bold ${fontSize}px Arial`;
+        
+        const textX = padding;
+        let textY = canvas.height - overlayHeight + padding + fontSize;
+
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+        ctx.shadowBlur = 4;
+        ctx.shadowOffsetX = 2;
+        ctx.shadowOffsetY = 2;
+
+        const latText = `📍 Lat: ${latitude.toFixed(6)}`;
+        ctx.fillText(latText, textX, textY);
+        textY += lineHeight;
+
+        const lngText = `📍 Lng: ${longitude.toFixed(6)}`;
+        ctx.fillText(lngText, textX, textY);
+        
+        if (address && address.trim() !== "" && numberOfLines === 3) {
+          textY += lineHeight;
+          
+          let displayAddress = address;
+          const maxTextWidth = canvas.width - (2 * padding);
+          
+          if (ctx.measureText(displayAddress).width > maxTextWidth) {
+            while (displayAddress.length > 5 && ctx.measureText(displayAddress + "...").width > maxTextWidth) {
+              displayAddress = displayAddress.substring(0, displayAddress.length - 1);
+            }
+            displayAddress = displayAddress + "...";
+          }
+          
+          ctx.fillText(displayAddress, textX, textY);
+        }
+
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+
+        canvas.toBlob((blob) => {
+          if (blob) {
+            resolve(new File([blob], imageFile.name, { type: "image/jpeg" }));
+          } else {
+            reject(new Error("Failed to create image blob"));
+          }
+        }, "image/jpeg", 0.92); // ✅ Slightly better quality
+
+      } catch (error) {
+        clearTimeout(timeoutId);
+        reject(error);
+      }
+    };
+    
+    img.onerror = () => {
+      clearTimeout(timeoutId);
+      reject(new Error("Failed to load image"));
+    };
+    
+    img.src = URL.createObjectURL(imageFile);
+  });
+}
 
  const handleUpdateTask = async () => {
   // ✅ Check if geotag photo is uploaded
@@ -692,29 +700,37 @@ const submitToTrackerSheet = async (task, serialNo, documentUrl, photoUrl) => {
       
       setIsCapturingLocation(true);
       setLocationError(null);
-
+      setUploadedPhoto(null); // ✅ Reset previous photo
+  
       try {
+        console.log("📍 Starting location capture...");
         const location = await getCurrentLocation();
         setPhotoLocation(location);
-        console.log("📍 Location captured:", location);
-
+        console.log("✅ Location captured:", location);
+  
+        console.log("🖼️ Processing image with location overlay...");
         const processedPhoto = await addLocationOverlayToImage(
           file,
           location.latitude,
           location.longitude,
           location.formattedAddress
         );
-
+  
         setUploadedPhoto(processedPhoto);
         setIsCapturingLocation(false);
         
-        console.log("✅ Image updated with overlay text");
-
+        console.log("✅ Image successfully processed with location");
+  
       } catch (error) {
-        console.error("Location error:", error);
+        console.error("❌ Location/Image error:", error);
         setLocationError(error.message);
         setIsCapturingLocation(false);
+        
+        // ✅ Still allow photo upload without location
         setUploadedPhoto(file);
+        setPhotoLocation(null);
+        
+        alert(`लोकेशन कैप्चर नहीं हो पाई: ${error.message}\n\nफोटो बिना लोकेशन के अपलोड होगी।`);
       }
     }
   };
