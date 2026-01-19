@@ -98,45 +98,46 @@ useEffect(() => {
 }, [filterBeneficiaryName])
 
 // ✅ FIXED: Only CT-001 format use करें
-useEffect(() => {
-  const generateSerialNumber = async () => {
+  // ✅ FINAL FIX: Pure data scan for absolute Maximum ID
+  const generateSerialNumber = useCallback(async () => {
     try {
-      // Fetch last complaint ID from sheet
       const response = await fetch(
         'https://script.google.com/a/macros/rbpindia.com/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec?action=getAllData&sheetName=FMS',
-        { 
-          method: 'GET',
-          headers: { 'Accept': 'application/json' }
-        }
+        { method: 'GET', headers: { 'Accept': 'application/json' } }
       )
       
-      const responseText = await response.text()
-      const data = JSON.parse(responseText)
+      const data = await response.json()
       
-      if (data.success && data.data && data.data.length > 0) {
-        // Get last complaint ID from column index 2 (Complaint ID column)
-        const lastComplaintId = data.data[data.data.length - 1][2]
+      if (data.success && data.data) {
+        let maxNumber = 0;
+        // Poore data ko string mein convert karke saare CT- numbers ko regex se dhoondho
+        const rawJson = JSON.stringify(data.data);
+        const allMatches = rawJson.match(/CT-(\d+)/g);
         
-        if (lastComplaintId && lastComplaintId.startsWith('CT-')) {
-          // Extract number from CT-XXX format
-          const lastNumber = parseInt(lastComplaintId.split('-')[1])
-          const newNumber = lastNumber + 1
-          const newSerialNumber = `CT-${newNumber.toString().padStart(3, '0')}`
-          setSerialNumber(newSerialNumber)
-        } else {
-          setSerialNumber('CT-001') // Default if no valid ID found
+        if (allMatches) {
+          allMatches.forEach(match => {
+            const num = parseInt(match.split('-')[1]);
+            if (!isNaN(num)) {
+              maxNumber = Math.max(maxNumber, num);
+            }
+          });
         }
-      } else {
-        setSerialNumber('CT-001') // Default for first entry
+        
+        // Agar koi ID nahi mila to default CT-001, warna MAX + 1
+        const nextIdNumber = maxNumber > 0 ? maxNumber + 1 : 1;
+        const newId = `CT-${nextIdNumber.toString().padStart(3, '0')}`;
+        
+        console.log('Detected Max Number:', maxNumber, '| Next ID to use:', newId);
+        setSerialNumber(newId);
       }
     } catch (error) {
-      console.error('Error generating serial number:', error)
-      setSerialNumber('CT-001') // Fallback
+      console.error('Critical Error in sequence generation:', error);
     }
-  }
-  
-  generateSerialNumber()
-}, [])
+  }, []);
+
+  useEffect(() => {
+    generateSerialNumber()
+  }, [generateSerialNumber])
 
   // Fetch dropdown options from the master sheet
   const fetchDropdownOptions = async () => {
@@ -662,14 +663,11 @@ useEffect(() => {
     setCloseDate(null)
     setShowForm(false)
     
-    // ✅ NEXT CT NUMBER GENERATE KAREN (RBPST format नहीं)
-    const nextNumber = parseInt(serialNumber.split('-')[1]) + 1
-    setSerialNumber(`CT-${nextNumber.toString().padStart(3, '0')}`)
-    
-    // ✅ Force refresh table data after submission
+    // ✅ Force refresh table and ID after submission
     setTimeout(async () => {
-      console.log('Refreshing table data after submission...')
+      console.log('Refreshing data after submission...')
       await fetchTableData()
+      await generateSerialNumber() // Recalculate next ID from fresh data
     }, 2000)
 
   } catch (error) {
