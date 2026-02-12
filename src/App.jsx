@@ -39,11 +39,8 @@ import Reportpage from "./pages/Reportpage"
 import TechnicianDashboard from "./pages/TechnicianDashboard"
 import TechnicianTracker from "./pages/TechnicianTracker"
 import Approved from "./pages/Approved"
-<<<<<<< HEAD
 import AdminApproved from "./pages/AdminApproved"
 import AdminLetter from "./pages/AdminLetter"
-=======
->>>>>>> 4c89a70c46faaa456ffea1552df8a304a9a19de9
 import TrackerHistoryPage from "./pages/TrackerHistoryPage"
 
 function App() {
@@ -62,15 +59,12 @@ function App() {
         <Route path="/dashboard/technician-dasboard" element={<TechnicianDashboard />} />
         <Route path="/dashboard/technician-tracker" element={<TechnicianTracker />} />
         <Route path="/dashboard/approved" element={<Approved />} />
-<<<<<<< HEAD
         <Route path="/dashboard/admin-approved" element={<AdminApproved />} />
         <Route path="/dashboard/admin-letter/:complaintId" element={<AdminLetter />} />
-=======
->>>>>>> 4c89a70c46faaa456ffea1552df8a304a9a19de9
         <Route path="/dashboard/tracker-history" element={<TrackerHistoryPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Router>
+      </Routes >
+    </Router >
   )
 }
 
