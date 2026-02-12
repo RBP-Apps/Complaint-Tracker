@@ -16,52 +16,52 @@ function PendingDocumentVerificationTable() {
   const DRIVE_FOLDER_ID = "1XqVaevdcDk5xPqdC6qY8mPOsGwdPsGme"
   // Google Apps Script Web App URL
   const GOOGLE_SCRIPT_URL =
-    "https://script.google.com/a/macros/rbpindia.com/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec"
+    "https://script.google.com/macros/s/AKfycbwJVTmvMQSqVxvBvejjZxJMIKvFFppXjAbBPDZnXeoIkvEfJSE8GxorNlj_SWQblQ0/exec"
 
-    const formatDateString = (dateValue) => {
-      if (!dateValue) return "";
-      
-      let date;
-      
-      // Handle ISO string format (2025-05-22T07:38:28.052Z)
-      if (typeof dateValue === 'string' && dateValue.includes('T')) {
-        date = new Date(dateValue);
+  const formatDateString = (dateValue) => {
+    if (!dateValue) return "";
+
+    let date;
+
+    // Handle ISO string format (2025-05-22T07:38:28.052Z)
+    if (typeof dateValue === 'string' && dateValue.includes('T')) {
+      date = new Date(dateValue);
+    }
+    // Handle date format (2025-05-21)
+    else if (typeof dateValue === 'string' && dateValue.includes('-')) {
+      date = new Date(dateValue);
+    }
+    // Handle Google Sheets Date constructor format like "Date(2025,4,21)"
+    else if (typeof dateValue === 'string' && dateValue.startsWith('Date(')) {
+      // Extract the date parts from "Date(2025,4,21)" format
+      const match = dateValue.match(/Date\((\d+),(\d+),(\d+)\)/);
+      if (match) {
+        const year = parseInt(match[1]);
+        const month = parseInt(match[2]); // Month is 0-indexed in this format
+        const day = parseInt(match[3]);
+        date = new Date(year, month, day);
+      } else {
+        return dateValue;
       }
-      // Handle date format (2025-05-21)
-      else if (typeof dateValue === 'string' && dateValue.includes('-')) {
-        date = new Date(dateValue);
-      }
-      // Handle Google Sheets Date constructor format like "Date(2025,4,21)"
-      else if (typeof dateValue === 'string' && dateValue.startsWith('Date(')) {
-        // Extract the date parts from "Date(2025,4,21)" format
-        const match = dateValue.match(/Date\((\d+),(\d+),(\d+)\)/);
-        if (match) {
-          const year = parseInt(match[1]);
-          const month = parseInt(match[2]); // Month is 0-indexed in this format
-          const day = parseInt(match[3]);
-          date = new Date(year, month, day);
-        } else {
-          return dateValue;
-        }
-      }
-      // Handle if it's already a Date object
-      else if (typeof dateValue === 'object' && dateValue.getDate) {
-        date = dateValue;
-      }
-      else {
-        return dateValue; // Return as is if not a recognizable date format
-      }
-      
-      // Check if date is valid
-      if (isNaN(date.getTime())) {
-        return dateValue; // Return original value if invalid date
-      }
-      
-      const day = String(date.getDate()).padStart(2, '0');
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const year = date.getFullYear();
-      return `${day}/${month}/${year}`;
-    };
+    }
+    // Handle if it's already a Date object
+    else if (typeof dateValue === 'object' && dateValue.getDate) {
+      date = dateValue;
+    }
+    else {
+      return dateValue; // Return as is if not a recognizable date format
+    }
+
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      return dateValue; // Return original value if invalid date
+    }
+
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
 
   // Function to fetch data from Google Sheets
   useEffect(() => {
@@ -106,12 +106,12 @@ function PendingDocumentVerificationTable() {
                   email: formatDateString(row.c[47]?.v) || "", // Column AV - Email
                   address: row.c[48]?.v || "", // Column AW - Address
                 };
-        
+
                 documentsData.push(document);
               }
             }
           });
-        
+
           setPendingDocuments(documentsData);
         }
       } catch (err) {
@@ -138,10 +138,10 @@ function PendingDocumentVerificationTable() {
   // Function to upload file to Google Drive
   const uploadFileToDrive = async (file, fileType) => {
     if (!file) return null;
-    
+
     try {
       setUploadStatus(`Uploading ${fileType}...`);
-      
+
       // Convert file to base64
       const reader = new FileReader();
       const fileBase64 = await new Promise((resolve, reject) => {
@@ -149,7 +149,7 @@ function PendingDocumentVerificationTable() {
         reader.onerror = reject;
         reader.readAsDataURL(file);
       });
-  
+
       // Create form data
       const formData = new FormData();
       formData.append('action', 'uploadFile');
@@ -157,23 +157,23 @@ function PendingDocumentVerificationTable() {
       formData.append('mimeType', file.type);
       formData.append('folderId', DRIVE_FOLDER_ID);
       formData.append('data', fileBase64);
-  
+
       // Send the request
       const response = await fetch(GOOGLE_SCRIPT_URL, {
         method: 'POST',
         body: formData
       });
-  
+
       // Parse the response
       const result = await response.json();
-      
+
       if (!result.success) {
         throw new Error(result.error || 'Failed to upload file');
       }
-  
+
       // Return the direct file URL
       return `https://drive.google.com/uc?id=${result.fileId}`;
-      
+
     } catch (err) {
       console.error(`Error uploading ${fileType}:`, err);
       setUploadStatus(`Error uploading ${fileType}: ${err.message}`);
@@ -183,111 +183,111 @@ function PendingDocumentVerificationTable() {
 
   // Handle document verification form submission
   // Find the handleVerifyDocument function and update the row data preparation section
-// Here's the modified version of that section:
+  // Here's the modified version of that section:
 
-// Handle document verification form submission
-// Submit each additional document individually
+  // Handle document verification form submission
+  // Submit each additional document individually
 
-// Submit each additional document to a different column
+  // Submit each additional document to a different column
 
-const handleVerifyDocument = async (documentId, verificationData) => {
-  try {
-    // Get the document to verify
-    const documentToVerify = pendingDocuments.find((doc) => doc.id === documentId)
-    if (!documentToVerify) {
-      throw new Error("Document not found")
-    }
-  
-    // Upload files if they exist
-    setUploadStatus("Processing document uploads...");
-    
-    let document1Url = "";
-    let document2Url = "";
-    let additionalDocsUrls = [];
-    
-    // Upload document 1 if exists
-    if (verificationData.document1File) {
-      document1Url = await uploadFileToDrive(verificationData.document1File, "Document 1");
-      console.log("Document 1 uploaded, URL:", document1Url);
-    }
-    
-    // Upload document 2 if exists
-    if (verificationData.document2File) {
-      document2Url = await uploadFileToDrive(verificationData.document2File, "Document 2");
-      console.log("Document 2 uploaded, URL:", document2Url);
-    }
-    
-    // Upload additional documents if exist
-    if (verificationData.additionalDocumentsFiles && verificationData.additionalDocumentsFiles.length > 0) {
-      for (let i = 0; i < verificationData.additionalDocumentsFiles.length; i++) {
-        const file = verificationData.additionalDocumentsFiles[i];
-        const url = await uploadFileToDrive(file, `Additional Document ${i+1}`);
-        if (url) additionalDocsUrls.push(url);
+  const handleVerifyDocument = async (documentId, verificationData) => {
+    try {
+      // Get the document to verify
+      const documentToVerify = pendingDocuments.find((doc) => doc.id === documentId)
+      if (!documentToVerify) {
+        throw new Error("Document not found")
       }
-      console.log("Additional documents uploaded, URLs:", additionalDocsUrls);
+
+      // Upload files if they exist
+      setUploadStatus("Processing document uploads...");
+
+      let document1Url = "";
+      let document2Url = "";
+      let additionalDocsUrls = [];
+
+      // Upload document 1 if exists
+      if (verificationData.document1File) {
+        document1Url = await uploadFileToDrive(verificationData.document1File, "Document 1");
+        console.log("Document 1 uploaded, URL:", document1Url);
+      }
+
+      // Upload document 2 if exists
+      if (verificationData.document2File) {
+        document2Url = await uploadFileToDrive(verificationData.document2File, "Document 2");
+        console.log("Document 2 uploaded, URL:", document2Url);
+      }
+
+      // Upload additional documents if exist
+      if (verificationData.additionalDocumentsFiles && verificationData.additionalDocumentsFiles.length > 0) {
+        for (let i = 0; i < verificationData.additionalDocumentsFiles.length; i++) {
+          const file = verificationData.additionalDocumentsFiles[i];
+          const url = await uploadFileToDrive(file, `Additional Document ${i + 1}`);
+          if (url) additionalDocsUrls.push(url);
+        }
+        console.log("Additional documents uploaded, URLs:", additionalDocsUrls);
+      }
+
+      // Get the actual row index in the sheet
+      const rowIndex = documentToVerify.rowIndex;
+
+      setUploadStatus("Updating document verification data...");
+
+      // Create an array with all columns, filled with empty strings
+      // Make sure it's large enough to accommodate all additional documents (100 columns)
+      const rowDataArray = new Array(100).fill("");
+
+      // Fill the columns for verification status and first two documents
+      // rowDataArray[46] = "Verified"; // Column AP - Verification Status
+      rowDataArray[50] = new Date().toLocaleString('en-US')
+      rowDataArray[52] = document1Url || ""; // Document 1 (Column AQ)
+      rowDataArray[53] = document2Url || ""; // Document 2 (Column AR)
+
+      // Now, put each additional document in its own column
+      // Start with column AS (index 49) and continue to subsequent columns
+      for (let i = 0; i < additionalDocsUrls.length; i++) {
+        // Index 49 is column AS, 50 is AT, 51 is AU, etc.
+        rowDataArray[54 + i] = additionalDocsUrls[i];
+      }
+
+      // Prepare form data for the update
+      const formData = new FormData();
+      formData.append("sheetName", "FMS");
+      formData.append("action", "update");
+      formData.append("rowIndex", rowIndex.toString());
+
+      // Add the JSON string of row data to the form
+      formData.append("rowData", JSON.stringify(rowDataArray));
+
+      console.log("Submitting all documents for row:", rowIndex);
+      console.log("Row data:", rowDataArray);
+
+      // Post the update
+      const response = await fetch(GOOGLE_SCRIPT_URL, {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.error || "Failed to update sheet");
+      }
+
+      // Update the local state to remove this document from the list
+      setPendingDocuments(pendingDocuments.filter((doc) => doc.id !== documentId));
+
+      // Close the dialog
+      setIsDialogOpen(false);
+      setSelectedDocument(null);
+
+      return true;
+    } catch (err) {
+      console.error("Error verifying document:", err);
+      setUploadStatus(`Error: ${err.message}`);
+      throw err;
+    } finally {
+      setUploadStatus("");
     }
-  
-    // Get the actual row index in the sheet
-    const rowIndex = documentToVerify.rowIndex;
-  
-    setUploadStatus("Updating document verification data...");
-  
-    // Create an array with all columns, filled with empty strings
-    // Make sure it's large enough to accommodate all additional documents (100 columns)
-    const rowDataArray = new Array(100).fill("");
-  
-    // Fill the columns for verification status and first two documents
-    // rowDataArray[46] = "Verified"; // Column AP - Verification Status
-    rowDataArray[50] = new Date().toLocaleString('en-US')    
-    rowDataArray[52] = document1Url || ""; // Document 1 (Column AQ)
-    rowDataArray[53] = document2Url || ""; // Document 2 (Column AR)
-    
-    // Now, put each additional document in its own column
-    // Start with column AS (index 49) and continue to subsequent columns
-    for (let i = 0; i < additionalDocsUrls.length; i++) {
-      // Index 49 is column AS, 50 is AT, 51 is AU, etc.
-      rowDataArray[54 + i] = additionalDocsUrls[i];
-    }
-  
-    // Prepare form data for the update
-    const formData = new FormData();
-    formData.append("sheetName", "FMS");
-    formData.append("action", "update");
-    formData.append("rowIndex", rowIndex.toString());
-    
-    // Add the JSON string of row data to the form
-    formData.append("rowData", JSON.stringify(rowDataArray));
-  
-    console.log("Submitting all documents for row:", rowIndex);
-    console.log("Row data:", rowDataArray);
-  
-    // Post the update
-    const response = await fetch(GOOGLE_SCRIPT_URL, {
-      method: "POST",
-      body: formData,
-    });
-  
-    const result = await response.json();
-    if (!result.success) {
-      throw new Error(result.error || "Failed to update sheet");
-    }
-  
-    // Update the local state to remove this document from the list
-    setPendingDocuments(pendingDocuments.filter((doc) => doc.id !== documentId));
-  
-    // Close the dialog
-    setIsDialogOpen(false);
-    setSelectedDocument(null);
-  
-    return true;
-  } catch (err) {
-    console.error("Error verifying document:", err);
-    setUploadStatus(`Error: ${err.message}`);
-    throw err;
-  } finally {
-    setUploadStatus("");
-  }
-};
+  };
 
   if (isLoading) {
     return (

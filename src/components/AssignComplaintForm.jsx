@@ -80,27 +80,27 @@ function AssignComplaintForm({ complaintId, onClose, onSubmit }) {
         alert("Please enter the assignee name")
         return
       }
-      
+
       if (!formData.technicianName.trim()) {
         alert("Please select or enter a technician name")
         return
       }
-      
+
       if (!formData.technicianContact.trim()) {
         alert("Please enter the technician contact")
         return
       }
-      
+
       if (!formData.location.trim()) {
         alert("Please enter the location")
         return
       }
-      
+
       if (!formData.complaintDetails.trim()) {
         alert("Please enter complaint details")
         return
       }
-      
+
       if (!expectedCompletionDate) {
         alert("Please select an expected completion date")
         return
@@ -142,15 +142,15 @@ function AssignComplaintForm({ complaintId, onClose, onSubmit }) {
         <label htmlFor="assigneeName" className="block text-sm font-medium">
           Assignee Name <span className="text-red-500">*</span>
         </label>
-          <input
-            id="assigneeName"
-            name="assigneeName"  // Changed from "assignee" to "assigneeName"
-            placeholder="Enter assignee name"
-            value={formData.assigneeName}
-            onChange={handleChange}
-            required
-            className="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
+        <input
+          id="assigneeName"
+          name="assigneeName"  // Changed from "assignee" to "assigneeName"
+          placeholder="Enter assignee name"
+          value={formData.assigneeName}
+          onChange={handleChange}
+          required
+          className="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        />
       </div>
 
       <div className="space-y-2">
@@ -282,7 +282,7 @@ function AssignComplaintForm({ complaintId, onClose, onSubmit }) {
         </div>
       </div>
 
-    <div className="space-y-2">
+      <div className="space-y-2">
         <label htmlFor="notesForTechnician" className="block text-sm font-medium">
           Notes for Technician
         </label>

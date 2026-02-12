@@ -39,6 +39,10 @@ import Reportpage from "./pages/Reportpage"
 import TechnicianDashboard from "./pages/TechnicianDashboard"
 import TechnicianTracker from "./pages/TechnicianTracker"
 import Approved from "./pages/Approved"
+import AdminApproved from "./pages/AdminApproved"
+import AdminLetter from "./pages/AdminLetter"
+import TrackerHistoryPage from "./pages/TrackerHistoryPage"
+
 function App() {
   return (
     <Router>
@@ -51,10 +55,13 @@ function App() {
         <Route path="/dashboard/verification" element={<VerificationPage />} />
         <Route path="/dashboard/document-verification" element={<DocumentVerificationPage />} />
         <Route path="/dashboard/petrol-expenses" element={<PetrolExpensesPage />} />
-        <Route path="/dashboard/Report" element={<Reportpage/>} />
+        <Route path="/dashboard/Report" element={<Reportpage />} />
         <Route path="/dashboard/technician-dasboard" element={<TechnicianDashboard />} />
         <Route path="/dashboard/technician-tracker" element={<TechnicianTracker />} />
         <Route path="/dashboard/approved" element={<Approved />} />
+        <Route path="/dashboard/admin-approved" element={<AdminApproved />} />
+        <Route path="/dashboard/admin-letter/:complaintId" element={<AdminLetter />} />
+        <Route path="/dashboard/tracker-history" element={<TrackerHistoryPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>

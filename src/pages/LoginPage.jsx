@@ -16,24 +16,24 @@
 
 //     try {
 //       // Using your existing AppScript URL
-//       const scriptUrl = 'https://script.google.com/a/macros/rbpindia.com/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec';
-      
+//       const scriptUrl = 'https://script.google.com/macros/s/AKfycbwJVTmvMQSqVxvBvejjZxJMIKvFFppXjAbBPDZnXeoIkvEfJSE8GxorNlj_SWQblQ0/exec';
+
 //       // Direct authentication from the Login sheet without modifying your app script
 //       try {
 //         // Fetch the Google Sheet data for validation
 //         const sheetUrl = "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=Login";
 //         const response = await fetch(sheetUrl);
 //         const text = await response.text();
-        
+
 //         // Google Sheets API returns a JSON-like string that needs parsing
 //         // This format is specific to the /gviz/tq endpoint
 //         const jsonData = JSON.parse(text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1));
 //         const rows = jsonData.table.rows;
-        
+
 //         // Check for matching credentials
 //         let authenticated = false;
 //         let userPermission = "";
-        
+
 //         // handleSubmit function ke andar - authentication part ko replace karo
 
 // for (let i = 0; i < rows.length; i++) {
@@ -42,16 +42,16 @@
 //   const rowPassword = row && row[1]?.v || "";
 //   const rowPermission = row && row[2]?.v || "";
 //   const rowRole = row && row[4]?.v || ""; // Column E (index 4) - Role column
-  
+
 //   if (rowUsername === username && rowPassword === password) {
 //     authenticated = true;
 //     userPermission = rowPermission;
-    
+
 //     // Store role separately for easy access
 //     localStorage.setItem('userRole', rowRole); // NEW - Role store kar rahe hain
 //     localStorage.setItem('userPermissions', userPermission); 
 //     localStorage.setItem('username', username);
-    
+
 //     break;
 //   }
 // }
@@ -119,19 +119,19 @@
 //           <h1 className="mb-2 text-3xl font-bold text-gray-800">Complaints Tracker</h1>
 //           <p className="text-gray-600">Login to manage and track complaints</p>
 //         </div>
-        
+
 //         {error && (
 //           <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-700">
 //             {error}
 //           </div>
 //         )}
-        
+
 //         <form onSubmit={handleSubmit} className="space-y-6">
 //           <div className="mb-4 flex items-center rounded-md bg-blue-50 p-3 text-sm text-blue-700">
 //             <Info size={18} className="mr-2 flex-shrink-0" />
 //             <p>Use your assigned credentials to login</p>
 //           </div>
-          
+
 //           <div className="space-y-4">
 //             <div>
 //               <label htmlFor="username" className="mb-1 block text-sm font-medium text-gray-700">
@@ -146,7 +146,7 @@
 //                 className="h-11 w-full rounded-md border border-gray-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
 //               />
 //             </div>
-            
+
 //             <div>
 //               <label htmlFor="password" className="mb-1 block text-sm font-medium text-gray-700">
 //                 Password
@@ -161,7 +161,7 @@
 //               />
 //             </div>
 //           </div>
-          
+
 //           <button
 //             type="submit"
 //             disabled={isLoading}
@@ -169,7 +169,7 @@
 //           >
 //             {isLoading ? "Logging in..." : "Login"}
 //           </button>
-          
+
 //           {/* <div className="flex justify-center">
 //             <button
 //               type="button"
@@ -181,7 +181,7 @@
 //             </button>
 //           </div> */}
 //         </form>
-        
+
 //         <div className="mt-8 text-center text-xs text-gray-500">
 //           Complaints Tracker System v1.0
 //         </div>
@@ -195,7 +195,7 @@
 
 
 
-"use client"  
+"use client"
 
 import { useState, useEffect } from "react";
 import { Clipboard, Info } from "react-feather";
@@ -216,18 +216,18 @@ function LoginPage() {
       const sheetUrl = "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=Login";
       const response = await fetch(sheetUrl);
       const text = await response.text();
-      
+
       // Google Sheets API returns a JSON-like string that needs parsing
       const jsonData = JSON.parse(text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1));
       const rows = jsonData.table.rows;
-      
+
       // Check for matching credentials
       let authenticated = false;
       let userPermission = "";
       let userRole = "";
       let technicianName = "";
       let technicianContact = "";
-      
+
       for (let i = 0; i < rows.length; i++) {
         const row = rows[i].c;
         const rowUsername = row && row[0]?.v || ""; // Column A - Username
@@ -235,7 +235,7 @@ function LoginPage() {
         const rowPermission = row && row[2]?.v || ""; // Column C - Permissions
         const rowRole = row && row[4]?.v || ""; // Column E - Role
         const rowContact = row && row[5]?.v || ""; // Column F - Contact
-        
+
         if (rowUsername === username && rowPassword === password) {
           authenticated = true;
           userPermission = rowPermission;
@@ -263,10 +263,10 @@ function LoginPage() {
 
         // Determine redirect path based on role
         let redirectPath = "/dashboard";
-        
+
         if (userRole && userRole.toLowerCase() === 'admin') {
           redirectPath = "/dashboard";  // Admin → Dashboard
-        } 
+        }
         else if (userRole && userRole.toLowerCase() === 'technician') {
           redirectPath = "/dashboard/tracker";  // Technician → Tracker
         }
@@ -326,19 +326,19 @@ function LoginPage() {
           <h1 className="mb-2 text-3xl font-bold text-gray-800">Complaints Tracker</h1>
           <p className="text-gray-600">Login to manage and track complaints</p>
         </div>
-        
+
         {error && (
           <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-700">
             {error}
           </div>
         )}
-        
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="mb-4 flex items-center rounded-md bg-blue-50 p-3 text-sm text-blue-700">
             <Info size={18} className="mr-2 flex-shrink-0" />
             <p>Use your assigned credentials to login</p>
           </div>
-          
+
           <div className="space-y-4">
             <div>
               <label htmlFor="username" className="mb-1 block text-sm font-medium text-gray-700">
@@ -354,7 +354,7 @@ function LoginPage() {
                 placeholder="Enter your user ID"
               />
             </div>
-            
+
             <div>
               <label htmlFor="password" className="mb-1 block text-sm font-medium text-gray-700">
                 Password
@@ -370,7 +370,7 @@ function LoginPage() {
               />
             </div>
           </div>
-          
+
           <button
             type="submit"
             disabled={isLoading}
@@ -379,7 +379,7 @@ function LoginPage() {
             {isLoading ? "Logging in..." : "Login"}
           </button>
         </form>
-        
+
         <div className="mt-8 text-center text-xs text-gray-500">
           Complaints Tracker System v1.0
         </div>

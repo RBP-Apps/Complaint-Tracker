@@ -16,54 +16,54 @@ function DashboardStats() {
   useEffect(() => {
     const loggedInUser = localStorage.getItem('username')
     const loggedInRole = localStorage.getItem('userRole')
-    
+
     console.log('DashboardStats - Retrieved from localStorage:', { loggedInUser, loggedInRole })
-    
+
     if (loggedInUser) {
       setUser(loggedInUser)
     }
-    
+
     if (loggedInRole) {
       setUserRole(loggedInRole)
     }
   }, [])
 
 
-useEffect(() => {
+  useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading(true)
         const sheetUrl = "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=FMS"
         const response = await fetch(sheetUrl)
-        
+
         if (!response.ok) {
           throw new Error(`Failed to fetch sheet data: ${response.status} ${response.statusText}`)
         }
-        
+
         const text = await response.text()
-        
+
         const jsonStart = text.indexOf('{')
         const jsonEnd = text.lastIndexOf('}') + 1
-        
+
         if (jsonStart === -1 || jsonEnd === 0) {
           throw new Error("Invalid response format from Google Sheets")
         }
-        
+
         const jsonData = text.substring(jsonStart, jsonEnd)
         const parsedData = JSON.parse(jsonData)
-        
+
         if (parsedData && parsedData.table && parsedData.table.rows) {
           // Get parsedNumHeaders से actual header count
           const headerCount = parsedData.parsedNumHeaders || 0
-          
+
           // Header rows को skip करें
           const rows = parsedData.table.rows.slice(headerCount)
-          
+
           console.log('Raw sheet data:', rows)
           console.log('Header count:', headerCount)
           console.log('Data rows after removing headers:', rows.length)
           console.log('First data row sample:', rows[0])
-          
+
           if (rows[0] && rows[0].c) {
             console.log('Row structure - total columns:', rows[0].c.length)
             // Print all column values to find the right ones
@@ -90,41 +90,41 @@ useEffect(() => {
   }, [])
 
 
-// Role-based filtering function
-const getFilteredDataByRole = () => {
-  if (!data) return [];
-  
-  console.log('DashboardStats - Filtering with user:', user, 'role:', userRole)
-  
-  // If admin or user, show all data
-  if (userRole && (userRole.toLowerCase() === 'admin' || userRole.toLowerCase() === 'user')) {
-    console.log('DashboardStats - Admin/User role, showing all data')
+  // Role-based filtering function
+  const getFilteredDataByRole = () => {
+    if (!data) return [];
+
+    console.log('DashboardStats - Filtering with user:', user, 'role:', userRole)
+
+    // If admin or user, show all data
+    if (userRole && (userRole.toLowerCase() === 'admin' || userRole.toLowerCase() === 'user')) {
+      console.log('DashboardStats - Admin/User role, showing all data')
+      return data;
+    }
+
+    // If tech role and has username, filter by technician name
+    if (userRole && userRole.toLowerCase() === 'tech' && user) {
+      console.log('DashboardStats - Tech role, filtering by technician name:', user)
+      const filtered = data.filter((row) => {
+        // Column T (index 19) - Technician Name
+        const technicianName = row.c[19]?.v || "";
+        const match = technicianName === user;
+        return match;
+      });
+      console.log('DashboardStats - Filtered data count:', filtered.length)
+      return filtered;
+    }
+
+    // If tech role but no username, show empty
+    if (userRole && userRole.toLowerCase() === 'tech' && !user) {
+      console.log('DashboardStats - Tech role but no username, showing empty')
+      return [];
+    }
+
+    // Default: show all data (when no role is set)
+    console.log('DashboardStats - No role set, showing all data')
     return data;
   }
-  
-  // If tech role and has username, filter by technician name
-  if (userRole && userRole.toLowerCase() === 'tech' && user) {
-    console.log('DashboardStats - Tech role, filtering by technician name:', user)
-    const filtered = data.filter((row) => {
-      // Column T (index 19) - Technician Name
-      const technicianName = row.c[19]?.v || "";
-      const match = technicianName === user;
-      return match;
-    });
-    console.log('DashboardStats - Filtered data count:', filtered.length)
-    return filtered;
-  }
-  
-  // If tech role but no username, show empty
-  if (userRole && userRole.toLowerCase() === 'tech' && !user) {
-    console.log('DashboardStats - Tech role but no username, showing empty')
-    return [];
-  }
-  
-  // Default: show all data (when no role is set)
-  console.log('DashboardStats - No role set, showing all data')
-  return data;
-}
 
 
   // Get filtered data based on role
@@ -140,57 +140,57 @@ const getFilteredDataByRole = () => {
   // Check if row has data (any meaningful data in key columns)
   const pendingComplaints = filteredData
     ? filteredData.filter(
-        (row) => {
-          const columnZ = row.c[25]?.v;  // Z column status
-          
-          // Check if this row has meaningful data (not all empty)
-          const hasData = row.c.some(cell => cell && cell.v !== null && cell.v !== "");
-          
-          console.log('Pending check - hasData:', hasData, 'Z:', columnZ)
-          
-          // Show as pending if: has data AND (Z is null/empty OR Z is "Reject")
-          const isPending = hasData && (!columnZ || columnZ === null || columnZ === "" || columnZ === "Reject");
-          
-          return isPending;
-        }
-      ).length
+      (row) => {
+        const columnZ = row.c[25]?.v;  // Z column status
+
+        // Check if this row has meaningful data (not all empty)
+        const hasData = row.c.some(cell => cell && cell.v !== null && cell.v !== "");
+
+        console.log('Pending check - hasData:', hasData, 'Z:', columnZ)
+
+        // Show as pending if: has data AND (Z is null/empty OR Z is "Reject")
+        const isPending = hasData && (!columnZ || columnZ === null || columnZ === "" || columnZ === "Reject");
+
+        return isPending;
+      }
+    ).length
     : 0
 
 
   // For completed complaints - Changed to count "APPROVED-CLOSE" from column Z
   const completedComplaints = filteredData
     ? filteredData.filter(
-        (row) => {
-          const columnZ = row.c[25]?.v;  // Z column status
-          
-          // Check if this row has meaningful data
-          const hasData = row.c.some(cell => cell && cell.v !== null && cell.v !== "");
-          
-          console.log('Completed check - hasData:', hasData, 'Z:', columnZ)
-          
-          // Show as completed if: has data AND Z is "APPROVED-CLOSE"
-          const isCompleted = hasData && columnZ === "APPROVED-CLOSE";
-          
-          return isCompleted;
-        }
-      ).length
+      (row) => {
+        const columnZ = row.c[25]?.v;  // Z column status
+
+        // Check if this row has meaningful data
+        const hasData = row.c.some(cell => cell && cell.v !== null && cell.v !== "");
+
+        console.log('Completed check - hasData:', hasData, 'Z:', columnZ)
+
+        // Show as completed if: has data AND Z is "APPROVED-CLOSE"
+        const isCompleted = hasData && columnZ === "APPROVED-CLOSE";
+
+        return isCompleted;
+      }
+    ).length
     : 0
 
 
   // Insurance count - Count non-null values from column R (index 17)
   const insuranceCount = filteredData
     ? filteredData.filter(
-        (row) => {
-          const columnR = row.c[17]?.v;  // R column (index 17)
-          
-          console.log('Insurance check - R:', columnR)
-          
-          // Count if column R has a non-null, non-empty value
-          const hasInsurance = columnR !== null && columnR !== undefined && columnR !== "";
-          
-          return hasInsurance;
-        }
-      ).length
+      (row) => {
+        const columnR = row.c[17]?.v;  // R column (index 17)
+
+        console.log('Insurance check - R:', columnR)
+
+        // Count if column R has a non-null, non-empty value
+        const hasInsurance = columnR !== null && columnR !== undefined && columnR !== "";
+
+        return hasInsurance;
+      }
+    ).length
     : 0
 
 
@@ -209,7 +209,7 @@ const getFilteredDataByRole = () => {
       textColor: "text-blue-600",
     },
     {
-      title: "Pending Complaints", 
+      title: "Pending Complaints",
       value: isLoading ? "-" : pendingComplaints,
       change: "-5%",
       trend: "down",
