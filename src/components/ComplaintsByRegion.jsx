@@ -18,13 +18,13 @@
 //   useEffect(() => {
 //     const loggedInUser = localStorage.getItem('username')
 //     const loggedInRole = localStorage.getItem('userRole')
-    
+
 //     console.log('ComplaintsByDistrict - Retrieved from localStorage:', { loggedInUser, loggedInRole })
-    
+
 //     if (loggedInUser) {
 //       setUser(loggedInUser)
 //     }
-    
+
 //     if (loggedInRole) {
 //       setUserRole(loggedInRole)
 //     }
@@ -74,21 +74,21 @@
 //   // Role-based filtering function
 //   const getFilteredDataByRole = () => {
 //     if (!data) return [];
-    
+
 //     console.log('ComplaintsByDistrict - Filtering with user:', user, 'role:', userRole)
-    
+
 //     // If no role is set, show all data
 //     if (!userRole) {
 //       console.log('ComplaintsByDistrict - No role set, showing all data')
 //       return data;
 //     }
-    
+
 //     // If admin, show all data
 //     if (userRole.toLowerCase() === 'admin') {
 //       console.log('ComplaintsByDistrict - Admin user, showing all data')
 //       return data;
 //     }
-    
+
 //     // If user role and has username, filter by technician name
 //     if (user) {
 //       console.log('ComplaintsByDistrict - User role, filtering by technician name:', user)
@@ -101,7 +101,7 @@
 //       console.log('ComplaintsByDistrict - Filtered data count:', filtered.length)
 //       return filtered;
 //     }
-    
+
 //     // If user role but no username, show empty
 //     console.log('ComplaintsByDistrict - User role but no username, showing empty')
 //     return [];
@@ -110,7 +110,7 @@
 //   // Process complaints by district from filtered data
 //   const processComplaintsByDistrict = () => {
 //     const filteredData = getFilteredDataByRole();
-    
+
 //     if (!filteredData || filteredData.length === 0) return []
 
 //     const districtCounts = {}
@@ -315,12 +315,12 @@ function ComplaintsByRegion() {
                 status: row.c[25] && row.c[25].v ? row.c[25].v : "Open",
                 closeDate:
                   row.c[25] &&
-                  row.c[25].v === "APPROVED-CLOSE" &&
-                  row.c[23] &&
-                  row.c[23].v
+                    row.c[25].v === "APPROVED-CLOSE" &&
+                    row.c[23] &&
+                    row.c[23].v
                     ? row.c[23].f ||
-                      formatDateString(row.c[23].v) ||
-                      row.c[23].v
+                    formatDateString(row.c[23].v) ||
+                    row.c[23].v
                     : "",
               }
               if (complaint.complaintId) complaintData.push(complaint)

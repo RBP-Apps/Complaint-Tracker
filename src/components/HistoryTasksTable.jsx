@@ -13,11 +13,11 @@
 //  useEffect(() => {
 //   const u = localStorage.getItem("username") || ""
 //   const loggedInRole = localStorage.getItem('userRole')
-  
+
 //   console.log('TrackerHistoryTable - Retrieved from localStorage:', { username: u, userRole: loggedInRole })
-  
+
 //   setUsername(u)
-  
+
 //   if (loggedInRole) {
 //     setUserRole(loggedInRole)
 //   }
@@ -117,15 +117,15 @@
 //         // 🔥 FIX: Add proper debugging and row validation for FMS
 //         console.log('FMS Total rows:', fmsData.table.rows.length)
 //         console.log('FMS ParsedNumHeaders:', fmsData.parsedNumHeaders)
-        
+
 //         fmsData.table.rows.forEach((row, index) => {
 //           if (row.c && row.c[1]?.v) { // Check if complaint ID exists
 //             console.log(`FMS Processing row ${index}:`, { id: row.c[1]?.v, status: row.c[25]?.v })
-            
+
 //             const complaintId = row.c[1].v // Column B - Complaint ID
 //             const status = row.c[25] ? row.c[25].v : "" // Column Z (index 25)
 //             const attendDate = row.c[26] ? row.c[26].v : "" // Column AA (index 26)
-            
+
 //             fmsMap.set(complaintId, {
 //               status: status,
 //               attendDate: formatDateString(attendDate)
@@ -152,9 +152,9 @@
 //               complaintId: row.c[2]?.v,
 //               technician: row.c[3]?.v
 //             })
-            
+
 //             const complaintId = row.c[2] ? row.c[2].v : "" // Column C - Complaint ID
-            
+
 //             // Get corresponding FMS data
 //             const fmsInfo = fmsMap.get(complaintId) || { status: "", attendDate: "" }
 
@@ -178,7 +178,7 @@
 //               remarks: row.c[16] ? row.c[16].v : "", // Column Q - Remarks
 //               trackerStatus: row.c[17] ? row.c[17].v : "", // Column R - Tracker Status
 //               address: row.c[20] ? row.c[20].v : "", // Column U - Address
-              
+
 //               // From FMS sheet
 //               status: fmsInfo.status, // Column Z from FMS
 //               attendDate: fmsInfo.attendDate, // Column AA from FMS
@@ -218,19 +218,19 @@
 //   // Role-based filtering function
 // const getFilteredHistoryByRole = () => {
 //   console.log('TrackerHistoryTable - Filtering with user:', username, 'role:', userRole)
-  
+
 //   // If no role is set, show all history
 //   if (!userRole) {
 //     console.log('TrackerHistoryTable - No role set, showing all history')
 //     return historyData;
 //   }
-  
+
 //   // If admin or user, show all history
 //   if (userRole.toLowerCase() === 'admin' || userRole.toLowerCase() === 'user') {
 //     console.log('TrackerHistoryTable - Admin/User role, showing all history')
 //     return historyData;
 //   }
-  
+
 //   // If tech role and has username, filter by technician name
 //   if (userRole.toLowerCase() === 'tech' && username) {
 //     console.log('TrackerHistoryTable - Tech role, filtering by technician name:', username)
@@ -241,13 +241,13 @@
 //     console.log('TrackerHistoryTable - Filtered history count:', filtered.length)
 //     return filtered;
 //   }
-  
+
 //   // If tech role but no username, show empty
 //   if (userRole.toLowerCase() === 'tech' && !username) {
 //     console.log('TrackerHistoryTable - Tech role but no username, showing empty')
 //     return [];
 //   }
-  
+
 //   // Default: show all history
 //   console.log('TrackerHistoryTable - Default, showing all history')
 //   return historyData;
@@ -324,7 +324,7 @@
 //             <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">{record.serialNo}</span>
 //             <span className="text-xs px-2 py-1 bg-green-50 text-green-700 rounded">{record.status}</span>
 //           </div>
-          
+
 //           <div className="space-y-1.5">
 //             <div className="flex justify-between text-xs">
 //               <span className="text-gray-500">Complaint ID</span>
@@ -362,7 +362,7 @@
 //               <span className="text-gray-500">Attend Date</span>
 //               <span className="text-gray-900">{record.attendDate}</span>
 //             </div>
-            
+
 //             {/* Technician Info Section */}
 //             <div className="mt-2 pt-2 border-t border-gray-100">
 //               <div className="flex items-center justify-between text-xs">
@@ -376,7 +376,7 @@
 //                 </div>
 //               </div>
 //             </div>
-            
+
 //             {/* Documents & Photos Section */}
 //             {(record.hasDriveUrl.uploadDocuments || record.hasDriveUrl.geotagPhoto) && (
 //               <div className="mt-2 pt-2 border-t border-gray-100 flex gap-2">
@@ -402,7 +402,7 @@
 //                 )}
 //               </div>
 //             )}
-            
+
 //             {/* Remarks if available */}
 //             {record.remarks && (
 //               <div className="mt-2 pt-2 border-t border-gray-100">
@@ -510,7 +510,7 @@ function TrackerHistoryTable() {
   const [searchTerm, setSearchTerm] = useState("")
   const [username, setUsername] = useState("")
   const [userRole, setUserRole] = useState(null)
-  
+
   // Edit popup states
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [selectedRecord, setSelectedRecord] = useState(null)
@@ -522,7 +522,7 @@ function TrackerHistoryTable() {
   const [isCapturingLocation, setIsCapturingLocation] = useState(false)
   const [locationError, setLocationError] = useState(null)
   const [trackerStatusOptions, setTrackerStatusOptions] = useState([])
-  
+
   // Form data for editing
   const [formData, setFormData] = useState({
     systemVoltage: "",
@@ -531,17 +531,17 @@ function TrackerHistoryTable() {
     trackerStatus: ""
   })
 
-  const GOOGLE_SCRIPT_URL = "https://script.google.com/a/macros/rbpindia.com/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec"
+  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec"
   const DRIVE_FOLDER_ID = "1-H5DWKRV2u_ueqtLX-ISTPvuySGYBLoT"
 
   useEffect(() => {
     const u = localStorage.getItem("username") || ""
     const loggedInRole = localStorage.getItem('userRole')
-    
+
     console.log('TrackerHistoryTable - Retrieved from localStorage:', { username: u, userRole: loggedInRole })
-    
+
     setUsername(u)
-    
+
     if (loggedInRole) {
       setUserRole(loggedInRole)
     }
@@ -618,48 +618,48 @@ function TrackerHistoryTable() {
   };
 
   useEffect(() => {
-  const fetchTrackerStatusOptions = async () => {
-    try {
-      const masterSheetUrl = "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=Master"
-      
-      const response = await fetch(masterSheetUrl)
-      const text = await response.text()
-      
-      const jsonStart = text.indexOf('{')
-      const jsonEnd = text.lastIndexOf('}') + 1
-      const jsonData = text.substring(jsonStart, jsonEnd)
-      const data = JSON.parse(jsonData)
-      
-      if (data && data.table && data.table.rows) {
-        const options = []
-        
-        // Column H is index 7 (0-indexed)
-        data.table.rows.forEach((row) => {
-          if (row.c && row.c[7]?.v) {
-            const value = row.c[7].v.toString().trim()
-            if (value && !options.includes(value)) {
-              options.push(value)
-            }
-          }
-        })
-        
-        console.log('Tracker Status Options from Master sheet:', options)
-        setTrackerStatusOptions(options)
-      }
-    } catch (err) {
-      console.error("Error fetching tracker status options:", err)
-      // Fallback to default options if fetch fails
-      setTrackerStatusOptions([
-        "beneficiary_visit",
-        "service_centre",
-        "closed",
-        "repair"
-      ])
-    }
-  }
+    const fetchTrackerStatusOptions = async () => {
+      try {
+        const masterSheetUrl = "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=Master"
 
-  fetchTrackerStatusOptions()
-}, [])
+        const response = await fetch(masterSheetUrl)
+        const text = await response.text()
+
+        const jsonStart = text.indexOf('{')
+        const jsonEnd = text.lastIndexOf('}') + 1
+        const jsonData = text.substring(jsonStart, jsonEnd)
+        const data = JSON.parse(jsonData)
+
+        if (data && data.table && data.table.rows) {
+          const options = []
+
+          // Column H is index 7 (0-indexed)
+          data.table.rows.forEach((row) => {
+            if (row.c && row.c[7]?.v) {
+              const value = row.c[7].v.toString().trim()
+              if (value && !options.includes(value)) {
+                options.push(value)
+              }
+            }
+          })
+
+          console.log('Tracker Status Options from Master sheet:', options)
+          setTrackerStatusOptions(options)
+        }
+      } catch (err) {
+        console.error("Error fetching tracker status options:", err)
+        // Fallback to default options if fetch fails
+        setTrackerStatusOptions([
+          "beneficiary_visit",
+          "service_centre",
+          "closed",
+          "repair"
+        ])
+      }
+    }
+
+    fetchTrackerStatusOptions()
+  }, [])
 
   // Function to format date string to dd/mm/yyyy
   const formatDateString = (dateValue) => {
@@ -718,10 +718,10 @@ function TrackerHistoryTable() {
   // Upload file functions
   const uploadFileToDrive = async (file, fileType) => {
     if (!file) return null;
-    
+
     try {
       setUploadStatus(`Uploading ${fileType}...`);
-      
+
       const reader = new FileReader();
       const fileBase64 = await new Promise((resolve, reject) => {
         reader.onload = () => resolve(reader.result.split(',')[1]);
@@ -742,13 +742,13 @@ function TrackerHistoryTable() {
       });
 
       const result = await response.json();
-      
+
       if (!result.success) {
         throw new Error(result.error || 'Failed to upload file');
       }
 
       return `https://drive.google.com/uc?id=${result.fileId}`;
-      
+
     } catch (err) {
       console.error(`Error uploading ${fileType}:`, err);
       alert(`Failed to upload ${fileType}: ${err.message}`);
@@ -760,7 +760,7 @@ function TrackerHistoryTable() {
   async function addLocationOverlayToImage(imageFile, latitude, longitude, address) {
     return new Promise((resolve, reject) => {
       const img = new Image();
-      
+
       img.onload = () => {
         try {
           const canvas = document.createElement("canvas");
@@ -773,29 +773,29 @@ function TrackerHistoryTable() {
 
           const minFontSize = 12;
           const maxFontSize = 24;
-          
+
           const widthBasedSize = Math.floor(img.width / 25);
           const heightBasedSize = Math.floor(img.height / 15);
           const fontSize = Math.max(minFontSize, Math.min(maxFontSize, Math.min(widthBasedSize, heightBasedSize)));
-          
+
           const lineHeight = fontSize + 6;
           const padding = Math.max(8, fontSize / 2);
-          
+
           let numberOfLines = 2;
           if (address && address.trim() !== "") {
             numberOfLines = 3;
           }
-          
+
           const calculatedHeight = (numberOfLines * lineHeight) + (2 * padding);
           const maxOverlayHeight = img.height * 0.5;
           const overlayHeight = Math.min(calculatedHeight, maxOverlayHeight);
-          
+
           ctx.fillStyle = "rgba(0, 0, 0, 0.65)";
           ctx.fillRect(0, canvas.width - overlayHeight, canvas.width, overlayHeight);
 
           ctx.fillStyle = "#fff";
           ctx.font = `bold ${fontSize}px Arial`;
-          
+
           const textX = padding;
           let textY = canvas.height - overlayHeight + padding + fontSize;
 
@@ -810,20 +810,20 @@ function TrackerHistoryTable() {
 
           const lngText = `Lng: ${longitude.toFixed(6)}`;
           ctx.fillText(lngText, textX, textY);
-          
+
           if (address && address.trim() !== "" && numberOfLines === 3) {
             textY += lineHeight;
-            
+
             let displayAddress = address;
             const maxTextWidth = canvas.width - (2 * padding);
-            
+
             if (ctx.measureText(displayAddress).width > maxTextWidth) {
               while (displayAddress.length > 5 && ctx.measureText(displayAddress + "...").width > maxTextWidth) {
                 displayAddress = displayAddress.substring(0, displayAddress.length - 1);
               }
               displayAddress = displayAddress + "...";
             }
-            
+
             ctx.fillText(displayAddress, textX, textY);
           }
 
@@ -844,11 +844,11 @@ function TrackerHistoryTable() {
           reject(error);
         }
       };
-      
+
       img.onerror = () => {
         reject(new Error("Failed to load image"));
       };
-      
+
       img.src = URL.createObjectURL(imageFile);
     });
   }
@@ -888,16 +888,18 @@ function TrackerHistoryTable() {
         if (fmsData && fmsData.table && fmsData.table.rows) {
           console.log('FMS Total rows:', fmsData.table.rows.length)
           console.log('FMS ParsedNumHeaders:', fmsData.parsedNumHeaders)
-          
+
           fmsData.table.rows.forEach((row, index) => {
             if (row.c && row.c[1]?.v) { // Check if complaint ID exists
               console.log(`FMS Processing row ${index}:`, { id: row.c[1]?.v, status: row.c[25]?.v })
-              
+
               const complaintId = row.c[1].v // Column B - Complaint ID
+              const idNumber = row.c[4] ? row.c[4].v : "" // Column E (index 4)
               const status = row.c[25] ? row.c[25].v : "" // Column Z (index 25)
               const attendDate = row.c[26] ? row.c[26].v : "" // Column AA (index 26)
-              
+
               fmsMap.set(complaintId, {
+                idNumber: idNumber,
                 status: status,
                 attendDate: formatDateString(attendDate)
               })
@@ -916,15 +918,20 @@ function TrackerHistoryTable() {
 
           trackerData.table.rows.forEach((row, index) => {
             if (row.c && row.c[1]?.v) { // Check if Serial No exists (Column B)
+              const serialNo = row.c[1] ? row.c[1].v : "" // Column B - Serial No (RBPST-01, RBPST-02, etc)
+              const complaintId = row.c[2] ? row.c[2].v : "" // Column C - Complaint ID
+
+              // 🔥 Skip header row and placeholder data
+              if (serialNo === "Serial No" || complaintId === "Complaint Id" || complaintId === "Complaint ID") {
+                return;
+              }
+
               console.log(`Tracker Processing row ${index}:`, {
-                serial: row.c[1]?.v,
-                complaintId: row.c[2]?.v,
+                serial: serialNo,
+                complaintId: complaintId,
                 technician: row.c[3]?.v
               })
-              
-              const serialNo = row.c[1] ? row.c[1].v : "" // Column B - Serial No
-              const complaintId = row.c[2] ? row.c[2].v : "" // Column C - Complaint ID
-              
+
               // Get corresponding FMS data
               const fmsInfo = fmsMap.get(complaintId) || { status: "", attendDate: "" }
 
@@ -932,6 +939,7 @@ function TrackerHistoryTable() {
                 actualRowNumber: index + 2, // +2 because Google Sheets is 1-indexed and we might have header row
                 serialNo: serialNo, // Column B - Serial No (RBPST-01, RBPST-02, etc)
                 complaintId: complaintId, // Column C - Complaint Id
+                idNumber: fmsInfo.idNumber || "-",
                 technicianName: row.c[3] ? row.c[3].v : "", // Column D - Technician Name
                 technicianNumber: row.c[4] ? row.c[4].v : "", // Column E - Technician Number
                 beneficiaryName: row.c[5] ? row.c[5].v : "", // Column F - Beneficiary Name
@@ -950,7 +958,7 @@ function TrackerHistoryTable() {
                 latitude: row.c[18] ? row.c[18].v : "", // Column S - Latitude  
                 longitude: row.c[19] ? row.c[19].v : "", // Column T - Longitude
                 address: row.c[20] ? row.c[20].v : "", // Column U - Address
-                
+
                 // From FMS sheet
                 status: fmsInfo.status, // Column Z from FMS
                 attendDate: fmsInfo.attendDate, // Column AA from FMS
@@ -987,19 +995,19 @@ function TrackerHistoryTable() {
   // Role-based filtering function
   const getFilteredHistoryByRole = () => {
     console.log('TrackerHistoryTable - Filtering with user:', username, 'role:', userRole)
-    
+
     // If no role is set, show all history
     if (!userRole) {
       console.log('TrackerHistoryTable - No role set, showing all history')
       return historyData;
     }
-    
+
     // If admin or user, show all history
     if (userRole.toLowerCase() === 'admin' || userRole.toLowerCase() === 'user') {
       console.log('TrackerHistoryTable - Admin/User role, showing all history')
       return historyData;
     }
-    
+
     // If tech role and has username, filter by technician name
     if (userRole.toLowerCase() === 'tech' && username) {
       console.log('TrackerHistoryTable - Tech role, filtering by technician name:', username)
@@ -1010,13 +1018,13 @@ function TrackerHistoryTable() {
       console.log('TrackerHistoryTable - Filtered history count:', filtered.length)
       return filtered;
     }
-    
+
     // If tech role but no username, show empty
     if (userRole.toLowerCase() === 'tech' && !username) {
       console.log('TrackerHistoryTable - Tech role but no username, showing empty')
       return [];
     }
-    
+
     // Default: show all history
     console.log('TrackerHistoryTable - Default, showing all history')
     return historyData;
@@ -1075,7 +1083,7 @@ function TrackerHistoryTable() {
   const handlePhotoChange = async (e) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0]
-      
+
       setIsCapturingLocation(true)
       setLocationError(null)
 
@@ -1093,7 +1101,7 @@ function TrackerHistoryTable() {
 
         setUploadedPhoto(processedPhoto)
         setIsCapturingLocation(false)
-        
+
         console.log("✅ Image updated with overlay text")
 
       } catch (error) {
@@ -1107,47 +1115,47 @@ function TrackerHistoryTable() {
 
   const handleUpdateRecord = async () => {
     setIsSubmitting(true)
-    
+
     try {
       let documentUrl = selectedRecord.uploadDocuments
       let photoUrl = selectedRecord.geotagPhoto
-      
+
       if (uploadedDocument) {
         setUploadStatus("Uploading document...")
         documentUrl = await uploadFileToDrive(uploadedDocument, "document")
       }
-      
+
       if (uploadedPhoto) {
         setUploadStatus("Uploading photo...")
         photoUrl = await uploadFileToDrive(uploadedPhoto, "photo")
       }
-      
+
       // 🔥 Update the Tracker sheet record by Serial No (RBPST-01, RBPST-02, etc)
       await updateTrackerRecordBySerial(selectedRecord, documentUrl, photoUrl)
-      
+
       // Update local state
-      setHistoryData(prev => prev.map(record => 
-        record.serialNo === selectedRecord.serialNo 
+      setHistoryData(prev => prev.map(record =>
+        record.serialNo === selectedRecord.serialNo
           ? {
-              ...record,
-              systemVoltage: formData.systemVoltage,
-              natureOfComplaint: formData.natureOfComplaint,
-              remarks: formData.remarks,
-              trackerStatus: formData.trackerStatus,
-              uploadDocuments: documentUrl || record.uploadDocuments,
-              geotagPhoto: photoUrl || record.geotagPhoto,
-              hasDriveUrl: {
-                uploadDocuments: (documentUrl || record.uploadDocuments)?.includes('drive.google.com'),
-                geotagPhoto: (photoUrl || record.geotagPhoto)?.includes('drive.google.com')
-              }
+            ...record,
+            systemVoltage: formData.systemVoltage,
+            natureOfComplaint: formData.natureOfComplaint,
+            remarks: formData.remarks,
+            trackerStatus: formData.trackerStatus,
+            uploadDocuments: documentUrl || record.uploadDocuments,
+            geotagPhoto: photoUrl || record.geotagPhoto,
+            hasDriveUrl: {
+              uploadDocuments: (documentUrl || record.uploadDocuments)?.includes('drive.google.com'),
+              geotagPhoto: (photoUrl || record.geotagPhoto)?.includes('drive.google.com')
             }
+          }
           : record
       ))
-      
+
       alert("Record updated successfully!")
       setIsEditDialogOpen(false)
       resetEditForm()
-      
+
     } catch (err) {
       console.error("Error updating record:", err)
       alert("Failed to update record: " + err.message)
@@ -1157,107 +1165,107 @@ function TrackerHistoryTable() {
     }
   }
 
-const findRowBySerialNo = async (serialNo) => {
-  try {
-    const trackerSheetUrl = "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=Tracker"
-    
-    const response = await fetch(trackerSheetUrl)
-    const text = await response.text()
-    
-    const jsonStart = text.indexOf('{')
-    const jsonEnd = text.lastIndexOf('}') + 1
-    const jsonData = text.substring(jsonStart, jsonEnd)
-    const data = JSON.parse(jsonData)
-    
-    if (data && data.table && data.table.rows) {
-      console.log('🔍 Searching for Serial No:', serialNo)
-      
-      for (let i = 0; i < data.table.rows.length; i++) {
-        const row = data.table.rows[i]
-        const cellValue = row.c && row.c[1]?.v ? row.c[1].v.toString().trim() : ""
-        
-        if (cellValue === serialNo.toString().trim()) {
-          console.log('✅ Found at index:', i, 'Cell value:', cellValue)
-          // Return the serial number itself - let Google Script find the row
-          return serialNo
+  const findRowBySerialNo = async (serialNo) => {
+    try {
+      const trackerSheetUrl = "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=Tracker"
+
+      const response = await fetch(trackerSheetUrl)
+      const text = await response.text()
+
+      const jsonStart = text.indexOf('{')
+      const jsonEnd = text.lastIndexOf('}') + 1
+      const jsonData = text.substring(jsonStart, jsonEnd)
+      const data = JSON.parse(jsonData)
+
+      if (data && data.table && data.table.rows) {
+        console.log('🔍 Searching for Serial No:', serialNo)
+
+        for (let i = 0; i < data.table.rows.length; i++) {
+          const row = data.table.rows[i]
+          const cellValue = row.c && row.c[1]?.v ? row.c[1].v.toString().trim() : ""
+
+          if (cellValue === serialNo.toString().trim()) {
+            console.log('✅ Found at index:', i, 'Cell value:', cellValue)
+            // Return the serial number itself - let Google Script find the row
+            return serialNo
+          }
         }
       }
-    }
-    
-    throw new Error(`Serial No ${serialNo} not found in Tracker sheet`)
-    
-  } catch (error) {
-    console.error("Error finding row by Serial No:", error)
-    throw error
-  }
-}
 
- const updateTrackerRecordBySerial = async (record, documentUrl, photoUrl) => {
-  try {
-    console.log('🔄 Updating record with Serial No:', record.serialNo)
-    
-    // Verify serial number exists
-    await findRowBySerialNo(record.serialNo)
-    
-    const formDataToSubmit = new FormData()
-    formDataToSubmit.append('sheetName', 'Tracker')
-    formDataToSubmit.append('action', 'updateBySerialNo')
-    formDataToSubmit.append('serialNo', record.serialNo)
-    
-    const timestamp = record.timestamp || new Date().toLocaleString('en-US')
-    
-    // Get location data
-    const latitude = photoLocation ? photoLocation.latitude : (record.latitude || "")
-    const longitude = photoLocation ? photoLocation.longitude : (record.longitude || "")
-    const address = photoLocation ? photoLocation.formattedAddress : (record.address || "")
-    
-    // Prepare updated row data for Tracker sheet (columns A to U)
-    const trackerRow = [
-      timestamp,                         // Column A - Timestamp
-      record.serialNo,                   // Column B - Serial No (RBPST-01)
-      record.complaintId,                // Column C - Complaint Id
-      record.technicianName,             // Column D - Technician Name 
-      record.technicianNumber,           // Column E - Technician Number 
-      record.beneficiaryName,            // Column F - Beneficiary Name
-      record.contactNumber,              // Column G - Contact Number
-      record.village,                    // Column H - Village
-      record.block,                      // Column I - Block
-      record.district,                   // Column J - District
-      record.product,                    // Column K - Product
-      record.make,                       // Column L - Make                       
-      formData.systemVoltage,            // Column M - System Voltage
-      formData.natureOfComplaint,        // Column N - Nature Of Complaint
-      documentUrl || record.uploadDocuments, // Column O - Upload Documents
-      photoUrl || record.geotagPhoto,    // Column P - Geotag Photo
-      formData.remarks,                  // Column Q - Remarks
-      formData.trackerStatus,            // Column R - Tracker Status
-      latitude,                          // Column S - Latitude
-      longitude,                         // Column T - Longitude
-      address                            // Column U - Address
-    ]
-    
-    formDataToSubmit.append('rowData', JSON.stringify(trackerRow))
-    
-    console.log('📤 Sending update for Serial No:', record.serialNo)
-    
-    const response = await fetch(GOOGLE_SCRIPT_URL, {
-      method: 'POST',
-      body: formDataToSubmit
-    })
-    
-    const result = await response.json()
-    
-    if (!result.success) {
-      throw new Error(result.error || 'Failed to update Tracker sheet')
+      throw new Error(`Serial No ${serialNo} not found in Tracker sheet`)
+
+    } catch (error) {
+      console.error("Error finding row by Serial No:", error)
+      throw error
     }
-    
-    console.log('✅ Update successful:', result)
-    return true
-  } catch (error) {
-    console.error("❌ Error updating Tracker sheet:", error)
-    throw error
   }
-}
+
+  const updateTrackerRecordBySerial = async (record, documentUrl, photoUrl) => {
+    try {
+      console.log('🔄 Updating record with Serial No:', record.serialNo)
+
+      // Verify serial number exists
+      await findRowBySerialNo(record.serialNo)
+
+      const formDataToSubmit = new FormData()
+      formDataToSubmit.append('sheetName', 'Tracker')
+      formDataToSubmit.append('action', 'updateBySerialNo')
+      formDataToSubmit.append('serialNo', record.serialNo)
+
+      const timestamp = record.timestamp || new Date().toLocaleString('en-US')
+
+      // Get location data
+      const latitude = photoLocation ? photoLocation.latitude : (record.latitude || "")
+      const longitude = photoLocation ? photoLocation.longitude : (record.longitude || "")
+      const address = photoLocation ? photoLocation.formattedAddress : (record.address || "")
+
+      // Prepare updated row data for Tracker sheet (columns A to U)
+      const trackerRow = [
+        timestamp,                         // Column A - Timestamp
+        record.serialNo,                   // Column B - Serial No (RBPST-01)
+        record.complaintId,                // Column C - Complaint Id
+        record.technicianName,             // Column D - Technician Name 
+        record.technicianNumber,           // Column E - Technician Number 
+        record.beneficiaryName,            // Column F - Beneficiary Name
+        record.contactNumber,              // Column G - Contact Number
+        record.village,                    // Column H - Village
+        record.block,                      // Column I - Block
+        record.district,                   // Column J - District
+        record.product,                    // Column K - Product
+        record.make,                       // Column L - Make                       
+        formData.systemVoltage,            // Column M - System Voltage
+        formData.natureOfComplaint,        // Column N - Nature Of Complaint
+        documentUrl || record.uploadDocuments, // Column O - Upload Documents
+        photoUrl || record.geotagPhoto,    // Column P - Geotag Photo
+        formData.remarks,                  // Column Q - Remarks
+        formData.trackerStatus,            // Column R - Tracker Status
+        latitude,                          // Column S - Latitude
+        longitude,                         // Column T - Longitude
+        address                            // Column U - Address
+      ]
+
+      formDataToSubmit.append('rowData', JSON.stringify(trackerRow))
+
+      console.log('📤 Sending update for Serial No:', record.serialNo)
+
+      const response = await fetch(GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        body: formDataToSubmit
+      })
+
+      const result = await response.json()
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to update Tracker sheet')
+      }
+
+      console.log('✅ Update successful:', result)
+      return true
+    } catch (error) {
+      console.error("❌ Error updating Tracker sheet:", error)
+      throw error
+    }
+  }
 
   if (isLoading) {
     return (
@@ -1316,11 +1324,15 @@ const findRowBySerialNo = async (serialNo) => {
                       <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">{record.serialNo}</span>
                       <span className="text-xs px-2 py-1 bg-green-50 text-green-700 rounded">{record.status}</span>
                     </div>
-                    
+
                     <div className="space-y-1.5">
                       <div className="flex justify-between text-xs">
                         <span className="text-gray-500">Complaint ID</span>
                         <span className="text-gray-900 font-medium">{record.complaintId}</span>
+                      </div>
+                      <div className="flex justify-between text-xs">
+                        <span className="text-gray-500">ID Number</span>
+                        <span className="text-gray-900 font-medium">{record.idNumber}</span>
                       </div>
                       <div className="flex justify-between text-xs">
                         <span className="text-gray-500">Beneficiary</span>
@@ -1350,7 +1362,7 @@ const findRowBySerialNo = async (serialNo) => {
                         <span className="text-gray-500">Attend Date</span>
                         <span className="text-gray-900">{record.attendDate}</span>
                       </div>
-                      
+
                       {/* Technician Info Section */}
                       <div className="mt-2 pt-2 border-t border-gray-100">
                         <div className="flex items-center justify-between text-xs">
@@ -1364,25 +1376,25 @@ const findRowBySerialNo = async (serialNo) => {
                           </div>
                         </div>
                       </div>
-                      
+
                       {/* Documents & Photos Section */}
                       {(record.hasDriveUrl.uploadDocuments || record.hasDriveUrl.geotagPhoto) && (
                         <div className="mt-2 pt-2 border-t border-gray-100 flex gap-2">
                           {record.hasDriveUrl.uploadDocuments && (
-                            <a 
-                              href={record.uploadDocuments} 
-                              target="_blank" 
-                              rel="noopener noreferrer" 
+                            <a
+                              href={record.uploadDocuments}
+                              target="_blank"
+                              rel="noopener noreferrer"
                               className="flex-1 text-center bg-blue-50 text-blue-600 hover:bg-blue-100 px-2 py-1.5 rounded text-xs font-medium"
                             >
                               📄 Document
                             </a>
                           )}
                           {record.hasDriveUrl.geotagPhoto && (
-                            <a 
-                              href={record.geotagPhoto} 
-                              target="_blank" 
-                              rel="noopener noreferrer" 
+                            <a
+                              href={record.geotagPhoto}
+                              target="_blank"
+                              rel="noopener noreferrer"
                               className="flex-1 text-center bg-green-50 text-green-600 hover:bg-green-100 px-2 py-1.5 rounded text-xs font-medium"
                             >
                               📷 Photo
@@ -1390,7 +1402,7 @@ const findRowBySerialNo = async (serialNo) => {
                           )}
                         </div>
                       )}
-                      
+
                       {/* Remarks if available */}
                       {record.remarks && (
                         <div className="mt-2 pt-2 border-t border-gray-100">
@@ -1414,15 +1426,16 @@ const findRowBySerialNo = async (serialNo) => {
                 ))}
               </div>
 
-              {/* Desktop Table View - Same as before but with updated data structure */}
-              <div className="hidden md:block overflow-x-auto -mx-4 sm:mx-0">
+              {/* Desktop Table View - Fixed Header & Scrollable Body */}
+              <div className="hidden md:block overflow-x-auto -mx-4 sm:mx-0 max-h-[600px] overflow-y-auto border border-gray-200 rounded-lg">
                 <div className="inline-block min-w-full align-middle">
                   <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-100">
+                    <thead className="bg-gray-100 sticky top-0 z-10">
                       <tr>
                         <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase whitespace-nowrap">Actions</th>
                         <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase whitespace-nowrap">Serial No</th>
                         <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase whitespace-nowrap">Complaint Id</th>
+                        <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase whitespace-nowrap">ID Number</th>
                         <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase whitespace-nowrap">Technician Name</th>
                         <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase whitespace-nowrap">Technician Number</th>
                         <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase whitespace-nowrap">Beneficiary Name</th>
@@ -1455,6 +1468,7 @@ const findRowBySerialNo = async (serialNo) => {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap font-medium text-blue-600">{record.serialNo}</td>
                           <td className="px-6 py-4 whitespace-nowrap">{record.complaintId}</td>
+                          <td className="px-6 py-4 whitespace-nowrap font-medium text-blue-600">{record.idNumber}</td>
                           <td className="px-6 py-4 whitespace-nowrap">{record.technicianName}</td>
                           <td className="px-6 py-4 whitespace-nowrap">{record.technicianNumber}</td>
                           <td className="px-6 py-4 whitespace-nowrap">{record.beneficiaryName}</td>
@@ -1506,33 +1520,33 @@ const findRowBySerialNo = async (serialNo) => {
               <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div className="sm:flex sm:items-start">
                   <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-             
-                    
+
+
                     {/* Editable form fields */}
                     <div className="mt-4 max-h-[60vh] overflow-auto">
                       <h4 className="font-medium text-gray-700 mb-4">ट्रैकर फॉर्म फील्ड्स (Edit)</h4>
                       <div className="grid gap-4">
-                        
-                      <div className="space-y-2">
-  <label htmlFor="trackerStatus" className="block text-sm font-medium text-gray-700">
-    ट्रैकर स्थिति *
-  </label>
-  <select
-    id="trackerStatus"
-    name="trackerStatus"
-    value={formData.trackerStatus}
-    onChange={(e) => handleFormChange("trackerStatus", e.target.value)}
-    required
-    className="w-full border border-gray-300 rounded-md py-2 px-3"
-  >
-    <option value="">स्थिति चुनें</option>
-    {trackerStatusOptions.map((option, index) => (
-      <option key={index} value={option}>
-        {option}
-      </option>
-    ))}
-  </select>
-</div>
+
+                        <div className="space-y-2">
+                          <label htmlFor="trackerStatus" className="block text-sm font-medium text-gray-700">
+                            ट्रैकर स्थिति *
+                          </label>
+                          <select
+                            id="trackerStatus"
+                            name="trackerStatus"
+                            value={formData.trackerStatus}
+                            onChange={(e) => handleFormChange("trackerStatus", e.target.value)}
+                            required
+                            className="w-full border border-gray-300 rounded-md py-2 px-3"
+                          >
+                            <option value="">स्थिति चुनें</option>
+                            {trackerStatusOptions.map((option, index) => (
+                              <option key={index} value={option}>
+                                {option}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
                         <div className="space-y-2">
                           <label htmlFor="natureOfComplaint" className="block text-sm font-medium text-gray-700">
                             शिकायत की प्रकृति
@@ -1558,8 +1572,8 @@ const findRowBySerialNo = async (serialNo) => {
                               className="flex-1 border border-gray-300 rounded-md py-2 px-3"
                               onChange={handleDocumentChange}
                             />
-                            <button 
-                              type="button" 
+                            <button
+                              type="button"
                               className="p-2 border border-gray-300 rounded-md"
                               disabled={!uploadedDocument}
                             >
@@ -1586,28 +1600,28 @@ const findRowBySerialNo = async (serialNo) => {
                               className="flex-1 border border-gray-300 rounded-md py-2 px-3"
                               onChange={handlePhotoChange}
                             />
-                            <button 
-                              type="button" 
+                            <button
+                              type="button"
                               className="p-2 border border-gray-300 rounded-md"
                               disabled={!uploadedPhoto}
                             >
                               <MapPin className="h-4 w-4" />
                             </button>
                           </div>
-                          
+
                           {uploadedPhoto && (
                             <div className="text-sm text-green-600">
                               ✓ चयनित: {uploadedPhoto.name}
                             </div>
                           )}
-                          
+
                           {isCapturingLocation && (
                             <div className="flex items-center gap-2 text-sm text-blue-600">
                               <Loader className="h-4 w-4 animate-spin" />
                               स्थान कैप्चर किया जा रहा है...
                             </div>
                           )}
-                          
+
                           {photoLocation && !isCapturingLocation && (
                             <div className="text-sm text-green-600 space-y-1">
                               <div className="flex items-center gap-2">
@@ -1615,7 +1629,7 @@ const findRowBySerialNo = async (serialNo) => {
                                 स्थान सफलतापूर्वक कैप्चर किया गया
                               </div>
                               <div className="text-xs text-gray-600 ml-6">
-                                📍 अक्षांश: {photoLocation.latitude.toFixed(6)}, 
+                                📍 अक्षांश: {photoLocation.latitude.toFixed(6)},
                                 देशांतर: {photoLocation.longitude.toFixed(6)}
                               </div>
                               <div className="text-xs text-gray-500 ml-6 truncate">
@@ -1623,7 +1637,7 @@ const findRowBySerialNo = async (serialNo) => {
                               </div>
                             </div>
                           )}
-                          
+
                           {locationError && !isCapturingLocation && (
                             <div className="text-sm text-amber-600">
                               ⚠️ स्थान उपलब्ध नहीं है: {locationError}
@@ -1655,7 +1669,7 @@ const findRowBySerialNo = async (serialNo) => {
                         )}
                       </div>
                     </div>
-                    
+
                     <div className="flex justify-end gap-2 mt-4">
                       <button
                         type="button"

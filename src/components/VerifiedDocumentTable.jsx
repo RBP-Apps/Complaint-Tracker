@@ -11,9 +11,9 @@ function VerifiedDocumentsTable() {
 
   const formatDateString = (dateValue) => {
     if (!dateValue) return "";
-    
+
     let date;
-    
+
     // Handle ISO string format (2025-05-22T07:38:28.052Z)
     if (typeof dateValue === 'string' && dateValue.includes('T')) {
       date = new Date(dateValue);
@@ -42,12 +42,12 @@ function VerifiedDocumentsTable() {
     else {
       return dateValue; // Return as is if not a recognizable date format
     }
-    
+
     // Check if date is valid
     if (isNaN(date.getTime())) {
       return dateValue; // Return original value if invalid date
     }
-    
+
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
@@ -240,47 +240,47 @@ function VerifiedDocumentsTable() {
                     <td className="px-6 py-4 whitespace-nowrap">{doc.document2}</td>
                     <td className="px-6 py-4 whitespace-nowrap">{doc.additionalDocuments}</td> */}
                     <td className="px-6 py-4 whitespace-nowrap">
-  {doc.document1 ? (
-    <a 
-      href={doc.document1} 
-      className="text-blue-600 hover:text-blue-800 underline"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      Document 1
-    </a>
-  ) : (
-    ""
-  )}
-</td>
-<td className="px-6 py-4 whitespace-nowrap">
-  {doc.document2 ? (
-    <a 
-      href={doc.document2} 
-      className="text-blue-600 hover:text-blue-800 underline"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      Document 2
-    </a>
-  ) : (
-    ""
-  )}
-</td>
-<td className="px-6 py-4 whitespace-nowrap">
-  {doc.additionalDocuments ? (
-    <a 
-      href={doc.additionalDocuments} 
-      className="text-blue-600 hover:text-blue-800 underline"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      Additional Docs
-    </a>
-  ) : (
-    ""
-  )}
-</td>
+                      {doc.document1 ? (
+                        <a
+                          href={doc.document1}
+                          className="text-blue-600 hover:text-blue-800 underline"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Document 1
+                        </a>
+                      ) : (
+                        ""
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {doc.document2 ? (
+                        <a
+                          href={doc.document2}
+                          className="text-blue-600 hover:text-blue-800 underline"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Document 2
+                        </a>
+                      ) : (
+                        ""
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {doc.additionalDocuments ? (
+                        <a
+                          href={doc.additionalDocuments}
+                          className="text-blue-600 hover:text-blue-800 underline"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Additional Docs
+                        </a>
+                      ) : (
+                        ""
+                      )}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">{doc.verificationDate}</td>
                   </tr>
                 ))}

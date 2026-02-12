@@ -44,13 +44,13 @@ function DashboardCharts() {
   useEffect(() => {
     const loggedInUser = localStorage.getItem('username')
     const loggedInRole = localStorage.getItem('userRole')
-    
+
     console.log('DashboardCharts - Retrieved from localStorage:', { loggedInUser, loggedInRole })
-    
+
     if (loggedInUser) {
       setUser(loggedInUser)
     }
-    
+
     if (loggedInRole) {
       setUserRole(loggedInRole)
     }
@@ -62,23 +62,23 @@ function DashboardCharts() {
         setIsLoading(true)
         const sheetUrl = "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=FMS"
         const response = await fetch(sheetUrl)
-        
+
         if (!response.ok) {
           throw new Error(`Failed to fetch sheet data: ${response.status} ${response.statusText}`)
         }
-        
+
         const text = await response.text()
-        
+
         const jsonStart = text.indexOf('{')
         const jsonEnd = text.lastIndexOf('}') + 1
-        
+
         if (jsonStart === -1 || jsonEnd === 0) {
           throw new Error("Invalid response format from Google Sheets")
         }
-        
+
         const jsonData = text.substring(jsonStart, jsonEnd)
         const parsedData = JSON.parse(jsonData)
-        
+
         if (parsedData && parsedData.table && parsedData.table.rows) {
           // Skip the header rows (first 2 rows) - data starts from row 3
           setData(parsedData.table.rows.slice(2))
@@ -99,21 +99,21 @@ function DashboardCharts() {
   // Role-based filtering function
   const getFilteredDataByRole = () => {
     if (!data) return [];
-    
+
     console.log('DashboardCharts - Filtering with user:', user, 'role:', userRole)
-    
+
     // If no role is set, show all data
     if (!userRole) {
       console.log('DashboardCharts - No role set, showing all data')
       return data;
     }
-    
+
     // If admin, show all data
     if (userRole.toLowerCase() === 'admin') {
       console.log('DashboardCharts - Admin user, showing all data')
       return data;
     }
-    
+
     // If user role and has username, filter by technician name
     if (user) {
       console.log('DashboardCharts - User role, filtering by technician name:', user)
@@ -126,7 +126,7 @@ function DashboardCharts() {
       console.log('DashboardCharts - Filtered data count:', filtered.length)
       return filtered;
     }
-    
+
     // If user role but no username, show empty
     console.log('DashboardCharts - User role but no username, showing empty')
     return [];
@@ -135,7 +135,7 @@ function DashboardCharts() {
   // Process data for charts using filtered data
   const processComplaintsByProduct = () => {
     const filteredData = getFilteredDataByRole();
-    
+
     if (!filteredData || filteredData.length === 0) return []
 
     const productCounts = {}
@@ -162,21 +162,21 @@ function DashboardCharts() {
 
   const processComplaintsByMonth = () => {
     const filteredData = getFilteredDataByRole();
-    
+
     if (!filteredData || filteredData.length === 0) return []
-  
+
     // Initialize all months with zeros
     const allMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
     const monthCounts = Object.fromEntries(
       allMonths.map(month => [month, { completed: 0, pending: 0 }])
     )
-  
+
     filteredData.forEach((row, rowIndex) => {
       if (row.c && row.c[49] && row.c[49].v) { // Column AX (index 49) for date
         try {
           const dateValue = row.c[49].v
           let date
-  
+
           // Handle Date(2025,5,3) format from Google Sheets
           if (typeof dateValue === 'string' && dateValue.startsWith('Date(')) {
             const match = dateValue.match(/Date\((\d+),(\d+),(\d+)(?:,(\d+),(\d+),(\d+))?\)/)
@@ -194,14 +194,14 @@ function DashboardCharts() {
           else if (dateValue instanceof Date) {
             date = new Date(dateValue)
           }
-  
+
           // Check if date is valid
           if (!date || isNaN(date.getTime())) {
             return
           }
-  
+
           const monthName = date.toLocaleString('default', { month: 'short' })
-          
+
           // Check completion status - look for any non-empty value in columns 50-56 (AY-BE)
           let isCompleted = false
           for (let i = 50; i <= 51; i++) {
@@ -210,7 +210,7 @@ function DashboardCharts() {
               break
             }
           }
-  
+
           if (isCompleted) {
             monthCounts[monthName].completed++
           } else {
@@ -221,7 +221,7 @@ function DashboardCharts() {
         }
       }
     })
-  
+
     // Return data for all months
     return allMonths.map(month => ({
       name: month,

@@ -113,7 +113,7 @@
 //   //   badgeColor: "bg-blue-500 hover:bg-blue-600",
 //   //   permissionKey: "technician tracker",
 //   // },
-  
+
 //   // {
 //   //   name: "Petrol Expenses",
 //   //   href: "/dashboard/petrol-expenses",
@@ -373,6 +373,12 @@ function DashboardLayout({ children }) {
       badgeColor: "bg-blue-500 hover:bg-blue-600",
       permissionKey: "approved",
     },
+    {
+      name: "Tracker History",
+      href: "/dashboard/tracker-history",
+      icon: Clock,
+      permissionKey: "all", // Restricted to admin (who usually have 'all' permission) or specifically added
+    },
     // {
     //   name: "Technician Dashboard",
     //   href: "/dashboard/technician-dashboard",
@@ -390,7 +396,12 @@ function DashboardLayout({ children }) {
   ]
 
   // Filter nav items based on user permissions (same for all users including tech)
-  const navItems = allNavItems.filter((item) => hasPermission(item.permissionKey))
+  const navItems = allNavItems.filter((item) => {
+    if (item.name === "Tracker History") {
+      return userRole && userRole.toLowerCase() === 'admin';
+    }
+    return hasPermission(item.permissionKey);
+  })
 
   const handleLogout = () => {
     localStorage.removeItem("userPermissions")
@@ -434,9 +445,8 @@ function DashboardLayout({ children }) {
               <Link
                 key={item.name}
                 to={item.href}
-                className={`group flex items-center rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${
-                  isActive ? "bg-gray-700 text-white" : "text-gray-300 hover:bg-gray-700 hover:text-white"
-                }`}
+                className={`group flex items-center rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${isActive ? "bg-gray-700 text-white" : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                  }`}
                 onClick={() => isMobile && setIsSidebarOpen(false)}
               >
                 <item.icon className="mr-3 h-5 w-5" />

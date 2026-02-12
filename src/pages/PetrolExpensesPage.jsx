@@ -41,7 +41,7 @@ function PetrolExpensesPage() {
 
   // Google Apps Script Web App URL - Replace with your actual deployed script URL
   const GOOGLE_SCRIPT_URL =
-    "https://script.google.com/a/macros/rbpindia.com/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec";
+    "https://script.google.com/macros/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec";
 
   // Function to format date string to dd/mm/yyyy
   const formatDateString = (dateValue) => {

@@ -45,14 +45,14 @@
 //     ? (username || "").substring(4).trim()
 //     : ""
 
-//   const GOOGLE_SCRIPT_URL = "https://script.google.com/a/macros/rbpindia.com/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec"
+//   const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec"
 //   const DRIVE_FOLDER_ID = "1-H5DWKRV2u_ueqtLX-ISTPvuySGYBLoT"
 
 //   const formatDateString = (dateValue) => {
 //     if (!dateValue) return "";
-    
+
 //     let date;
-    
+
 //     if (typeof dateValue === 'string' && dateValue.includes('T')) {
 //       date = new Date(dateValue);
 //     } else if (typeof dateValue === 'string' && dateValue.includes('-')) {
@@ -72,11 +72,11 @@
 //     } else {
 //       return dateValue;
 //     }
-    
+
 //     if (isNaN(date.getTime())) {
 //       return dateValue;
 //     }
-    
+
 //     const day = String(date.getDate()).padStart(2, '0');
 //     const month = String(date.getMonth() + 1).padStart(2, '0');
 //     const year = date.getFullYear();
@@ -161,48 +161,48 @@
 //       default: return "bg-gray-500"
 //     }
 //   }
-  
+
 //  useEffect(() => {
 //   const fetchTasks = async () => {
 //     setIsLoading(true)
 //     setError(null)
-    
+
 //     try {
 //       // Fetch FMS data for pending tasks
 //       const sheetUrl = "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=FMS"
 //       const response = await fetch(sheetUrl)
 //       const text = await response.text()
-      
+
 //       const jsonStart = text.indexOf('{')
 //       const jsonEnd = text.lastIndexOf('}') + 1
 //       const jsonData = text.substring(jsonStart, jsonEnd)
-      
+
 //       const data = JSON.parse(jsonData)
-      
+
 //       const pendingData = []
-      
+
 //      if (data && data.table && data.table.rows) {
 //   console.log('Total rows in FMS sheet:', data.table.rows.length);
-  
+
 //   // ✅ Start from row 1 (index 0) instead of row 7 (index 6)
 //   data.table.rows.forEach((row, index) => {
 //     console.log(`\n=== Row ${index + 1} ===`);
 //     console.log('Has row.c?', !!row.c);
-    
+
 //     if (row.c) {
 //       console.log('Total columns in this row:', row.c.length);
 //       console.log('Column AJ (index 35) value:', row.c[35] ? row.c[35].v : 'EMPTY/NULL');
 //       console.log('Column AK (index 36) value:', row.c[36] ? row.c[36].v : 'EMPTY/NULL');
 //       console.log('Complaint Number (index 8):', row.c[8] ? row.c[8].v : 'EMPTY');
-      
+
 //       // ✅ Simple filtering: Column AJ (index 35) not null AND Column AK (index 36) null
 //       const hasColumnAJ = row.c[35] && row.c[35].v !== null && row.c[35].v !== "";
 //       const hasEmptyColumnAK = !row.c[36] || row.c[36].v === null || row.c[36].v === "";
-      
+
 //       console.log('Column AJ has value?', hasColumnAJ);
 //       console.log('Column AK is empty?', hasEmptyColumnAK);
 //       console.log('WILL ADD TO PENDING?', hasColumnAJ && hasEmptyColumnAK);
-      
+
 //       // ✅ Show in pending if: AJ has value AND AK is empty
 //       if (hasColumnAJ && hasEmptyColumnAK) {
 //         const task = {
@@ -245,14 +245,14 @@
 //           targetDate: row.c[33] ? formatDateString(row.c[33].v) : "",
 //           fullRowData: row.c
 //         }
-        
+
 //         console.log('✅ ADDED TASK:', task.complaintNumber);
 //         pendingData.push(task)
 //       }
 //     }
 //   })
 // }
-      
+
 //     // Fetch Tracker sheet data for history - starting from row 1
 // console.log("Fetching Tracker sheet data...");
 // const trackerSheetUrl = "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=Tracker"
@@ -272,35 +272,35 @@
 
 // if (trackerData && trackerData.table && trackerData.table.rows) {
 //   console.log("Tracker rows found:", trackerData.table.rows.length);
-  
+
 //   // ✅ Process all rows instead of starting from index 6
 //   trackerData.table.rows.forEach((row, index) => {
 //     console.log(`\n=== Tracker Row ${index + 1} ===`);
 //     console.log('Has row.c?', !!row.c);
-    
+
 //     if (row.c && row.c.length > 0) {
 //       // Check if this is a header row (skip if it contains header text)
 //       const firstCell = row.c[0] ? row.c[0].v : "";
 //       const secondCell = row.c[1] ? row.c[1].v : "";
-      
+
 //       console.log('First cell:', firstCell);
 //       console.log('Second cell:', secondCell);
-      
+
 //       // Skip if it looks like a header row
 //       if (firstCell === "Timestamp" || firstCell === "Technician" || 
 //           secondCell === "Attend id" || secondCell === "Assignee Response") {
 //         console.log(`Skipping header row ${index + 1}`);
 //         return;
 //       }
-      
+
 //       // Skip empty rows (no data in key columns)
 //       if (!row.c[1] || !row.c[1].v) {
 //         console.log(`Skipping empty row ${index + 1}`);
 //         return;
 //       }
-      
+
 //       console.log("Processing tracker row:", index + 1);
-      
+
 //       const historyTask = {
 //         id: row.c[1] ? row.c[1].v : `TRACK-${index + 1}`, // Attend ID
 //         timestamp: row.c[0] ? row.c[0].v : "",
@@ -340,7 +340,7 @@
 //         expectedCompletionDate: "",
 //         notesForTechnician: ""
 //       }
-      
+
 //       console.log("Created history task:", historyTask);
 //       historyData.push(historyTask)
 //     }
@@ -350,10 +350,10 @@
 // }
 
 // console.log("History tasks:", historyData.length);
-      
+
 //       setPendingTasks(pendingData)
 //       setHistoryTasks(historyData)
-      
+
 //     } catch (err) {
 //       console.error("Error fetching tasks data:", err)
 //       setError(err.message)
@@ -369,13 +369,13 @@
 //       const sheetUrl = "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=master"
 //       const response = await fetch(sheetUrl)
 //       const text = await response.text()
-      
+
 //       const jsonStart = text.indexOf('{')
 //       const jsonEnd = text.lastIndexOf('}') + 1
 //       const jsonData = text.substring(jsonStart, jsonEnd)
-      
+
 //       const data = JSON.parse(jsonData)
-      
+
 //       if (data && data.table && data.table.rows) {
 //         const options = data.table.rows.slice(2).map(row => row.c[5]?.v || "").filter(name => name && name.trim() !== "")
 //         setTechnicianOptions([...new Set(options)].sort())
@@ -392,10 +392,10 @@
 
 //   const uploadFileToDrive = async (file, fileType) => {
 //     if (!file) return null;
-    
+
 //     try {
 //       setUploadStatus(`Uploading ${fileType}...`);
-      
+
 //       const reader = new FileReader();
 //       const fileBase64 = await new Promise((resolve, reject) => {
 //         reader.onload = () => resolve(reader.result.split(',')[1]);
@@ -416,13 +416,13 @@
 //       });
 
 //       const result = await response.json();
-      
+
 //       if (!result.success) {
 //         throw new Error(result.error || 'Failed to upload file');
 //       }
 
 //       return `https://drive.google.com/uc?id=${result.fileId}`;
-      
+
 //     } catch (err) {
 //       console.error(`Error uploading ${fileType}:`, err);
 //       alert(`Failed to upload ${fileType}: ${err.message}`);
@@ -432,33 +432,33 @@
 
 // const handleUpdateTask = async () => {
 //   setIsSubmitting(true);
-  
+
 //   try {
 //     const currentTasks = activeTab === "pending" ? pendingTasks : historyTasks;
 //     const taskIndex = currentTasks.findIndex(t => t.id === selectedTask);
 //     if (taskIndex === -1) throw new Error("Task not found");
-    
+
 //     const task = currentTasks[taskIndex];
-    
+
 //     let documentUrl = null;
 //     let photoUrl = null;
-    
+
 //     if (uploadedDocument) {
 //       setUploadStatus("Uploading document...");
 //       documentUrl = await uploadFileToDrive(uploadedDocument, "document");
 //     }
-    
+
 //     if (uploadedPhoto) {
 //       setUploadStatus("Uploading photo...");
 //       photoUrl = await uploadFileToDrive(uploadedPhoto, "photo");
 //     }
-    
+
 //     const completionDate = date ? date.toISOString().split('T')[0] : '';
 //     const remarks = document.getElementById('remarks').value;
-    
+
 //     // ✅ Submit to Tracker sheet with status parameter
 //     await submitToTrackerSheet(task, completionDate, remarks, documentUrl, photoUrl, status);
-    
+
 //     // ✅ Also update FMS sheet with tracker status
 //     const formData = new FormData();
 //     formData.append('action', 'updateSpecificColumns');
@@ -478,7 +478,7 @@
 //     if (!result.success) {
 //       throw new Error(result.error || 'Failed to update tracker status in FMS');
 //     }
-    
+
 //     if (status === "close_task") {
 //       if (activeTab === "pending") {
 //         setPendingTasks(prev => 
@@ -495,10 +495,10 @@
 //       //   );
 //       // }
 //     }
-    
+
 //     alert(`Task ${selectedTask} has been submitted successfully to Tracker sheet.`);
 //     setIsDialogOpen(false);
-    
+
 //     // ✅ IMPORTANT: Reset all dialog states
 //     setSelectedTask(null);
 //     setSelectedTaskData(null);
@@ -507,7 +507,7 @@
 //     setDate(null);
 //     setStatus("pending"); // Reset to default
 //     setTechnicianName("");
-    
+
 //   } catch (err) {
 //     console.error("Error updating task:", err);
 //     alert("Failed to update task: " + err.message);
@@ -649,7 +649,7 @@
 // async function addLocationOverlayToImage(imageFile, latitude, longitude, address) {
 //   return new Promise((resolve, reject) => {
 //     const img = new Image();
-    
+
 //     img.onload = () => {
 //       try {
 //         const canvas = document.createElement("canvas");
@@ -664,31 +664,31 @@
 //         // Smart font size calculation based on image dimensions
 //         const minFontSize = 12;
 //         const maxFontSize = 24;
-        
+
 //         // Calculate font size based on image width and height
 //         const widthBasedSize = Math.floor(img.width / 25); // 25 characters approx
 //         const heightBasedSize = Math.floor(img.height / 15); // 15 lines approx
 //         const fontSize = Math.max(minFontSize, Math.min(maxFontSize, Math.min(widthBasedSize, heightBasedSize)));
-        
+
 //         const lineHeight = fontSize + 6;
 //         const padding = Math.max(8, fontSize / 2); // Responsive padding
-        
+
 //         // Calculate number of lines needed
 //         let numberOfLines = 2; // latitude and longitude
 //         if (address && address.trim() !== "") {
 //           numberOfLines = 3; // add address line
 //         }
-        
+
 //         // Calculate overlay height - ensure it fits within image
 //         const calculatedHeight = (numberOfLines * lineHeight) + (2 * padding);
 //         const maxOverlayHeight = img.height * 0.5; // Max 50% of image height
 //         const overlayHeight = Math.min(calculatedHeight, maxOverlayHeight);
-        
+
 //         console.log("📐 Canvas dimensions:", canvas.width, "x", canvas.height);
 //         console.log("📏 Overlay height:", overlayHeight);
 //         console.log("🔤 Font size:", fontSize);
 //         console.log("📝 Number of lines:", numberOfLines);
-        
+
 //         // Add semi-transparent black box
 //         ctx.fillStyle = "rgba(0, 0, 0, 0.65)";
 //         ctx.fillRect(0, canvas.height - overlayHeight, canvas.width, overlayHeight);
@@ -696,7 +696,7 @@
 //         // Add text overlay
 //         ctx.fillStyle = "#fff";
 //         ctx.font = `bold ${fontSize}px Arial`;
-        
+
 //         const textX = padding;
 //         let textY = canvas.height - overlayHeight + padding + fontSize;
 
@@ -714,17 +714,17 @@
 //         // Second line - Longitude (always show)
 //         const lngText = `Lng: ${longitude.toFixed(6)}`;
 //         ctx.fillText(lngText, textX, textY);
-        
+
 //         // Third line - Address (if space available)
 //         if (address && address.trim() !== "" && numberOfLines === 3) {
 //           textY += lineHeight;
-          
+
 //           // Smart address truncation
 //           let displayAddress = address;
 //           const maxTextWidth = canvas.width - (2 * padding);
 //           const avgCharWidth = fontSize * 0.6;
 //           const maxChars = Math.floor(maxTextWidth / avgCharWidth) - 2;
-          
+
 //           // Measure text width and truncate if needed
 //           if (ctx.measureText(displayAddress).width > maxTextWidth) {
 //             while (displayAddress.length > 5 && ctx.measureText(displayAddress + "...").width > maxTextWidth) {
@@ -732,7 +732,7 @@
 //             }
 //             displayAddress = displayAddress + "...";
 //           }
-          
+
 //           ctx.fillText(displayAddress, textX, textY);
 //         }
 
@@ -755,11 +755,11 @@
 //         reject(error);
 //       }
 //     };
-    
+
 //     img.onerror = () => {
 //       reject(new Error("Failed to load image"));
 //     };
-    
+
 //     img.src = URL.createObjectURL(imageFile);
 //   });
 // }
@@ -773,11 +773,11 @@
 //       setUploadedDocument(e.target.files[0]);
 //     }
 //   };
-  
+
 // const handlePhotoChange = async (e) => {
 //   if (e.target.files && e.target.files[0]) {
 //     const file = e.target.files[0];
-    
+
 //     // Start capturing location FIRST
 //     setIsCapturingLocation(true);
 //     setLocationError(null);
@@ -799,7 +799,7 @@
 //       // ✅ Use this processed image
 //       setUploadedPhoto(processedPhoto);
 //       setIsCapturingLocation(false);
-      
+
 //       console.log("✅ Image updated with overlay text");
 
 //     } catch (error) {
@@ -927,14 +927,14 @@
 //       .filter(name => name && name.trim() !== "")
 //     return [...new Set(companies)].sort()
 //   }
-  
+
 //   const getUniqueModeOfCalls = (tasks) => {
 //     const modes = tasks
 //       .map(task => task.modeOfCall)
 //       .filter(mode => mode && mode.trim() !== "")
 //     return [...new Set(modes)].sort()
 //   }
-  
+
 //   const getUniqueTechnicianNames = (tasks) => {
 //     const technicians = tasks
 //       .map(task => task.technicianName)
@@ -945,7 +945,7 @@
 //   const getCurrentTasks = () => {
 //     return activeTab === "pending" ? pendingTasks : historyTasks;
 //   };
-  
+
 //   const filteredTasks = getCurrentTasks().filter(
 //     (task) => {
 //       const searchFields = [
@@ -986,31 +986,31 @@
 //         task.details,
 //         task.targetDate
 //       ]
-      
+
 //       const normalizeText = (text) => {
 //         if (!text) return ""
 //         return text.toString().toLowerCase().trim()
 //       }
-      
+
 //       const matchesSearch = () => {
 //         if (!searchTerm || searchTerm.trim() === "") return true
-        
+
 //         const normalizedSearchTerm = normalizeText(searchTerm)
 //         const searchWords = normalizedSearchTerm.split(/\s+/).filter(word => word.length > 0)
-        
+
 //         return searchWords.every(word => 
 //           searchFields.some(field => 
 //             normalizeText(field).includes(word)
 //           )
 //         );
 //       }
-      
+
 //       const matchesSearchTerm = matchesSearch()
 //       const matchesCompany = companyFilter === "" || task.companyName === companyFilter
 //       const matchesModeOfCall = modeOfCallFilter === "" || task.modeOfCall === modeOfCallFilter
 //       const matchesTechnician = technicianFilter === "" || task.technicianName === technicianFilter
 //       const matchesTechUser = !techDisplayName || ((task.technicianName || "").toLowerCase().includes(techDisplayName.toLowerCase()))
-      
+
 //       return matchesSearchTerm && matchesCompany && matchesModeOfCall && matchesTechnician && matchesTechUser
 //     }
 //   )
@@ -1063,7 +1063,7 @@
 //     <DashboardLayout>
 //       <div className="p-6">
 //         <h1 className="text-2xl font-bold mb-6">Technician Tracker</h1>
-        
+
 //         {/* Tabs */}
 //         <div className="mb-6 border-b border-gray-200">
 //           <nav className="-mb-px flex space-x-8">
@@ -1430,7 +1430,7 @@
 //                             </div>
 //                           </div>
 
-                        
+
 
 //                           <div className="space-y-2">
 //                             <label htmlFor="status" className="block text-sm font-medium">
@@ -1506,14 +1506,14 @@
 //       <MapPin className="h-4 w-4" />
 //     </button>
 //   </div>
-  
+
 //   {/* Photo selected indicator */}
 //   {uploadedPhoto && (
 //     <div className="text-sm text-green-600">
 //       ✓ Selected: {uploadedPhoto.name}
 //     </div>
 //   )}
-  
+
 //   {/* Location capturing status */}
 //   {isCapturingLocation && (
 //     <div className="flex items-center gap-2 text-sm text-blue-600">
@@ -1521,7 +1521,7 @@
 //       Capturing location...
 //     </div>
 //   )}
-  
+
 //   {/* Location captured successfully */}
 //   {photoLocation && !isCapturingLocation && (
 //     <div className="text-sm text-green-600 space-y-1">
@@ -1538,7 +1538,7 @@
 //       </div>
 //     </div>
 //   )}
-  
+
 //   {/* Location error */}
 //   {locationError && !isCapturingLocation && (
 //     <div className="text-sm text-amber-600">
@@ -1549,7 +1549,7 @@
 //     </div>
 //   )}
 // </div>
-                          
+
 //                           {uploadStatus && (
 //                             <div className="mt-2 p-2 bg-blue-50 text-blue-700 rounded-md">
 //                               {uploadStatus}
@@ -1649,59 +1649,59 @@ function TechnicianTracker() {
     ? (username || "").substring(4).trim()
     : ""
 
-  const GOOGLE_SCRIPT_URL = "https://script.google.com/a/macros/rbpindia.com/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec"
+  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec"
   const DRIVE_FOLDER_ID = "1-H5DWKRV2u_ueqtLX-ISTPvuySGYBLoT"
 
-const getFilteredPendingTasks = () => {
-  console.log("🔵 Getting Pending Tasks, techDisplayName:", techDisplayName);
-  console.log("📊 Total pending tasks:", pendingTasks.length);
-  
-  if (!techDisplayName) {
-    console.log("👨‍💼 Admin mode - returning all pending tasks");
-    return pendingTasks;
-  }
-  
-  const filtered = pendingTasks.filter(task => {
-    const matchesTechUser = task.technicianName?.toLowerCase().includes(techDisplayName.toLowerCase());
-    return matchesTechUser;
-  });
-  
-  console.log("👷 Technician mode - filtered pending:", filtered.length);
-  return filtered;
-};
+  const getFilteredPendingTasks = () => {
+    console.log("🔵 Getting Pending Tasks, techDisplayName:", techDisplayName);
+    console.log("📊 Total pending tasks:", pendingTasks.length);
 
-const getFilteredHistoryTasks = () => {
-  console.log("🟢 Getting History Tasks, techDisplayName:", techDisplayName);
-  console.log("📊 Total history tasks:", historyTasks.length);
-  
-  if (!techDisplayName) {
-    console.log("👨‍💼 Admin mode - returning all history tasks");
-    return historyTasks;
-  }
-  
-  const filtered = historyTasks.filter(task => {
-    const matchesTechUser = task.technicianName?.toLowerCase().includes(techDisplayName.toLowerCase());
-    return matchesTechUser;
-  });
-  
-  console.log("👷 Technician mode - filtered history:", filtered.length);
-  return filtered;
-};
+    if (!techDisplayName) {
+      console.log("👨‍💼 Admin mode - returning all pending tasks");
+      return pendingTasks;
+    }
 
-// FIXED: Proper tab-specific data fetching
-const getCurrentTasks = () => {
-  if (activeTab === "pending") {
-    return getFilteredPendingTasks();
-  } else if (activeTab === "history") {
-    return getFilteredHistoryTasks();
-  }
-  return [];
-};
+    const filtered = pendingTasks.filter(task => {
+      const matchesTechUser = task.technicianName?.toLowerCase().includes(techDisplayName.toLowerCase());
+      return matchesTechUser;
+    });
+
+    console.log("👷 Technician mode - filtered pending:", filtered.length);
+    return filtered;
+  };
+
+  const getFilteredHistoryTasks = () => {
+    console.log("🟢 Getting History Tasks, techDisplayName:", techDisplayName);
+    console.log("📊 Total history tasks:", historyTasks.length);
+
+    if (!techDisplayName) {
+      console.log("👨‍💼 Admin mode - returning all history tasks");
+      return historyTasks;
+    }
+
+    const filtered = historyTasks.filter(task => {
+      const matchesTechUser = task.technicianName?.toLowerCase().includes(techDisplayName.toLowerCase());
+      return matchesTechUser;
+    });
+
+    console.log("👷 Technician mode - filtered history:", filtered.length);
+    return filtered;
+  };
+
+  // FIXED: Proper tab-specific data fetching
+  const getCurrentTasks = () => {
+    if (activeTab === "pending") {
+      return getFilteredPendingTasks();
+    } else if (activeTab === "history") {
+      return getFilteredHistoryTasks();
+    }
+    return [];
+  };
   const formatDateString = (dateValue) => {
     if (!dateValue) return "";
-    
+
     let date;
-    
+
     if (typeof dateValue === 'string' && dateValue.includes('T')) {
       date = new Date(dateValue);
     } else if (typeof dateValue === 'string' && dateValue.includes('-')) {
@@ -1721,11 +1721,11 @@ const getCurrentTasks = () => {
     } else {
       return dateValue;
     }
-    
+
     if (isNaN(date.getTime())) {
       return dateValue;
     }
-    
+
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
@@ -1798,7 +1798,7 @@ const getCurrentTasks = () => {
   };
 
   const getPriorityColor = (priority) => {
-    switch(priority?.toLowerCase()) {
+    switch (priority?.toLowerCase()) {
       case "urgent": return "bg-red-500"
       case "high": return "bg-orange-500"
       case "medium": return "bg-blue-500"
@@ -1807,240 +1807,240 @@ const getCurrentTasks = () => {
     }
   }
 
-useEffect(() => {
-  const fetchTasks = async () => {
-    setIsLoading(true)
-    setError(null)
-    
-    try {
-      // Fetch FMS data for pending tasks
-      const sheetUrl = "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=FMS"
-      const response = await fetch(sheetUrl)
-      const text = await response.text()
-      
-      const jsonStart = text.indexOf('{')
-      const jsonEnd = text.lastIndexOf('}') + 1
-      const jsonData = text.substring(jsonStart, jsonEnd)
-      
-      const data = JSON.parse(jsonData)
-      
-      const pendingData = []
-      
-      if (data && data.table && data.table.rows) {
-        console.log('Total rows in FMS sheet:', data.table.rows.length);
-        
-        data.table.rows.forEach((row, index) => {
-          console.log(`\n=== Row ${index + 1} ===`);
-          console.log('Has row.c?', !!row.c);
-          
-          if (row.c) {
-            console.log('Total columns in this row:', row.c.length);
-            console.log('Column AJ (index 35) value:', row.c[35] ? row.c[35].v : 'EMPTY/NULL');
-            console.log('Column AK (index 36) value:', row.c[36] ? row.c[36].v : 'EMPTY/NULL');
-            console.log('Complaint Number (index 8):', row.c[8] ? row.c[8].v : 'EMPTY');
-            
-            const hasColumnAJ = row.c[35] && row.c[35].v !== null && row.c[35].v !== "";
-            const hasEmptyColumnAK = !row.c[36] || row.c[36].v === null || row.c[36].v === "";
-            
-            console.log('Column AJ has value?', hasColumnAJ);
-            console.log('Column AK is empty?', hasEmptyColumnAK);
-            console.log('WILL ADD TO PENDING?', hasColumnAJ && hasEmptyColumnAK);
-            
-            if (hasColumnAJ && hasEmptyColumnAK) {
-              const task = {
-                rowIndex: index + 1,
-                complaintNo: row.c[1] ? row.c[1].v : "",
-                date: row.c[2] ? formatDateString(row.c[2].v) : "",
-                head: row.c[3] ? row.c[3].v : "",
-                companyName: row.c[4] ? row.c[4].v : "",
-                modeOfCall: row.c[5] ? row.c[5].v : "",
-                idNumber: row.c[6] ? row.c[6].v : "",
-                projectName: row.c[7] ? row.c[7].v : "",
-                complaintNumber: row.c[8] ? row.c[8].v : "",
-                complaintDate: row.c[9] ? formatDateString(row.c[9].v) : "",
-                beneficiaryName: row.c[10] ? row.c[10].v : "",
-                contactNumber: row.c[11] ? row.c[11].v : "",
-                village: row.c[12] ? row.c[12].v : "",
-                block: row.c[13] ? row.c[13].v : "",
-                district: row.c[14] ? row.c[14].v : "",
-                product: row.c[15] ? row.c[15].v : "",
-                make: row.c[16] ? row.c[16].v : "",
-                systemVoltage: row.c[17] ? row.c[17].v : "",
-                rating: row.c[18] ? row.c[18].v : "",
-                qty: row.c[19] ? row.c[19].v : "",
-                acDc: row.c[20] ? row.c[20].v : "",
-                priority: row.c[21] ? row.c[21].v : "",
-                insuranceType: row.c[22] ? row.c[22].v : "",
-                natureOfComplaint: row.c[23] ? row.c[23].v : "",
-                technicianName: row.c[27] ? row.c[27].v : "",
-                technicianContact: row.c[28] ? row.c[28].v : "",
-                assigneeName: row.c[29] ? row.c[29].v : "",
-                assigneeWhatsApp: row.c[30] ? row.c[30].v : "",
-                location: row.c[31] ? row.c[31].v : "",
-                complaintDetails: row.c[32] ? row.c[32].v : "",
-                expectedCompletionDate: row.c[33] ? formatDateString(row.c[33].v) : "",
-                notesForTechnician: row.c[34] ? row.c[34].v : "",
-                id: row.c[1] ? row.c[1].v : `COMP-${index + 1}`,
-                assignee: row.c[29] ? row.c[29].v : "",
-                technician: row.c[27] ? row.c[27].v : "",
-                details: row.c[32] ? row.c[32].v : "",
-                targetDate: row.c[33] ? formatDateString(row.c[33].v) : "",
-                fullRowData: row.c
+  useEffect(() => {
+    const fetchTasks = async () => {
+      setIsLoading(true)
+      setError(null)
+
+      try {
+        // Fetch FMS data for pending tasks
+        const sheetUrl = "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=FMS"
+        const response = await fetch(sheetUrl)
+        const text = await response.text()
+
+        const jsonStart = text.indexOf('{')
+        const jsonEnd = text.lastIndexOf('}') + 1
+        const jsonData = text.substring(jsonStart, jsonEnd)
+
+        const data = JSON.parse(jsonData)
+
+        const pendingData = []
+
+        if (data && data.table && data.table.rows) {
+          console.log('Total rows in FMS sheet:', data.table.rows.length);
+
+          data.table.rows.forEach((row, index) => {
+            console.log(`\n=== Row ${index + 1} ===`);
+            console.log('Has row.c?', !!row.c);
+
+            if (row.c) {
+              console.log('Total columns in this row:', row.c.length);
+              console.log('Column AJ (index 35) value:', row.c[35] ? row.c[35].v : 'EMPTY/NULL');
+              console.log('Column AK (index 36) value:', row.c[36] ? row.c[36].v : 'EMPTY/NULL');
+              console.log('Complaint Number (index 8):', row.c[8] ? row.c[8].v : 'EMPTY');
+
+              const hasColumnAJ = row.c[35] && row.c[35].v !== null && row.c[35].v !== "";
+              const hasEmptyColumnAK = !row.c[36] || row.c[36].v === null || row.c[36].v === "";
+
+              console.log('Column AJ has value?', hasColumnAJ);
+              console.log('Column AK is empty?', hasEmptyColumnAK);
+              console.log('WILL ADD TO PENDING?', hasColumnAJ && hasEmptyColumnAK);
+
+              if (hasColumnAJ && hasEmptyColumnAK) {
+                const task = {
+                  rowIndex: index + 1,
+                  complaintNo: row.c[1] ? row.c[1].v : "",
+                  date: row.c[2] ? formatDateString(row.c[2].v) : "",
+                  head: row.c[3] ? row.c[3].v : "",
+                  companyName: row.c[4] ? row.c[4].v : "",
+                  modeOfCall: row.c[5] ? row.c[5].v : "",
+                  idNumber: row.c[6] ? row.c[6].v : "",
+                  projectName: row.c[7] ? row.c[7].v : "",
+                  complaintNumber: row.c[8] ? row.c[8].v : "",
+                  complaintDate: row.c[9] ? formatDateString(row.c[9].v) : "",
+                  beneficiaryName: row.c[10] ? row.c[10].v : "",
+                  contactNumber: row.c[11] ? row.c[11].v : "",
+                  village: row.c[12] ? row.c[12].v : "",
+                  block: row.c[13] ? row.c[13].v : "",
+                  district: row.c[14] ? row.c[14].v : "",
+                  product: row.c[15] ? row.c[15].v : "",
+                  make: row.c[16] ? row.c[16].v : "",
+                  systemVoltage: row.c[17] ? row.c[17].v : "",
+                  rating: row.c[18] ? row.c[18].v : "",
+                  qty: row.c[19] ? row.c[19].v : "",
+                  acDc: row.c[20] ? row.c[20].v : "",
+                  priority: row.c[21] ? row.c[21].v : "",
+                  insuranceType: row.c[22] ? row.c[22].v : "",
+                  natureOfComplaint: row.c[23] ? row.c[23].v : "",
+                  technicianName: row.c[27] ? row.c[27].v : "",
+                  technicianContact: row.c[28] ? row.c[28].v : "",
+                  assigneeName: row.c[29] ? row.c[29].v : "",
+                  assigneeWhatsApp: row.c[30] ? row.c[30].v : "",
+                  location: row.c[31] ? row.c[31].v : "",
+                  complaintDetails: row.c[32] ? row.c[32].v : "",
+                  expectedCompletionDate: row.c[33] ? formatDateString(row.c[33].v) : "",
+                  notesForTechnician: row.c[34] ? row.c[34].v : "",
+                  id: row.c[1] ? row.c[1].v : `COMP-${index + 1}`,
+                  assignee: row.c[29] ? row.c[29].v : "",
+                  technician: row.c[27] ? row.c[27].v : "",
+                  details: row.c[32] ? row.c[32].v : "",
+                  targetDate: row.c[33] ? formatDateString(row.c[33].v) : "",
+                  fullRowData: row.c
+                }
+
+                console.log('✅ ADDED TASK:', task.complaintNumber);
+                pendingData.push(task)
               }
-              
-              console.log('✅ ADDED TASK:', task.complaintNumber);
-              pendingData.push(task)
             }
-          }
-        })
-      }
-      
-      // Fetch Tracker sheet data for history - FIXED: Get ALL data from Tracker sheet
-      console.log("Fetching Tracker sheet data...");
-      const trackerSheetUrl = "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=Tracker"
-      const trackerResponse = await fetch(trackerSheetUrl)
-      const trackerText = await trackerResponse.text()
+          })
+        }
 
-      console.log("Tracker response status:", trackerResponse.status);
+        // Fetch Tracker sheet data for history - FIXED: Get ALL data from Tracker sheet
+        console.log("Fetching Tracker sheet data...");
+        const trackerSheetUrl = "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=Tracker"
+        const trackerResponse = await fetch(trackerSheetUrl)
+        const trackerText = await trackerResponse.text()
 
-      const trackerJsonStart = trackerText.indexOf('{')
-      const trackerJsonEnd = trackerText.lastIndexOf('}') + 1
-      const trackerJsonData = trackerText.substring(trackerJsonStart, trackerJsonEnd)
+        console.log("Tracker response status:", trackerResponse.status);
 
-      const trackerData = JSON.parse(trackerJsonData)
-      console.log("Tracker data:", trackerData);
+        const trackerJsonStart = trackerText.indexOf('{')
+        const trackerJsonEnd = trackerText.lastIndexOf('}') + 1
+        const trackerJsonData = trackerText.substring(trackerJsonStart, trackerJsonEnd)
 
-      const historyData = []
+        const trackerData = JSON.parse(trackerJsonData)
+        console.log("Tracker data:", trackerData);
 
-      if (trackerData && trackerData.table && trackerData.table.rows) {
-        console.log("Tracker rows found:", trackerData.table.rows.length);
-        
-        trackerData.table.rows.forEach((row, index) => {
-          console.log(`\n=== Tracker Row ${index + 1} ===`);
-          console.log('Has row.c?', !!row.c);
-          
-          if (row.c && row.c.length > 0) {
-            const firstCell = row.c[0] ? row.c[0].v : "";
-            const secondCell = row.c[1] ? row.c[1].v : "";
-            
-            console.log('First cell:', firstCell);
-            console.log('Second cell:', secondCell);
-            
-            // Skip only header rows
-            if (firstCell === "Timestamp" || firstCell === "Technician" || 
+        const historyData = []
+
+        if (trackerData && trackerData.table && trackerData.table.rows) {
+          console.log("Tracker rows found:", trackerData.table.rows.length);
+
+          trackerData.table.rows.forEach((row, index) => {
+            console.log(`\n=== Tracker Row ${index + 1} ===`);
+            console.log('Has row.c?', !!row.c);
+
+            if (row.c && row.c.length > 0) {
+              const firstCell = row.c[0] ? row.c[0].v : "";
+              const secondCell = row.c[1] ? row.c[1].v : "";
+
+              console.log('First cell:', firstCell);
+              console.log('Second cell:', secondCell);
+
+              // Skip only header rows
+              if (firstCell === "Timestamp" || firstCell === "Technician" ||
                 secondCell === "Attend id" || secondCell === "Assignee Response") {
-              console.log(`Skipping header row ${index + 1}`);
-              return;
+                console.log(`Skipping header row ${index + 1}`);
+                return;
+              }
+
+              if (!row.c[1] || !row.c[1].v) {
+                console.log(`Skipping empty row ${index + 1}`);
+                return;
+              }
+
+              // FIXED: Include ALL rows from Tracker sheet (remove status filter)
+              console.log("Processing ALL tracker row:", index + 1);
+
+              const historyTask = {
+                id: row.c[1] ? row.c[1].v : `TRACK-${index + 1}`,
+                timestamp: row.c[0] ? row.c[0].v : "",
+                attendId: row.c[1] ? row.c[1].v : "",
+                complaintNumber: row.c[2] ? row.c[2].v : "",
+                technicianName: row.c[3] ? row.c[3].v : "",
+                beneficiaryName: row.c[4] ? row.c[4].v : "",
+                contactNumber: row.c[5] ? row.c[5].v : "",
+                village: row.c[6] ? row.c[6].v : "",
+                block: row.c[7] ? row.c[7].v : "",
+                district: row.c[8] ? row.c[8].v : "",
+                product: row.c[9] ? row.c[9].v : "",
+                make: row.c[10] ? row.c[10].v : "",
+                systemVoltage: row.c[11] ? row.c[11].v : "",
+                natureOfComplaint: row.c[12] ? row.c[12].v : "",
+                uploadDocuments: row.c[13] ? row.c[13].v : "",
+                geotagPhoto: row.c[14] ? row.c[14].v : "",
+                remarks: row.c[15] ? row.c[15].v : "",
+                trackerStatus: row.c[16] ? row.c[16].v : "",
+                assigneeName: row.c[17] ? row.c[17].v : "",
+                checked: row.c[18] ? row.c[18].v : "",
+                remark: row.c[19] ? row.c[19].v : "",
+                latitude: row.c[20] ? row.c[20].v : "",
+                longitude: row.c[21] ? row.c[21].v : "",
+                address: row.c[22] ? row.c[22].v : "",
+                companyName: "",
+                modeOfCall: "",
+                idNumber: "",
+                projectName: "",
+                complaintDate: "",
+                rating: "",
+                qty: "",
+                acDc: "",
+                priority: "",
+                insuranceType: "",
+                technicianContact: "",
+                assigneeWhatsApp: "",
+                location: "",
+                complaintDetails: "",
+                expectedCompletionDate: "",
+                notesForTechnician: ""
+              }
+
+              console.log("✅ ADDED TO HISTORY:", historyTask);
+              historyData.push(historyTask)
             }
-            
-            if (!row.c[1] || !row.c[1].v) {
-              console.log(`Skipping empty row ${index + 1}`);
-              return;
-            }
-            
-            // FIXED: Include ALL rows from Tracker sheet (remove status filter)
-            console.log("Processing ALL tracker row:", index + 1);
-            
-            const historyTask = {
-              id: row.c[1] ? row.c[1].v : `TRACK-${index + 1}`,
-              timestamp: row.c[0] ? row.c[0].v : "",
-              attendId: row.c[1] ? row.c[1].v : "",
-              complaintNumber: row.c[2] ? row.c[2].v : "",
-              technicianName: row.c[3] ? row.c[3].v : "",
-              beneficiaryName: row.c[4] ? row.c[4].v : "",
-              contactNumber: row.c[5] ? row.c[5].v : "",
-              village: row.c[6] ? row.c[6].v : "",
-              block: row.c[7] ? row.c[7].v : "",
-              district: row.c[8] ? row.c[8].v : "",
-              product: row.c[9] ? row.c[9].v : "",
-              make: row.c[10] ? row.c[10].v : "",
-              systemVoltage: row.c[11] ? row.c[11].v : "",
-              natureOfComplaint: row.c[12] ? row.c[12].v : "",
-              uploadDocuments: row.c[13] ? row.c[13].v : "",
-              geotagPhoto: row.c[14] ? row.c[14].v : "",
-              remarks: row.c[15] ? row.c[15].v : "",
-              trackerStatus: row.c[16] ? row.c[16].v : "",
-              assigneeName: row.c[17] ? row.c[17].v : "",
-              checked: row.c[18] ? row.c[18].v : "",
-              remark: row.c[19] ? row.c[19].v : "",
-              latitude: row.c[20] ? row.c[20].v : "",
-              longitude: row.c[21] ? row.c[21].v : "",
-              address: row.c[22] ? row.c[22].v : "",
-              companyName: "",
-              modeOfCall: "",
-              idNumber: "",
-              projectName: "",
-              complaintDate: "",
-              rating: "",
-              qty: "",
-              acDc: "",
-              priority: "",
-              insuranceType: "",
-              technicianContact: "",
-              assigneeWhatsApp: "",
-              location: "",
-              complaintDetails: "",
-              expectedCompletionDate: "",
-              notesForTechnician: ""
-            }
-            
-            console.log("✅ ADDED TO HISTORY:", historyTask);
-            historyData.push(historyTask)
-          }
-        })
-      } else {
-        console.log("No tracker data found");
+          })
+        } else {
+          console.log("No tracker data found");
+        }
+
+        console.log("Final Pending tasks:", pendingData.length);
+        console.log("Final History tasks:", historyData.length);
+
+        setPendingTasks(pendingData)
+        setHistoryTasks(historyData)
+
+      } catch (err) {
+        console.error("Error fetching tasks data:", err)
+        setError(err.message)
+        setPendingTasks([])
+        setHistoryTasks([])
+      } finally {
+        setIsLoading(false)
       }
-
-      console.log("Final Pending tasks:", pendingData.length);
-      console.log("Final History tasks:", historyData.length);
-      
-      setPendingTasks(pendingData)
-      setHistoryTasks(historyData)
-      
-    } catch (err) {
-      console.error("Error fetching tasks data:", err)
-      setError(err.message)
-      setPendingTasks([])
-      setHistoryTasks([])
-    } finally {
-      setIsLoading(false)
     }
-  }
 
-  const fetchTechnicianOptions = async () => {
-    try {
-      const sheetUrl = "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=master"
-      const response = await fetch(sheetUrl)
-      const text = await response.text()
-      
-      const jsonStart = text.indexOf('{')
-      const jsonEnd = text.lastIndexOf('}') + 1
-      const jsonData = text.substring(jsonStart, jsonEnd)
-      
-      const data = JSON.parse(jsonData)
-      
-      if (data && data.table && data.table.rows) {
-        const options = data.table.rows.slice(2).map(row => row.c[5]?.v || "").filter(name => name && name.trim() !== "")
-        setTechnicianOptions([...new Set(options)].sort())
+    const fetchTechnicianOptions = async () => {
+      try {
+        const sheetUrl = "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=master"
+        const response = await fetch(sheetUrl)
+        const text = await response.text()
+
+        const jsonStart = text.indexOf('{')
+        const jsonEnd = text.lastIndexOf('}') + 1
+        const jsonData = text.substring(jsonStart, jsonEnd)
+
+        const data = JSON.parse(jsonData)
+
+        if (data && data.table && data.table.rows) {
+          const options = data.table.rows.slice(2).map(row => row.c[5]?.v || "").filter(name => name && name.trim() !== "")
+          setTechnicianOptions([...new Set(options)].sort())
+        }
+      } catch (err) {
+        console.error("Error fetching technician options:", err)
+        setTechnicianOptions([])
       }
-    } catch (err) {
-      console.error("Error fetching technician options:", err)
-      setTechnicianOptions([])
     }
-  }
 
-  fetchTasks()
-  fetchTechnicianOptions()
-}, [])
+    fetchTasks()
+    fetchTechnicianOptions()
+  }, [])
 
   // All other functions remain the same...
   const uploadFileToDrive = async (file, fileType) => {
     if (!file) return null;
-    
+
     try {
       setUploadStatus(`Uploading ${fileType}...`);
-      
+
       const reader = new FileReader();
       const fileBase64 = await new Promise((resolve, reject) => {
         reader.onload = () => resolve(reader.result.split(',')[1]);
@@ -2061,13 +2061,13 @@ useEffect(() => {
       });
 
       const result = await response.json();
-      
+
       if (!result.success) {
         throw new Error(result.error || 'Failed to upload file');
       }
 
       return `https://drive.google.com/uc?id=${result.fileId}`;
-      
+
     } catch (err) {
       console.error(`Error uploading ${fileType}:`, err);
       alert(`Failed to upload ${fileType}: ${err.message}`);
@@ -2077,32 +2077,32 @@ useEffect(() => {
 
   const handleUpdateTask = async () => {
     setIsSubmitting(true);
-    
+
     try {
       const currentTasks = getCurrentTasks();
       const taskIndex = currentTasks.findIndex(t => t.id === selectedTask);
       if (taskIndex === -1) throw new Error("Task not found");
-      
+
       const task = currentTasks[taskIndex];
-      
+
       let documentUrl = null;
       let photoUrl = null;
-      
+
       if (uploadedDocument) {
         setUploadStatus("Uploading document...");
         documentUrl = await uploadFileToDrive(uploadedDocument, "document");
       }
-      
+
       if (uploadedPhoto) {
         setUploadStatus("Uploading photo...");
         photoUrl = await uploadFileToDrive(uploadedPhoto, "photo");
       }
-      
+
       const completionDate = date ? date.toISOString().split('T')[0] : '';
       const remarks = document.getElementById('remarks').value;
-      
+
       await submitToTrackerSheet(task, completionDate, remarks, documentUrl, photoUrl, status);
-      
+
       const formData = new FormData();
       formData.append('action', 'updateSpecificColumns');
       formData.append('sheetName', 'FMS');
@@ -2121,16 +2121,16 @@ useEffect(() => {
       if (!result.success) {
         throw new Error(result.error || 'Failed to update tracker status in FMS');
       }
-      
+
       if (status === "close_task") {
-        setPendingTasks(prev => 
+        setPendingTasks(prev =>
           prev.filter(task => task.id !== selectedTask)
         );
       }
-      
+
       alert(`Task ${selectedTask} has been submitted successfully to Tracker sheet.`);
       setIsDialogOpen(false);
-      
+
       setSelectedTask(null);
       setSelectedTaskData(null);
       setUploadedDocument(null);
@@ -2138,7 +2138,7 @@ useEffect(() => {
       setDate(null);
       setStatus("pending");
       setTechnicianName("");
-      
+
     } catch (err) {
       console.error("Error updating task:", err);
       alert("Failed to update task: " + err.message);
@@ -2223,11 +2223,11 @@ useEffect(() => {
         task.natureOfComplaint || "",
         documentUrl || "",
 
-        (photoUrl && photoUrl.includes("drive.google.com") 
+        (photoUrl && photoUrl.includes("drive.google.com")
           ? (() => {
-              const match = photoUrl.match(/[-\w]{25,}/);
-              return match ? `https://drive.google.com/uc?id=${match[0]}` : "";
-            })()
+            const match = photoUrl.match(/[-\w]{25,}/);
+            return match ? `https://drive.google.com/uc?id=${match[0]}` : "";
+          })()
           : ""
         ),
 
@@ -2266,7 +2266,7 @@ useEffect(() => {
   async function addLocationOverlayToImage(imageFile, latitude, longitude, address) {
     return new Promise((resolve, reject) => {
       const img = new Image();
-      
+
       img.onload = () => {
         try {
           const canvas = document.createElement("canvas");
@@ -2279,34 +2279,34 @@ useEffect(() => {
 
           const minFontSize = 12;
           const maxFontSize = 24;
-          
+
           const widthBasedSize = Math.floor(img.width / 25);
           const heightBasedSize = Math.floor(img.height / 15);
           const fontSize = Math.max(minFontSize, Math.min(maxFontSize, Math.min(widthBasedSize, heightBasedSize)));
-          
+
           const lineHeight = fontSize + 6;
           const padding = Math.max(8, fontSize / 2);
-          
+
           let numberOfLines = 2;
           if (address && address.trim() !== "") {
             numberOfLines = 3;
           }
-          
+
           const calculatedHeight = (numberOfLines * lineHeight) + (2 * padding);
           const maxOverlayHeight = img.height * 0.5;
           const overlayHeight = Math.min(calculatedHeight, maxOverlayHeight);
-          
+
           console.log("📐 Canvas dimensions:", canvas.width, "x", canvas.height);
           console.log("📏 Overlay height:", overlayHeight);
           console.log("🔤 Font size:", fontSize);
           console.log("📝 Number of lines:", numberOfLines);
-          
+
           ctx.fillStyle = "rgba(0, 0, 0, 0.65)";
           ctx.fillRect(0, canvas.height - overlayHeight, canvas.width, overlayHeight);
 
           ctx.fillStyle = "#fff";
           ctx.font = `bold ${fontSize}px Arial`;
-          
+
           const textX = padding;
           let textY = canvas.height - overlayHeight + padding + fontSize;
 
@@ -2321,22 +2321,22 @@ useEffect(() => {
 
           const lngText = `Lng: ${longitude.toFixed(6)}`;
           ctx.fillText(lngText, textX, textY);
-          
+
           if (address && address.trim() !== "" && numberOfLines === 3) {
             textY += lineHeight;
-            
+
             let displayAddress = address;
             const maxTextWidth = canvas.width - (2 * padding);
             const avgCharWidth = fontSize * 0.6;
             const maxChars = Math.floor(maxTextWidth / avgCharWidth) - 2;
-            
+
             if (ctx.measureText(displayAddress).width > maxTextWidth) {
               while (displayAddress.length > 5 && ctx.measureText(displayAddress + "...").width > maxTextWidth) {
                 displayAddress = displayAddress.substring(0, displayAddress.length - 1);
               }
               displayAddress = displayAddress + "...";
             }
-            
+
             ctx.fillText(displayAddress, textX, textY);
           }
 
@@ -2357,11 +2357,11 @@ useEffect(() => {
           reject(error);
         }
       };
-      
+
       img.onerror = () => {
         reject(new Error("Failed to load image"));
       };
-      
+
       img.src = URL.createObjectURL(imageFile);
     });
   }
@@ -2371,11 +2371,11 @@ useEffect(() => {
       setUploadedDocument(e.target.files[0]);
     }
   };
-  
+
   const handlePhotoChange = async (e) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      
+
       setIsCapturingLocation(true);
       setLocationError(null);
 
@@ -2393,7 +2393,7 @@ useEffect(() => {
 
         setUploadedPhoto(processedPhoto);
         setIsCapturingLocation(false);
-        
+
         console.log("✅ Image updated with overlay text");
 
       } catch (error) {
@@ -2518,89 +2518,89 @@ useEffect(() => {
       .filter(name => name && name.trim() !== "")
     return [...new Set(companies)].sort()
   }
-  
+
   const getUniqueModeOfCalls = (tasks) => {
     const modes = tasks
       .map(task => task.modeOfCall)
       .filter(mode => mode && mode.trim() !== "")
     return [...new Set(modes)].sort()
   }
-  
+
   const getUniqueTechnicianNames = (tasks) => {
     const technicians = tasks
       .map(task => task.technicianName)
       .filter(name => name && name.trim() !== "")
     return [...new Set(technicians)].sort()
   }
-  
+
   // FIXED: Clean filtering logic - only search/filters, no user filtering here
   const filteredTasks = getCurrentTasks().filter(
-  (task) => {
-    const searchFields = [
-      task.complaintNo,
-      task.date,
-      task.head,
-      task.companyName,
-      task.modeOfCall,
-      task.idNumber,
-      task.projectName,
-      task.complaintNumber,
-      task.complaintDate,
-      task.beneficiaryName,
-      task.contactNumber,
-      task.village,
-      task.block,
-      task.district,
-      task.product,
-      task.make,
-      task.systemVoltage,
-      task.rating,
-      task.qty,
-      task.acDc,
-      task.priority,
-      task.insuranceType,
-      task.natureOfComplaint,
-      task.technicianName,
-      task.technicianContact,
-      task.assigneeName,
-      task.assigneeWhatsApp,
-      task.location,
-      task.complaintDetails,
-      task.expectedCompletionDate,
-      task.notesForTechnician,
-      task.id,
-      task.assignee,
-      task.technician,
-      task.details,
-      task.targetDate
-    ]
-    
-    const normalizeText = (text) => {
-      if (!text) return ""
-      return text.toString().toLowerCase().trim()
+    (task) => {
+      const searchFields = [
+        task.complaintNo,
+        task.date,
+        task.head,
+        task.companyName,
+        task.modeOfCall,
+        task.idNumber,
+        task.projectName,
+        task.complaintNumber,
+        task.complaintDate,
+        task.beneficiaryName,
+        task.contactNumber,
+        task.village,
+        task.block,
+        task.district,
+        task.product,
+        task.make,
+        task.systemVoltage,
+        task.rating,
+        task.qty,
+        task.acDc,
+        task.priority,
+        task.insuranceType,
+        task.natureOfComplaint,
+        task.technicianName,
+        task.technicianContact,
+        task.assigneeName,
+        task.assigneeWhatsApp,
+        task.location,
+        task.complaintDetails,
+        task.expectedCompletionDate,
+        task.notesForTechnician,
+        task.id,
+        task.assignee,
+        task.technician,
+        task.details,
+        task.targetDate
+      ]
+
+      const normalizeText = (text) => {
+        if (!text) return ""
+        return text.toString().toLowerCase().trim()
+      }
+
+      const matchesSearch = () => {
+        if (!searchTerm || searchTerm.trim() === "") return true
+
+        const normalizedSearchTerm = normalizeText(searchTerm)
+        const searchWords = normalizedSearchTerm.split(/\s+/).filter(word => word.length > 0)
+
+        return searchWords.every(word =>
+          searchFields.some(field =>
+            normalizeText(field).includes(word)
+          )
+        );
+      }
+
+      const matchesSearchTerm = matchesSearch()
+      const matchesCompany = companyFilter === "" || task.companyName === companyFilter
+      const matchesModeOfCall = modeOfCallFilter === "" || task.modeOfCall === modeOfCallFilter
+      const matchesTechnician = technicianFilter === "" || task.technicianName === technicianFilter
+
+      return matchesSearchTerm && matchesCompany && matchesModeOfCall && matchesTechnician
     }
-    
-    const matchesSearch = () => {
-      if (!searchTerm || searchTerm.trim() === "") return true
-      
-      const normalizedSearchTerm = normalizeText(searchTerm)
-      const searchWords = normalizedSearchTerm.split(/\s+/).filter(word => word.length > 0)
-      
-      return searchWords.every(word => 
-        searchFields.some(field => 
-          normalizeText(field).includes(word)
-        )
-      );
-    }
-    
-    const matchesSearchTerm = matchesSearch()
-    const matchesCompany = companyFilter === "" || task.companyName === companyFilter
-    const matchesModeOfCall = modeOfCallFilter === "" || task.modeOfCall === modeOfCallFilter
-    const matchesTechnician = technicianFilter === "" || task.technicianName === technicianFilter
-    
-    return matchesSearchTerm && matchesCompany && matchesModeOfCall && matchesTechnician
-  }
-)
+  )
 
   const renderTableCell = (task, field, value) => {
     if (editingRow === task.id) {
@@ -2650,27 +2650,25 @@ useEffect(() => {
     <DashboardLayout>
       <div className="p-6">
         <h1 className="text-2xl font-bold mb-6">Technician Tracker</h1>
-        
+
         {/* FIXED: Tab counts now use filtered functions */}
         <div className="mb-6 border-b border-gray-200">
           <nav className="-mb-px flex space-x-8">
             <button
               onClick={() => setActiveTab("pending")}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === "pending"
-                  ? "border-blue-500 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === "pending"
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }`}
             >
               Pending ({getFilteredPendingTasks().length})
             </button>
             <button
               onClick={() => setActiveTab("history")}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === "history"
-                  ? "border-blue-500 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === "history"
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }`}
             >
               History ({getFilteredHistoryTasks().length})
             </button>
@@ -2687,11 +2685,11 @@ useEffect(() => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <svg 
+            <svg
               className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500"
-              xmlns="http://www.w3.org/2000/svg" 
-              fill="none" 
-              viewBox="0 0 24 24" 
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
               stroke="currentColor"
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -2757,8 +2755,8 @@ useEffect(() => {
             {filteredTasks.length === 0 ? (
               <div className="text-center p-6 bg-gray-50 rounded-lg border border-gray-200">
                 <p className="text-gray-500">
-                  {activeTab === "pending" 
-                    ? "No pending technician tasks found" 
+                  {activeTab === "pending"
+                    ? "No pending technician tasks found"
                     : "No technician history found"
                   }
                 </p>
@@ -2776,8 +2774,8 @@ useEffect(() => {
                           Actions
                         </th>
                         <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-  Complaint No.
-</th>
+                          Complaint No.
+                        </th>
                         <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                           Complaint Number
                         </th>
@@ -2823,10 +2821,10 @@ useEffect(() => {
                       </>
                     ) : (
                       <>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-      Complaint No.
-    </th>
-                       
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                          Complaint No.
+                        </th>
+
                         <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                           Beneficiary Name
                         </th>
@@ -2861,9 +2859,9 @@ useEffect(() => {
                     )}
                   </tr>
                 </thead>
-               <tbody className="bg-white divide-y divide-gray-200">
-  {filteredTasks.map((task, index) => (
-    <tr key={`${activeTab}-${task.id || task.complaintNo || task.attendId}-${index}`} className="hover:bg-gray-50">
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredTasks.map((task, index) => (
+                    <tr key={`${activeTab}-${task.id || task.complaintNo || task.attendId}-${index}`} className="hover:bg-gray-50">
                       {activeTab === "pending" ? (
                         <>
                           <td className="px-3 py-4 whitespace-nowrap">
@@ -2912,7 +2910,7 @@ useEffect(() => {
                               Update
                             </button>
                           </td>
-                           <td className="px-3 py-4 whitespace-nowrap text-sm">{task.complaintNo}</td>
+                          <td className="px-3 py-4 whitespace-nowrap text-sm">{task.complaintNo}</td>
                           <td className="px-3 py-4 whitespace-nowrap text-sm">{task.complaintNumber}</td>
                           <td className="px-3 py-4 whitespace-nowrap text-sm font-medium">{task.beneficiaryName}</td>
                           <td className="px-3 py-4 whitespace-nowrap text-sm">{task.contactNumber}</td>
@@ -3060,8 +3058,8 @@ useEffect(() => {
                                 className="flex-1 border border-gray-300 rounded-md py-2 px-3"
                                 onChange={handleDocumentChange}
                               />
-                              <button 
-                                type="button" 
+                              <button
+                                type="button"
                                 className="p-2 border border-gray-300 rounded-md"
                                 disabled={!uploadedDocument}
                               >
@@ -3088,28 +3086,28 @@ useEffect(() => {
                                 className="flex-1 border border-gray-300 rounded-md py-2 px-3"
                                 onChange={handlePhotoChange}
                               />
-                              <button 
-                                type="button" 
+                              <button
+                                type="button"
                                 className="p-2 border border-gray-300 rounded-md"
                                 disabled={!uploadedPhoto}
                               >
                                 <MapPin className="h-4 w-4" />
                               </button>
                             </div>
-                            
+
                             {uploadedPhoto && (
                               <div className="text-sm text-green-600">
                                 ✓ Selected: {uploadedPhoto.name}
                               </div>
                             )}
-                            
+
                             {isCapturingLocation && (
                               <div className="flex items-center gap-2 text-sm text-blue-600">
                                 <Loader className="h-4 w-4 animate-spin" />
                                 Capturing location...
                               </div>
                             )}
-                            
+
                             {photoLocation && !isCapturingLocation && (
                               <div className="text-sm text-green-600 space-y-1">
                                 <div className="flex items-center gap-2">
@@ -3117,7 +3115,7 @@ useEffect(() => {
                                   Location captured successfully
                                 </div>
                                 <div className="text-xs text-gray-600 ml-6">
-                                  📍 Lat: {photoLocation.latitude.toFixed(6)}, 
+                                  📍 Lat: {photoLocation.latitude.toFixed(6)},
                                   Lon: {photoLocation.longitude.toFixed(6)}
                                 </div>
                                 <div className="text-xs text-gray-500 ml-6 truncate">
@@ -3125,7 +3123,7 @@ useEffect(() => {
                                 </div>
                               </div>
                             )}
-                            
+
                             {locationError && !isCapturingLocation && (
                               <div className="text-sm text-amber-600">
                                 ⚠️ Location unavailable: {locationError}
@@ -3135,7 +3133,7 @@ useEffect(() => {
                               </div>
                             )}
                           </div>
-                          
+
                           {uploadStatus && (
                             <div className="mt-2 p-2 bg-blue-50 text-blue-700 rounded-md">
                               {uploadStatus}
@@ -3150,7 +3148,7 @@ useEffect(() => {
                           className="py-2 px-4 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50"
                           disabled={isSubmitting}
                         >
-                          Cancel 
+                          Cancel
                         </button>
                         <button
                           type="button"
@@ -3161,7 +3159,7 @@ useEffect(() => {
                           {isSubmitting ? (
                             <>
                               <Loader className="mr-2 h-4 w-4 animate-spin" />
-                              Saving... 
+                              Saving...
                             </>
                           ) : (
                             "Save Changes "

@@ -56,7 +56,7 @@ function RecentComplaints() {
   // Process recent complaints from sheet data
   const processRecentComplaints = () => {
     if (!data) return []
-  
+
     return data
       .filter(
         (row) =>
@@ -71,7 +71,7 @@ function RecentComplaints() {
         const beneficiaryName = row.c[7] ? row.c[7].v : "Unknown"
         const product = row.c[15] ? row.c[15].v : "Unknown"
         const village = row.c[12] ? row.c[12].v : "Unknown"
-  
+
         // Simple date display in dd/mm/yyyy format
         let date = "Unknown"
         if (row.c[24] && row.c[24].v) {
@@ -79,7 +79,7 @@ function RecentComplaints() {
             // If it's already a string in the correct format
             if (typeof row.c[24].v === 'string') {
               date = row.c[24].v
-            } 
+            }
             // If it's a date object or serial number
             else {
               const dateValue = new Date(row.c[24].v)
@@ -94,7 +94,7 @@ function RecentComplaints() {
             console.error("Error formatting date:", e)
           }
         }
-  
+
         // Status logic remains the same
         let status = "New"
         if (row.c[35] && row.c[35].v) {
@@ -106,7 +106,7 @@ function RecentComplaints() {
         } else if (row.c[27] && row.c[27].v) {
           status = "Assigned"
         }
-  
+
         return {
           id,
           beneficiaryName,
@@ -177,8 +177,7 @@ function RecentComplaints() {
                       <span className="text-xs text-gray-500">{complaint.id}</span>
                       <span
                         className={`px-2 py-1 text-xs font-semibold rounded-full text-white
-                        ${
-                          complaint.status === "New"
+                        ${complaint.status === "New"
                             ? "bg-blue-500"
                             : complaint.status === "Assigned"
                               ? "bg-purple-500"
@@ -187,7 +186,7 @@ function RecentComplaints() {
                                 : complaint.status === "Completed"
                                   ? "bg-green-500"
                                   : "bg-teal-500"
-                        }
+                          }
                       `}
                       >
                         {complaint.status}

@@ -15,7 +15,7 @@ function PendingAssignmentsTable() {
   const [modeOfCallFilter, setModeOfCallFilter] = useState("")
 
   // Google Apps Script Web App URL - Replace with your actual deployed script URL
-  const GOOGLE_SCRIPT_URL = "https://script.google.com/a/macros/rbpindia.com/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec"
+  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec"
 
   const formatDateString = (dateValue) => {
     if (!dateValue) return "";
@@ -139,8 +139,8 @@ function PendingAssignmentsTable() {
                   // CORRECTED: Google Sheets API rows slice(1) skips first row, 
                   // but your headers are in row 6, so actual row = index + 2 + (additional offset if needed)
                   // Based on your screenshot showing data in rows 41, 46, etc.
-                  actualRowIndex: index + 7, 
-                  
+                  actualRowIndex: index + 7,
+
                   // Map columns according to your exact sequence from the data
                   timestamp: row.c[0] ? (row.c[0].f || formatDateString(row.c[0].v) || row.c[0].v) : "", // Column A
                   complaintNo: row.c[1] ? row.c[1].v : "", // Column B
@@ -183,7 +183,7 @@ function PendingAssignmentsTable() {
             complaintNumber: c.complaintNumber,
             actualRowIndex: c.actualRowIndex
           })));
-          
+
           setPendingComplaints(complaintData)
         }
       } catch (err) {
@@ -198,64 +198,64 @@ function PendingAssignmentsTable() {
 
     fetchComplaints()
   }, [])
-const handleAssignComplaint = async (complaintId, assigneeData) => {
-  try {
-    console.log("Starting assignment for complaint:", complaintId);
-    
-    // ✅ STEP 1: Find the actual row number from backend
-    const findRowResponse = await fetch(
-      `${GOOGLE_SCRIPT_URL}?action=findComplaintRow&complaintNo=${encodeURIComponent(complaintId)}`
-    );
-    const findRowResult = await findRowResponse.json();
-    
-    if (!findRowResult.success) {
-      throw new Error(findRowResult.error);
+  const handleAssignComplaint = async (complaintId, assigneeData) => {
+    try {
+      console.log("Starting assignment for complaint:", complaintId);
+
+      // ✅ STEP 1: Find the actual row number from backend
+      const findRowResponse = await fetch(
+        `${GOOGLE_SCRIPT_URL}?action=findComplaintRow&complaintNo=${encodeURIComponent(complaintId)}`
+      );
+      const findRowResult = await findRowResponse.json();
+
+      if (!findRowResult.success) {
+        throw new Error(findRowResult.error);
+      }
+
+      const actualRowNumber = findRowResult.rowNumber;
+      console.log("Found actual row number:", actualRowNumber);
+
+      // ✅ STEP 2: Now assign with the correct row number
+      const assignmentData = {
+        actualTimestamp: new Date().toISOString(),
+        technicianName: assigneeData.technicianName || "",
+        technicianContact: assigneeData.technicianContact || "",
+        assigneeName: assigneeData.assigneeName || "",
+        assigneeWhatsapp: assigneeData.assigneeWhatsapp || "",
+        location: assigneeData.location || "",
+        complaintDetails: assigneeData.complaintDetails || "",
+        expectedCompletionDate: assigneeData.expectedCompletionDate || "",
+        notesForTechnician: assigneeData.notesForTechnician || ""
+      };
+
+      const formData = new FormData();
+      formData.append('sheetName', 'FMS');
+      formData.append('action', 'assignComplaint');
+      formData.append('rowNumber', actualRowNumber.toString());
+      formData.append('assigneeData', JSON.stringify(assignmentData));
+
+      const response = await fetch(GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+
+      const result = await response.json();
+      if (!result.success) throw new Error(result.error || "Assignment failed");
+
+      setPendingComplaints(prev =>
+        prev.filter(c => c.complaintNo !== complaintId)
+      );
+      setIsDialogOpen(false);
+      alert(`Complaint ${complaintId} assigned successfully!`);
+
+    } catch (error) {
+      console.error("Assignment error:", error);
+      alert(`Failed to assign: ${error.message}`);
     }
-    
-    const actualRowNumber = findRowResult.rowNumber;
-    console.log("Found actual row number:", actualRowNumber);
-    
-    // ✅ STEP 2: Now assign with the correct row number
-    const assignmentData = {
-      actualTimestamp: new Date().toISOString(),
-      technicianName: assigneeData.technicianName || "",
-      technicianContact: assigneeData.technicianContact || "",
-      assigneeName: assigneeData.assigneeName || "",
-      assigneeWhatsapp: assigneeData.assigneeWhatsapp || "",
-      location: assigneeData.location || "",
-      complaintDetails: assigneeData.complaintDetails || "",
-      expectedCompletionDate: assigneeData.expectedCompletionDate || "",
-      notesForTechnician: assigneeData.notesForTechnician || ""
-    };
-
-    const formData = new FormData();
-    formData.append('sheetName', 'FMS');
-    formData.append('action', 'assignComplaint');
-    formData.append('rowNumber', actualRowNumber.toString());
-    formData.append('assigneeData', JSON.stringify(assignmentData));
-
-    const response = await fetch(GOOGLE_SCRIPT_URL, {
-      method: 'POST',
-      body: formData
-    });
-
-    if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-    
-    const result = await response.json();
-    if (!result.success) throw new Error(result.error || "Assignment failed");
-
-    setPendingComplaints(prev => 
-      prev.filter(c => c.complaintNo !== complaintId)
-    );
-    setIsDialogOpen(false);
-    alert(`Complaint ${complaintId} assigned successfully!`);
-
-  } catch (error) {
-    console.error("Assignment error:", error);
-    alert(`Failed to assign: ${error.message}`);
-  }
-};
-// ... (keep rest of the component code the same)
+  };
+  // ... (keep rest of the component code the same)
   // Function to get appropriate color for priority badges
   const getPriorityColor = (priority) => {
     switch (priority) {
@@ -330,25 +330,25 @@ const handleAssignComplaint = async (complaintId, assigneeData) => {
   )
 
   // Handle opening the assignment dialog
- const handleOpenAssignDialog = (complaint) => {
-  // ✅ CHANGED: Use complaintNo (Column B) instead of complaintNumber
-  const complaintId = complaint.complaintNo;
-  
-  if (!complaintId || complaintId.toString().trim() === "") {
-    alert("❌ This complaint does not have a valid Complaint No. Cannot assign.");
-    return;
-  }
-  
-  console.log("Opening assignment dialog for Complaint No:", complaintId);
-  console.log("Complaint data:", {
-    complaintNo: complaint.complaintNo,
-    actualRowIndex: complaint.actualRowIndex
-  });
-  
-  setSelectedComplaint(complaintId);
-  setSelectedComplaintData(complaint);
-  setIsDialogOpen(true);
-};
+  const handleOpenAssignDialog = (complaint) => {
+    // ✅ CHANGED: Use complaintNo (Column B) instead of complaintNumber
+    const complaintId = complaint.complaintNo;
+
+    if (!complaintId || complaintId.toString().trim() === "") {
+      alert("❌ This complaint does not have a valid Complaint No. Cannot assign.");
+      return;
+    }
+
+    console.log("Opening assignment dialog for Complaint No:", complaintId);
+    console.log("Complaint data:", {
+      complaintNo: complaint.complaintNo,
+      actualRowIndex: complaint.actualRowIndex
+    });
+
+    setSelectedComplaint(complaintId);
+    setSelectedComplaintData(complaint);
+    setIsDialogOpen(true);
+  };
   if (isLoading) {
     return (
       <div className="p-4 flex justify-center items-center h-64">
@@ -442,7 +442,7 @@ const handleAssignComplaint = async (complaintId, assigneeData) => {
                   {/* <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     Row #
                   </th> */}
-                   <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     Actions
                   </th>
                   <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
@@ -481,14 +481,14 @@ const handleAssignComplaint = async (complaintId, assigneeData) => {
                   <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     Nature Of Complaint
                   </th>
-                 
+
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredComplaints.map((complaint, index) => (
                   <tr key={`complaint-${complaint.complaintNumber}-${index}`} className="hover:bg-gray-50">
                     {/* <td className="px-3 py-4 whitespace-nowrap text-sm font-mono text-blue-600">{complaint.actualRowIndex}</td> */}
-                      <td className="px-3 py-4 whitespace-nowrap">
+                    <td className="px-3 py-4 whitespace-nowrap">
                       <button
                         className="bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded-md text-sm"
                         onClick={() => handleOpenAssignDialog(complaint)}
@@ -513,7 +513,7 @@ const handleAssignComplaint = async (complaintId, assigneeData) => {
                       </span>
                     </td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm">{complaint.natureOfComplaint}</td>
-                  
+
                   </tr>
                 ))}
               </tbody>

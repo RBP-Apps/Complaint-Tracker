@@ -8,13 +8,13 @@ function AssignmentHistoryTable() {
   const [error, setError] = useState(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [companyFilter, setCompanyFilter] = useState("")
-const [modeOfCallFilter, setModeOfCallFilter] = useState("")
+  const [modeOfCallFilter, setModeOfCallFilter] = useState("")
 
   const formatDateString = (dateValue) => {
     if (!dateValue) return "";
-    
+
     let date;
-    
+
     // Handle ISO string format (2025-05-22T07:38:28.052Z)
     if (typeof dateValue === 'string' && dateValue.includes('T')) {
       date = new Date(dateValue);
@@ -43,12 +43,12 @@ const [modeOfCallFilter, setModeOfCallFilter] = useState("")
     else {
       return dateValue; // Return as is if not a recognizable date format
     }
-    
+
     // Check if date is valid
     if (isNaN(date.getTime())) {
       return dateValue; // Return original value if invalid date
     }
-    
+
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
@@ -61,7 +61,7 @@ const [modeOfCallFilter, setModeOfCallFilter] = useState("")
       .filter(name => name && name.trim() !== "")
     return [...new Set(companies)].sort()
   }
-  
+
   const getUniqueModeOfCalls = () => {
     const modes = assignmentHistory
       .map(assignment => assignment.modeOfCall)
@@ -74,36 +74,36 @@ const [modeOfCallFilter, setModeOfCallFilter] = useState("")
     const fetchAssignmentHistory = async () => {
       setIsLoading(true)
       setError(null)
-      
+
       try {
         // Fetch the entire sheet using Google Sheets API directly
         const sheetUrl = "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=FMS"
         const response = await fetch(sheetUrl)
         const text = await response.text()
-        
+
         // Extract the JSON part from the response
         const jsonStart = text.indexOf('{')
         const jsonEnd = text.lastIndexOf('}') + 1
         const jsonData = text.substring(jsonStart, jsonEnd)
-        
+
         const data = JSON.parse(jsonData)
-        
+
         // Process the assignments data
         if (data && data.table && data.table.rows) {
           const historyData = []
-          
+
           // Skip the header row and process the data rows
           data.table.rows.slice(0).forEach((row, index) => {
             if (row.c) {
               // Check if column Y (index 25) has data and column Z (index 26) is null/empty
               const hasColumnY = row.c[24] && row.c[24].v !== null && row.c[24].v !== "";
               const isColumnZEmpty = row.c[25] && row.c[25].v !== null && row.c[25].v !== "";
-              
+
               // Only include rows where column Y has data and column Z is null
               if (hasColumnY && isColumnZEmpty) {
                 const assignment = {
                   rowIndex: index + 6, // Actual row index in the sheet (1-indexed, +5 for header rows, +1 for 1-indexing)
-                  
+
                   // All columns from B to AI (excluding Planned and Actual)
                   complaintNo: row.c[1] ? row.c[1].v : "", // Column B - Complaint No.
                   date: row.c[2] ? formatDateString(row.c[2].v) : "", // Column C - Date
@@ -139,12 +139,12 @@ const [modeOfCallFilter, setModeOfCallFilter] = useState("")
                   expectedCompletionDate: row.c[33] ? formatDateString(row.c[33].v) : "", // Column AH - Expected Completion Date
                   notesForTechnician: row.c[34] ? row.c[34].v : "", // Column AI - Notes for Technician
                 }
-                
+
                 historyData.push(assignment)
               }
             }
           })
-          
+
           setAssignmentHistory(historyData)
         }
       } catch (err) {
@@ -156,13 +156,13 @@ const [modeOfCallFilter, setModeOfCallFilter] = useState("")
         setIsLoading(false)
       }
     }
-    
+
     fetchAssignmentHistory()
   }, [])
 
   // Function to get appropriate color for priority badges
   const getPriorityColor = (priority) => {
-    switch(priority?.toLowerCase()) {
+    switch (priority?.toLowerCase()) {
       case "urgent": return "bg-red-500"
       case "high": return "bg-orange-500"
       case "medium": return "bg-blue-500"
@@ -209,39 +209,39 @@ const [modeOfCallFilter, setModeOfCallFilter] = useState("")
         assignment.expectedCompletionDate,
         assignment.notesForTechnician
       ]
-      
+
       // Function to normalize text for better searching
       const normalizeText = (text) => {
         if (!text) return ""
         return text.toString().toLowerCase().trim()
       }
-      
+
       // Function to check if search term matches any field
       const matchesSearch = () => {
         if (!searchTerm || searchTerm.trim() === "") return true
-        
+
         const normalizedSearchTerm = normalizeText(searchTerm)
-        
+
         // Split search term by spaces to allow multiple word search
         const searchWords = normalizedSearchTerm.split(/\s+/).filter(word => word.length > 0)
-        
+
         // Check if all search words are found in at least one field
-        return searchWords.every(word => 
-          searchFields.some(field => 
+        return searchWords.every(word =>
+          searchFields.some(field =>
             normalizeText(field).includes(word)
           )
         )
       }
-      
+
       // Filter conditions
       const matchesSearchTerm = matchesSearch()
       const matchesCompany = companyFilter === "" || assignment.companyName === companyFilter
       const matchesModeOfCall = modeOfCallFilter === "" || assignment.modeOfCall === modeOfCallFilter
-      
+
       return matchesSearchTerm && matchesCompany && matchesModeOfCall
     }
   )
-  
+
 
   if (isLoading) {
     return (
@@ -263,64 +263,64 @@ const [modeOfCallFilter, setModeOfCallFilter] = useState("")
     <div className="p-4">
       <div className="mb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <h1 className="text-2xl font-bold">Assignment History</h1>
-        
+
         <div className="relative">
-      <input
-        type="search"
-        placeholder="Search across all fields (assignments, technicians, etc.)"
-        className="pl-8 w-full sm:w-[280px] lg:w-[320px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-      />
-      <svg 
-        className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500"
-        xmlns="http://www.w3.org/2000/svg" 
-        fill="none" 
-        viewBox="0 0 24 24" 
-        stroke="currentColor"
-      >
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-      </svg>
-      {searchTerm && (
-        <button
-          onClick={() => setSearchTerm("")}
-          className="absolute right-2 top-2 h-6 w-6 text-gray-400 hover:text-gray-600 flex items-center justify-center rounded-full hover:bg-gray-100"
-          title="Clear search"
-        >
-          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          <input
+            type="search"
+            placeholder="Search across all fields (assignments, technicians, etc.)"
+            className="pl-8 w-full sm:w-[280px] lg:w-[320px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <svg
+            className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
-        </button>
-      )}
-    </div>
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm("")}
+              className="absolute right-2 top-2 h-6 w-6 text-gray-400 hover:text-gray-600 flex items-center justify-center rounded-full hover:bg-gray-100"
+              title="Clear search"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
+        </div>
 
-    {/* Company Name Filter */}
-    <select
-      className="w-full sm:w-[180px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-      value={companyFilter}
-      onChange={(e) => setCompanyFilter(e.target.value)}
-    >
-      <option value="">All Companies</option>
-      {getUniqueCompanyNames().map((company) => (
-        <option key={company} value={company}>
-          {company}
-        </option>
-      ))}
-    </select>
+        {/* Company Name Filter */}
+        <select
+          className="w-full sm:w-[180px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+          value={companyFilter}
+          onChange={(e) => setCompanyFilter(e.target.value)}
+        >
+          <option value="">All Companies</option>
+          {getUniqueCompanyNames().map((company) => (
+            <option key={company} value={company}>
+              {company}
+            </option>
+          ))}
+        </select>
 
-    {/* Mode of Call Filter */}
-    <select
-      className="w-full sm:w-[180px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-      value={modeOfCallFilter}
-      onChange={(e) => setModeOfCallFilter(e.target.value)}
-    >
-      <option value="">All Modes</option>
-      {getUniqueModeOfCalls().map((mode) => (
-        <option key={mode} value={mode}>
-          {mode}
-        </option>
-      ))}
-    </select>
+        {/* Mode of Call Filter */}
+        <select
+          className="w-full sm:w-[180px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+          value={modeOfCallFilter}
+          onChange={(e) => setModeOfCallFilter(e.target.value)}
+        >
+          <option value="">All Modes</option>
+          {getUniqueModeOfCalls().map((mode) => (
+            <option key={mode} value={mode}>
+              {mode}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="overflow-x-auto -mx-4 sm:mx-0">
@@ -339,12 +339,12 @@ const [modeOfCallFilter, setModeOfCallFilter] = useState("")
                   {/* <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     Date
                     </th> */}
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                      Complaint Number
-                    </th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                      Complaint Date
-                    </th>
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                    Complaint Number
+                  </th>
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                    Complaint Date
+                  </th>
                   <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     Head
                   </th>

@@ -18,9 +18,9 @@ function PendingVerificationTable() {
   // Function to format date string to dd/mm/yyyy
   const formatDateString = (dateValue) => {
     if (!dateValue) return "";
-    
+
     let date;
-    
+
     // Handle ISO string format (2025-05-22T07:38:28.052Z)
     if (typeof dateValue === 'string' && dateValue.includes('T')) {
       date = new Date(dateValue);
@@ -49,12 +49,12 @@ function PendingVerificationTable() {
     else {
       return dateValue; // Return as is if not a recognizable date format
     }
-    
+
     // Check if date is valid
     if (isNaN(date.getTime())) {
       return dateValue; // Return original value if invalid date
     }
-    
+
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
@@ -66,37 +66,37 @@ function PendingVerificationTable() {
     const fetchPendingTasks = async () => {
       setIsLoading(true)
       setError(null)
-      
+
       try {
         // Fetch the entire sheet using Google Sheets API directly
         const sheetUrl = "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=FMS"
         const response = await fetch(sheetUrl)
         const text = await response.text()
-        
+
         // Extract the JSON part from the response
         const jsonStart = text.indexOf('{')
         const jsonEnd = text.lastIndexOf('}') + 1
         const jsonData = text.substring(jsonStart, jsonEnd)
-        
+
         const data = JSON.parse(jsonData)
-        
+
         // Process the pending verification tasks data
         if (data && data.table && data.table.rows) {
           const tasksData = []
-          
+
           // Skip the header row and process the data rows
           data.table.rows.slice(3).forEach((row, index) => {
             if (row.c) {
               // Check if column AO (index 41) is not null and column AP (index 42) is null
               const hasColumnAO = row.c[43] && row.c[43].v !== null && row.c[43].v !== "";
               const isColumnAPEmpty = !row.c[44] || row.c[44].v === null || row.c[44].v === "";
-              
+
               // Only include rows where column AO has data and column AP is null/empty
               if (hasColumnAO && isColumnAPEmpty) {
                 // Format the date value
                 let dateValue = row.c[38] ? row.c[38].v : "";
                 dateValue = formatDateString(dateValue);
-                
+
                 const task = {
                   rowIndex: index + 6, // Actual row index in the sheet (1-indexed, +5 for header rows, +1 for 1-indexing)
                   id: row.c[1] ? row.c[1].v : `COMP-${index + 1}`, // Column B - Complaint No.
@@ -106,12 +106,12 @@ function PendingVerificationTable() {
                   email: row.c[41] ? row.c[41].v : "", // Column F - Email
                   address: row.c[42] ? row.c[42].v : "", // Column G - Address
                 }
-                
+
                 tasksData.push(task)
               }
             }
           })
-          
+
           setPendingTasks(tasksData)
         }
       } catch (err) {
@@ -123,7 +123,7 @@ function PendingVerificationTable() {
         setIsLoading(false)
       }
     }
-    
+
     fetchPendingTasks()
   }, [])
 
@@ -150,19 +150,19 @@ function PendingVerificationTable() {
 
     try {
       // Format the verification date
-      const formattedDate = verificationDate instanceof Date ? 
-        `${verificationDate.getMonth() + 1}/${verificationDate.getDate()}/${verificationDate.getFullYear()}` : 
+      const formattedDate = verificationDate instanceof Date ?
+        `${verificationDate.getMonth() + 1}/${verificationDate.getDate()}/${verificationDate.getFullYear()}` :
         ""
-      
+
       // Prepare form data for the update
       const formData = new FormData()
       formData.append('sheetName', 'Verifications')
       formData.append('action', 'insert') // Changed from 'update' to 'insert' to add to a new row
-      
+
       // Get current timestamp for the first column
       // const currentTimestamp = new Date().toLocaleString()
       const currentTimestamp = new Date().toLocaleString('en-US')
-      
+
       // Create an array with columns we want to update
       // [timestamp, complaint_id, status, verification_date, verification_password]
       const rowDataArray = [
@@ -172,46 +172,46 @@ function PendingVerificationTable() {
         formattedDate,            // Fourth column - Verification Date
         verificationPassword      // Fifth column - Verification Password
       ]
-      
+
       // Add the JSON string of row data to the form
       formData.append('rowData', JSON.stringify(rowDataArray))
-      
+
       console.log("Submitting verification data")
       console.log("Row data:", rowDataArray)
-      
+
       // Google Apps Script Web App URL
-      const GOOGLE_SCRIPT_URL = "https://script.google.com/a/macros/rbpindia.com/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec"
-      
+      const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec"
+
       // Post the update
       const response = await fetch(GOOGLE_SCRIPT_URL, {
         method: 'POST',
         body: formData
       })
-      
+
       // Log the response for debugging
       console.log("Verification response:", response)
-      
+
       // Try to parse the JSON response if available
       try {
         const result = await response.json()
         console.log("Response JSON:", result)
-        
+
         if (result.error) {
           throw new Error(result.error)
         }
       } catch (jsonError) {
         console.log("Could not parse JSON response (likely due to CORS). This is expected.")
       }
-      
+
       // Update the local state to remove this task from the list
       setPendingTasks(pendingTasks.filter(task => task.id !== selectedTask))
-      
+
       // Close the dialog and reset form
       setIsDialogOpen(false)
       setVerificationDate(null)
       setVerificationStatus("verified")
       setVerificationPassword("")
-      
+
       alert(`Task ${selectedTask} has been verified successfully!`)
     } catch (err) {
       console.error("Error verifying task:", err)
@@ -239,7 +239,7 @@ function PendingVerificationTable() {
     <div className="p-4">
       <div className="mb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <h1 className="text-xl font-bold">Pending Verification Tasks</h1>
-        
+
         <div className="relative">
           <input
             type="search"
@@ -248,11 +248,11 @@ function PendingVerificationTable() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <svg 
+          <svg
             className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500"
-            xmlns="http://www.w3.org/2000/svg" 
-            fill="none" 
-            viewBox="0 0 24 24" 
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
             stroke="currentColor"
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -324,33 +324,33 @@ function PendingVerificationTable() {
                     {/* <td className="px-6 py-4 whitespace-nowrap">{task.email}</td>
                     <td className="px-6 py-4 whitespace-nowrap">{task.address}</td> */}
                     <td className="px-6 py-4 whitespace-nowrap">
-  {task.email ? (
-    <a 
-      href={`mailto:${task.email}`} 
-      className="text-blue-600 hover:text-blue-800 underline"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      {task.email}
-    </a>
-  ) : (
-    ""
-  )}
-</td>
-<td className="px-6 py-4 whitespace-nowrap">
-  {task.address ? (
-    <a 
-      href={task.address} 
-      className="text-blue-600 hover:text-blue-800 underline"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      {task.address}
-    </a>
-  ) : (
-    ""
-  )}
-</td>
+                      {task.email ? (
+                        <a
+                          href={`mailto:${task.email}`}
+                          className="text-blue-600 hover:text-blue-800 underline"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {task.email}
+                        </a>
+                      ) : (
+                        ""
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {task.address ? (
+                        <a
+                          href={task.address}
+                          className="text-blue-600 hover:text-blue-800 underline"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {task.address}
+                        </a>
+                      ) : (
+                        ""
+                      )}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <button
                         className="bg-gradient-to-r from-purple-400 to-pink-500 text-white hover:from-purple-500 hover:to-pink-600 border-0 py-1 px-3 rounded-md"
@@ -392,8 +392,8 @@ function PendingVerificationTable() {
                           <label htmlFor="status" className="block text-sm font-medium">
                             Status
                           </label>
-                          <select 
-                            id="status" 
+                          <select
+                            id="status"
                             className="w-full border border-gray-300 rounded-md py-2 px-3"
                             value={verificationStatus}
                             onChange={(e) => setVerificationStatus(e.target.value)}

@@ -61,7 +61,7 @@ function TrackerPendingTable() {
     ? (username || "").substring(4).trim()
     : ""
 
-  const GOOGLE_SCRIPT_URL = "https://script.google.com/a/macros/rbpindia.com/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec"
+  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec"
   const DRIVE_FOLDER_ID = "1-H5DWKRV2u_ueqtLX-ISTPvuySGYBLoT"
 
   // Location and address functions (from reference)
@@ -248,7 +248,7 @@ function TrackerPendingTable() {
           let skippedCount = 0;
 
           data.table.rows.forEach((row, index) => {
-            if (row.c && index >= 0) {
+            if (row.c && index > 1) { // Skip index 0 (header) and index 1 (default row)
               const hasComplaintId = row.c[1] && row.c[1].v !== null && row.c[1].v !== "";
               // ✅ NEW CONDITION: Check Column Z (index 25) for "APPROVED-CLOSE"
               const columnZValue = row.c[25] ? row.c[25].v : "";
@@ -272,6 +272,7 @@ function TrackerPendingTable() {
                 const task = {
                   rowIndex: index + 1,
                   complaintId: row.c[1] ? row.c[1].v : "",
+                  idNumber: row.c[4] ? row.c[4].v : "",
                   technicianName: row.c[19] ? row.c[19].v : "",
                   technicianNumber: row.c[20] ? row.c[20].v : "",
                   beneficiaryName: row.c[8] ? row.c[8].v : "",
@@ -1006,6 +1007,14 @@ function TrackerPendingTable() {
                         <span className="text-gray-900">{task.district}</span>
                       </div>
                       <div className="flex justify-between text-xs">
+                        <span className="text-gray-500">Complaint ID</span>
+                        <span className="text-gray-900 font-medium">{task.complaintId}</span>
+                      </div>
+                      <div className="flex justify-between text-xs">
+                        <span className="text-gray-500">ID Number</span>
+                        <span className="text-gray-900 font-medium">{task.idNumber}</span>
+                      </div>
+                      <div className="flex justify-between text-xs">
                         <span className="text-gray-500">Product</span>
                         <span className="text-gray-900 font-medium">{task.product}</span>
                       </div>
@@ -1033,6 +1042,9 @@ function TrackerPendingTable() {
                         </th>
                         <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap bg-gray-100">
                           Auto Complaint ID
+                        </th>
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap bg-gray-100">
+                          ID Number
                         </th>
                         <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap bg-gray-100">
                           Beneficiary Name
@@ -1073,6 +1085,7 @@ function TrackerPendingTable() {
                             </button>
                           </td>
                           <td className="px-3 py-4 whitespace-nowrap text-sm font-medium">{task.complaintId}</td>
+                          <td className="px-3 py-4 whitespace-nowrap text-sm font-medium text-blue-600">{task.idNumber}</td>
                           <td className="px-3 py-4 whitespace-nowrap text-sm">{task.beneficiaryName}</td>
                           <td className="px-3 py-4 whitespace-nowrap text-sm">{task.contactNumber}</td>
                           <td className="px-3 py-4 whitespace-nowrap text-sm">{task.village}</td>
