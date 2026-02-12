@@ -374,6 +374,7 @@ function DashboardLayout({ children }) {
       permissionKey: "approved",
     },
     {
+<<<<<<< HEAD
       name: "Admin Approved",
       href: "/dashboard/admin-approved",
       icon: CheckCircle,
@@ -381,6 +382,8 @@ function DashboardLayout({ children }) {
       permissionKey: "approved",
     },
     {
+=======
+>>>>>>> 4c89a70c46faaa456ffea1552df8a304a9a19de9
       name: "Tracker History",
       href: "/dashboard/tracker-history",
       icon: Clock,

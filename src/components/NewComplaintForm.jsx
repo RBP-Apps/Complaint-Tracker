@@ -41,8 +41,12 @@ function NewComplaintForm() {
   const [debouncedCompanyName, setDebouncedCompanyName] = useState("")
   const [debouncedTechnicianName, setDebouncedTechnicianName] = useState("")
   const [debouncedBeneficiaryName, setDebouncedBeneficiaryName] = useState("")
+<<<<<<< HEAD
   const [masterBeneficiaryOptions, setMasterBeneficiaryOptions] = useState([]) // For Create/Update Form (from Master)
   const [filterBeneficiaryOptions, setFilterBeneficiaryOptions] = useState([]) // For Table Filter (from FMS)
+=======
+  const [beneficiaryOptions, setBeneficiaryOptions] = useState([])
+>>>>>>> 4c89a70c46faaa456ffea1552df8a304a9a19de9
 
 
   // Auto-refresh states
@@ -104,7 +108,11 @@ function NewComplaintForm() {
   const generateSerialNumber = useCallback(async () => {
     try {
       const response = await fetch(
+<<<<<<< HEAD
         'https://script.google.com/macros/s/AKfycbwJVTmvMQSqVxvBvejjZxJMIKvFFppXjAbBPDZnXeoIkvEfJSE8GxorNlj_SWQblQ0/exec?action=getAllData&sheetName=FMS',
+=======
+        'https://script.google.com/macros/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec?action=getAllData&sheetName=FMS',
+>>>>>>> 4c89a70c46faaa456ffea1552df8a304a9a19de9
         { method: 'GET', headers: { 'Accept': 'application/json' } }
       )
 
@@ -144,8 +152,13 @@ function NewComplaintForm() {
     try {
       setIsLoading(true)
 
+<<<<<<< HEAD
       const sheetUrl = "https://docs.google.com/spreadsheets/d/1VH0Wa4zOM77A1cYF7TZB9DBpVDbeFwdRPI9OS26CdL8/gviz/tq?tqx=out:json&sheet=master"
       const loginSheetUrl = "https://docs.google.com/spreadsheets/d/1VH0Wa4zOM77A1cYF7TZB9DBpVDbeFwdRPI9OS26CdL8/gviz/tq?tqx=out:json&sheet=Login"
+=======
+      const sheetUrl = "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=master"
+      const loginSheetUrl = "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=Login"
+>>>>>>> 4c89a70c46faaa456ffea1552df8a304a9a19de9
 
       const [masterResponse, loginResponse] = await Promise.all([
         fetch(sheetUrl),
@@ -168,7 +181,10 @@ function NewComplaintForm() {
         const companyNames = []
         const districts = []
         const insuranceTypes = []
+<<<<<<< HEAD
         const beneficiaryNames = []
+=======
+>>>>>>> 4c89a70c46faaa456ffea1552df8a304a9a19de9
 
         masterData.table.rows.forEach((row) => {
           if (row.c) {
@@ -254,7 +270,11 @@ function NewComplaintForm() {
       const userRole = localStorage.getItem('userRole')
 
       const response = await fetch(
+<<<<<<< HEAD
         'https://script.google.com/macros/s/AKfycbwJVTmvMQSqVxvBvejjZxJMIKvFFppXjAbBPDZnXeoIkvEfJSE8GxorNlj_SWQblQ0/exec?action=getAllData&sheetName=FMS',
+=======
+        'https://script.google.com/macros/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec?action=getAllData&sheetName=FMS',
+>>>>>>> 4c89a70c46faaa456ffea1552df8a304a9a19de9
         {
           method: 'GET',
           headers: {
@@ -313,6 +333,7 @@ function NewComplaintForm() {
           )
         }
 
+<<<<<<< HEAD
         // Beneficiary options now come from Master sheet, so we don't overwrite them here from FMS data
         // BUT, the USER requested "benificery name filter drop down in the new complain page data from sheet name FMS colum I"
         // Wait, the user said "from sheet name FMS colum I" (which is Beneficiary Name usually?)
@@ -410,6 +431,38 @@ function NewComplaintForm() {
   }, [tableData]);
 
 
+=======
+        // ✅ Extract dynamic unique beneficiaries based on current filters (Company & Tech)
+        // This ensures the dropdown works together with other filters
+        const dynamicBeneficiaries = [...new Set(filteredData.map(row => row[9]))]
+          .filter(name => name && name.toString().trim() !== "")
+          .sort()
+        setBeneficiaryOptions(dynamicBeneficiaries)
+
+        if (debouncedBeneficiaryName) {
+          filteredData = filteredData.filter(row =>
+            row[9] && row[9].toLowerCase().includes(debouncedBeneficiaryName.toLowerCase())
+          )
+        }
+
+        setTableData(filteredData)
+
+        if (filteredData.length === 0) {
+          setDataError(userRole === 'tech'
+            ? 'No complaints assigned to you'
+            : 'No complaints found')
+        }
+      } else {
+        throw new Error(data.error || 'Failed to fetch data from server')
+      }
+    } catch (error) {
+      console.error('Error fetching table data:', error)
+      setDataError(error.message)
+    }
+  }, [debouncedCompanyName, debouncedTechnicianName, debouncedBeneficiaryName])  // ✅ Use debounced values in dependencies
+
+
+>>>>>>> 4c89a70c46faaa456ffea1552df8a304a9a19de9
   // Update the auto-refresh useEffect to include filter dependencies
   useEffect(() => {
     if (autoRefresh && refreshInterval > 0) {
@@ -574,7 +627,11 @@ function NewComplaintForm() {
       formDataToSend.append('rowData', JSON.stringify(currentRow))
 
       const response = await fetch(
+<<<<<<< HEAD
         'https://script.google.com/macros/s/AKfycbwJVTmvMQSqVxvBvejjZxJMIKvFFppXjAbBPDZnXeoIkvEfJSE8GxorNlj_SWQblQ0/exec',
+=======
+        'https://script.google.com/macros/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec',
+>>>>>>> 4c89a70c46faaa456ffea1552df8a304a9a19de9
         {
           method: 'POST',
           body: formDataToSend,
@@ -696,7 +753,11 @@ function NewComplaintForm() {
       })
 
       const response = await fetch(
+<<<<<<< HEAD
         'https://script.google.com/macros/s/AKfycbwJVTmvMQSqVxvBvejjZxJMIKvFFppXjAbBPDZnXeoIkvEfJSE8GxorNlj_SWQblQ0/exec',
+=======
+        'https://script.google.com/macros/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec',
+>>>>>>> 4c89a70c46faaa456ffea1552df8a304a9a19de9
         {
           method: 'POST',
           body: formDataToSend,
@@ -767,6 +828,7 @@ function NewComplaintForm() {
     } finally {
       setIsSubmitting(false)
     }
+<<<<<<< HEAD
   }
 
   // Handle Delete Complaint with Optimistic Update
@@ -809,6 +871,8 @@ function NewComplaintForm() {
         setTableData(previousData);
       }
     }
+=======
+>>>>>>> 4c89a70c46faaa456ffea1552df8a304a9a19de9
   }
 
   return (
@@ -873,7 +937,11 @@ function NewComplaintForm() {
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">All Beneficiaries</option>
+<<<<<<< HEAD
                   {filterBeneficiaryOptions.map((name, index) => (
+=======
+                  {beneficiaryOptions.map((name, index) => (
+>>>>>>> 4c89a70c46faaa456ffea1552df8a304a9a19de9
                     <option key={index} value={name}>
                       {name}
                     </option>
@@ -1008,18 +1076,28 @@ function NewComplaintForm() {
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Beneficiary Name *
                       </label>
+<<<<<<< HEAD
                       <select
+=======
+                      <input
+                        type="text"
+>>>>>>> 4c89a70c46faaa456ffea1552df8a304a9a19de9
                         name="beneficiaryName"
                         value={formData.beneficiaryName}
                         onChange={handleChange}
                         required
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+<<<<<<< HEAD
                       >
                         <option value="">Select Beneficiary Name</option>
                         {masterBeneficiaryOptions.map((name, index) => (
                           <option key={index} value={name}>{name}</option>
                         ))}
                       </select>
+=======
+                        placeholder="Enter Beneficiary Name"
+                      />
+>>>>>>> 4c89a70c46faaa456ffea1552df8a304a9a19de9
                     </div>
 
                     {/* Contact Number */}
@@ -1823,12 +1901,15 @@ function NewComplaintForm() {
                                 >
                                   Update
                                 </button>
+<<<<<<< HEAD
                                 <button
                                   onClick={() => handleDelete(rowIndex)}
                                   className="ml-2 px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded-md text-sm"
                                 >
                                   Delete
                                 </button>
+=======
+>>>>>>> 4c89a70c46faaa456ffea1552df8a304a9a19de9
                               </td>
                               <td className="px-3 py-4 whitespace-nowrap text-sm font-medium text-blue-600">{row[2]}</td>
                               <td className="px-3 py-4 whitespace-nowrap text-sm font-medium text-purple-600">{row[5] || '-'}</td>

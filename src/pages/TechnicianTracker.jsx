@@ -45,7 +45,7 @@
 //     ? (username || "").substring(4).trim()
 //     : ""
 
-//   const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwJVTmvMQSqVxvBvejjZxJMIKvFFppXjAbBPDZnXeoIkvEfJSE8GxorNlj_SWQblQ0/exec"
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwJVTmvMQSqVxvBvejjZxJMIKvFFppXjAbBPDZnXeoIkvEfJSE8GxorNlj_SWQblQ0/exec"
 //   const DRIVE_FOLDER_ID = "1-H5DWKRV2u_ueqtLX-ISTPvuySGYBLoT"
 
 //   const formatDateString = (dateValue) => {

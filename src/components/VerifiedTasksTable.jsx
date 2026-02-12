@@ -222,7 +222,11 @@ function VerifiedTasksTable() {
                     <td className="px-6 py-4 whitespace-nowrap font-medium">{task.complaintId}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 text-xs font-semibold rounded-full text-white ${task.status?.toLowerCase() === 'verified' ? 'bg-green-500' :
+<<<<<<< HEAD
                         task.status?.toLowerCase() === 'rejected' ? 'bg-red-500' : 'bg-gray-500'
+=======
+                          task.status?.toLowerCase() === 'rejected' ? 'bg-red-500' : 'bg-gray-500'
+>>>>>>> 4c89a70c46faaa456ffea1552df8a304a9a19de9
                         }`}>
                         {task.status}
                       </span>

@@ -61,7 +61,11 @@ function TrackerPendingTable() {
     ? (username || "").substring(4).trim()
     : ""
 
+<<<<<<< HEAD
   const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwJVTmvMQSqVxvBvejjZxJMIKvFFppXjAbBPDZnXeoIkvEfJSE8GxorNlj_SWQblQ0/exec"
+=======
+  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec"
+>>>>>>> 4c89a70c46faaa456ffea1552df8a304a9a19de9
   const DRIVE_FOLDER_ID = "1-H5DWKRV2u_ueqtLX-ISTPvuySGYBLoT"
 
   // Location and address functions (from reference)
@@ -248,7 +252,7 @@ function TrackerPendingTable() {
           let skippedCount = 0;
 
           data.table.rows.forEach((row, index) => {
-            if (row.c && index >= 0) {
+            if (row.c && index > 1) { // Skip index 0 (header) and index 1 (default row)
               const hasComplaintId = row.c[1] && row.c[1].v !== null && row.c[1].v !== "";
               // ✅ NEW CONDITION: Check Column Z (index 25) for "APPROVED-CLOSE"
               const columnZValue = row.c[25] ? row.c[25].v : "";
