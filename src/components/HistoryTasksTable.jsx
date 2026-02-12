@@ -531,11 +531,8 @@ function TrackerHistoryTable() {
     trackerStatus: ""
   })
 
-<<<<<<< HEAD
   const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwJVTmvMQSqVxvBvejjZxJMIKvFFppXjAbBPDZnXeoIkvEfJSE8GxorNlj_SWQblQ0/exec"
-=======
-  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec"
->>>>>>> 4c89a70c46faaa456ffea1552df8a304a9a19de9
+
   const DRIVE_FOLDER_ID = "1-H5DWKRV2u_ueqtLX-ISTPvuySGYBLoT"
 
   useEffect(() => {
@@ -1551,7 +1548,6 @@ function TrackerHistoryTable() {
                             ))}
                           </select>
                         </div>
-<<<<<<< HEAD
 
                         {/* System Voltage Field - Added for Edit */}
                         <div className="space-y-2">
@@ -1568,8 +1564,6 @@ function TrackerHistoryTable() {
                           />
                         </div>
 
-=======
->>>>>>> 4c89a70c46faaa456ffea1552df8a304a9a19de9
                         <div className="space-y-2">
                           <label htmlFor="natureOfComplaint" className="block text-sm font-medium text-gray-700">
                             शिकायत की प्रकृति

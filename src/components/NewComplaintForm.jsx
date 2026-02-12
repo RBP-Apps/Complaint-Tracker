@@ -41,12 +41,9 @@ function NewComplaintForm() {
   const [debouncedCompanyName, setDebouncedCompanyName] = useState("")
   const [debouncedTechnicianName, setDebouncedTechnicianName] = useState("")
   const [debouncedBeneficiaryName, setDebouncedBeneficiaryName] = useState("")
-<<<<<<< HEAD
   const [masterBeneficiaryOptions, setMasterBeneficiaryOptions] = useState([]) // For Create/Update Form (from Master)
   const [filterBeneficiaryOptions, setFilterBeneficiaryOptions] = useState([]) // For Table Filter (from FMS)
-=======
-  const [beneficiaryOptions, setBeneficiaryOptions] = useState([])
->>>>>>> 4c89a70c46faaa456ffea1552df8a304a9a19de9
+
 
 
   // Auto-refresh states
@@ -108,11 +105,8 @@ function NewComplaintForm() {
   const generateSerialNumber = useCallback(async () => {
     try {
       const response = await fetch(
-<<<<<<< HEAD
         'https://script.google.com/macros/s/AKfycbwJVTmvMQSqVxvBvejjZxJMIKvFFppXjAbBPDZnXeoIkvEfJSE8GxorNlj_SWQblQ0/exec?action=getAllData&sheetName=FMS',
-=======
-        'https://script.google.com/macros/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec?action=getAllData&sheetName=FMS',
->>>>>>> 4c89a70c46faaa456ffea1552df8a304a9a19de9
+
         { method: 'GET', headers: { 'Accept': 'application/json' } }
       )
 
@@ -152,13 +146,9 @@ function NewComplaintForm() {
     try {
       setIsLoading(true)
 
-<<<<<<< HEAD
-      const sheetUrl = "https://docs.google.com/spreadsheets/d/1VH0Wa4zOM77A1cYF7TZB9DBpVDbeFwdRPI9OS26CdL8/gviz/tq?tqx=out:json&sheet=master"
-      const loginSheetUrl = "https://docs.google.com/spreadsheets/d/1VH0Wa4zOM77A1cYF7TZB9DBpVDbeFwdRPI9OS26CdL8/gviz/tq?tqx=out:json&sheet=Login"
-=======
       const sheetUrl = "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=master"
       const loginSheetUrl = "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=Login"
->>>>>>> 4c89a70c46faaa456ffea1552df8a304a9a19de9
+
 
       const [masterResponse, loginResponse] = await Promise.all([
         fetch(sheetUrl),
@@ -181,10 +171,8 @@ function NewComplaintForm() {
         const companyNames = []
         const districts = []
         const insuranceTypes = []
-<<<<<<< HEAD
         const beneficiaryNames = []
-=======
->>>>>>> 4c89a70c46faaa456ffea1552df8a304a9a19de9
+
 
         masterData.table.rows.forEach((row) => {
           if (row.c) {
@@ -270,11 +258,8 @@ function NewComplaintForm() {
       const userRole = localStorage.getItem('userRole')
 
       const response = await fetch(
-<<<<<<< HEAD
         'https://script.google.com/macros/s/AKfycbwJVTmvMQSqVxvBvejjZxJMIKvFFppXjAbBPDZnXeoIkvEfJSE8GxorNlj_SWQblQ0/exec?action=getAllData&sheetName=FMS',
-=======
-        'https://script.google.com/macros/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec?action=getAllData&sheetName=FMS',
->>>>>>> 4c89a70c46faaa456ffea1552df8a304a9a19de9
+
         {
           method: 'GET',
           headers: {
@@ -333,7 +318,6 @@ function NewComplaintForm() {
           )
         }
 
-<<<<<<< HEAD
         // Beneficiary options now come from Master sheet, so we don't overwrite them here from FMS data
         // BUT, the USER requested "benificery name filter drop down in the new complain page data from sheet name FMS colum I"
         // Wait, the user said "from sheet name FMS colum I" (which is Beneficiary Name usually?)
@@ -431,38 +415,6 @@ function NewComplaintForm() {
   }, [tableData]);
 
 
-=======
-        // ✅ Extract dynamic unique beneficiaries based on current filters (Company & Tech)
-        // This ensures the dropdown works together with other filters
-        const dynamicBeneficiaries = [...new Set(filteredData.map(row => row[9]))]
-          .filter(name => name && name.toString().trim() !== "")
-          .sort()
-        setBeneficiaryOptions(dynamicBeneficiaries)
-
-        if (debouncedBeneficiaryName) {
-          filteredData = filteredData.filter(row =>
-            row[9] && row[9].toLowerCase().includes(debouncedBeneficiaryName.toLowerCase())
-          )
-        }
-
-        setTableData(filteredData)
-
-        if (filteredData.length === 0) {
-          setDataError(userRole === 'tech'
-            ? 'No complaints assigned to you'
-            : 'No complaints found')
-        }
-      } else {
-        throw new Error(data.error || 'Failed to fetch data from server')
-      }
-    } catch (error) {
-      console.error('Error fetching table data:', error)
-      setDataError(error.message)
-    }
-  }, [debouncedCompanyName, debouncedTechnicianName, debouncedBeneficiaryName])  // ✅ Use debounced values in dependencies
-
-
->>>>>>> 4c89a70c46faaa456ffea1552df8a304a9a19de9
   // Update the auto-refresh useEffect to include filter dependencies
   useEffect(() => {
     if (autoRefresh && refreshInterval > 0) {
@@ -627,11 +579,8 @@ function NewComplaintForm() {
       formDataToSend.append('rowData', JSON.stringify(currentRow))
 
       const response = await fetch(
-<<<<<<< HEAD
         'https://script.google.com/macros/s/AKfycbwJVTmvMQSqVxvBvejjZxJMIKvFFppXjAbBPDZnXeoIkvEfJSE8GxorNlj_SWQblQ0/exec',
-=======
-        'https://script.google.com/macros/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec',
->>>>>>> 4c89a70c46faaa456ffea1552df8a304a9a19de9
+
         {
           method: 'POST',
           body: formDataToSend,
@@ -753,11 +702,8 @@ function NewComplaintForm() {
       })
 
       const response = await fetch(
-<<<<<<< HEAD
         'https://script.google.com/macros/s/AKfycbwJVTmvMQSqVxvBvejjZxJMIKvFFppXjAbBPDZnXeoIkvEfJSE8GxorNlj_SWQblQ0/exec',
-=======
-        'https://script.google.com/macros/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec',
->>>>>>> 4c89a70c46faaa456ffea1552df8a304a9a19de9
+
         {
           method: 'POST',
           body: formDataToSend,
@@ -828,7 +774,6 @@ function NewComplaintForm() {
     } finally {
       setIsSubmitting(false)
     }
-<<<<<<< HEAD
   }
 
   // Handle Delete Complaint with Optimistic Update
@@ -871,9 +816,8 @@ function NewComplaintForm() {
         setTableData(previousData);
       }
     }
-=======
->>>>>>> 4c89a70c46faaa456ffea1552df8a304a9a19de9
   }
+
 
   return (
     <div className="rounded-lg border-0 shadow-md bg-white">
@@ -937,479 +881,44 @@ function NewComplaintForm() {
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">All Beneficiaries</option>
-<<<<<<< HEAD
                   {filterBeneficiaryOptions.map((name, index) => (
-=======
-                  {beneficiaryOptions.map((name, index) => (
->>>>>>> 4c89a70c46faaa456ffea1552df8a304a9a19de9
+
                     <option key={index} value={name}>
                       {name}
                     </option>
-                  ))}
-                </select>
-              </div>
+                  ))
+                  }
+                </select >
+              </div >
 
               {/* Clear All Filters Button */}
-              {(filterCompanyName || filterTechnicianName || filterBeneficiaryName) && (
-                <div className="md:col-span-3 flex justify-end">
-                  <button
-                    onClick={() => {
-                      setFilterCompanyName("")
-                      setFilterTechnicianName("")
-                      setFilterBeneficiaryName("")
-                    }}
-                    className="text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-md"
-                  >
-                    Clear All Filters
-                  </button>
-                </div>
-              )}
-            </div>
+              {
+                (filterCompanyName || filterTechnicianName || filterBeneficiaryName) && (
+                  <div className="md:col-span-3 flex justify-end">
+                    <button
+                      onClick={() => {
+                        setFilterCompanyName("")
+                        setFilterTechnicianName("")
+                        setFilterBeneficiaryName("")
+                      }}
+                      className="text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-md"
+                    >
+                      Clear All Filters
+                    </button>
+                  </div>
+                )
+              }
+            </div >
 
 
             {/* Collapsible Form - WHITE BACKGROUND */}
-            {showForm && (
-              <div className="mb-8 border border-gray-200 rounded-lg p-6 bg-white">
-                <h2 className="text-lg font-semibold mb-4">New Complaint Form</h2>
-                <form onSubmit={handleSubmit} className="space-y-6">
+            {
+              showForm && (
+                <div className="mb-8 border border-gray-200 rounded-lg p-6 bg-white">
+                  <h2 className="text-lg font-semibold mb-4">New Complaint Form</h2>
+                  <form onSubmit={handleSubmit} className="space-y-6">
 
-                  {/* Grid Layout */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-
-                    {/* Company Name */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Company Name *
-                      </label>
-                      <select
-                        name="companyName"
-                        value={formData.companyName}
-                        onChange={handleChange}
-                        required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        <option value="">Select Company</option>
-                        {companyNameOptions.map((option, index) => (
-                          <option key={index} value={option}>{option}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Mode of Call */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Mode of Call *
-                      </label>
-                      <input
-                        type="text"
-                        name="modeOfCall"
-                        value={formData.modeOfCall}
-                        onChange={handleChange}
-                        required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Enter Mode of Call"
-                      />
-                    </div>
-
-                    {/* ID Number */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        ID Number
-                      </label>
-                      <input
-                        type="text"
-                        name="idNumber"
-                        value={formData.idNumber}
-                        onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Enter ID Number"
-                      />
-                    </div>
-
-                    {/* Project Name */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Project Name
-                      </label>
-                      <input
-                        type="text"
-                        name="projectName"
-                        value={formData.projectName}
-                        onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Enter Project Name"
-                      />
-                    </div>
-
-                    {/* Complaint Number */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Complaint Number
-                      </label>
-                      <input
-                        type="text"
-                        name="complaintNumber"
-                        value={formData.complaintNumber}
-                        onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Enter Complaint Number"
-                      />
-                    </div>
-
-                    {/* Complaint Date */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Complaint Date *
-                      </label>
-                      <DatePicker
-                        selected={complaintDate}
-                        onChange={(date) => setComplaintDate(date)}
-                        dateFormat="dd/MM/yyyy"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholderText="Select complaint date"
-                        required
-                      />
-                    </div>
-
-                    {/* Beneficiary Name */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Beneficiary Name *
-                      </label>
-<<<<<<< HEAD
-                      <select
-=======
-                      <input
-                        type="text"
->>>>>>> 4c89a70c46faaa456ffea1552df8a304a9a19de9
-                        name="beneficiaryName"
-                        value={formData.beneficiaryName}
-                        onChange={handleChange}
-                        required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-<<<<<<< HEAD
-                      >
-                        <option value="">Select Beneficiary Name</option>
-                        {masterBeneficiaryOptions.map((name, index) => (
-                          <option key={index} value={name}>{name}</option>
-                        ))}
-                      </select>
-=======
-                        placeholder="Enter Beneficiary Name"
-                      />
->>>>>>> 4c89a70c46faaa456ffea1552df8a304a9a19de9
-                    </div>
-
-                    {/* Contact Number */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Contact Number *
-                      </label>
-                      <input
-                        type="tel"
-                        name="contactNumber"
-                        value={formData.contactNumber}
-                        onChange={handleChange}
-                        required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Enter Contact Number"
-                      />
-                    </div>
-
-                    {/* Village */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Village
-                      </label>
-                      <input
-                        type="text"
-                        name="village"
-                        value={formData.village}
-                        onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Enter Village"
-                      />
-                    </div>
-
-                    {/* Block */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Block
-                      </label>
-                      <input
-                        type="text"
-                        name="block"
-                        value={formData.block}
-                        onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Enter Block"
-                      />
-                    </div>
-
-                    {/* District */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        District *
-                      </label>
-                      <select
-                        name="district"
-                        value={formData.district}
-                        onChange={handleChange}
-                        required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        <option value="">Select District</option>
-                        {districtOptions.map((option, index) => (
-                          <option key={index} value={option}>{option}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Product */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Product
-                      </label>
-                      <input
-                        type="text"
-                        name="product"
-                        value={formData.product}
-                        onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Enter Product"
-                      />
-                    </div>
-
-                    {/* Make */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Make
-                      </label>
-                      <input
-                        type="text"
-                        name="make"
-                        value={formData.make}
-                        onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Enter Make"
-                      />
-                    </div>
-
-                    {/* Rating */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Rating
-                      </label>
-                      <input
-                        type="text"
-                        name="rating"
-                        value={formData.rating}
-                        onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Enter Rating"
-                      />
-                    </div>
-
-                    {/* Quantity */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Quantity
-                      </label>
-                      <input
-                        type="text"
-                        name="qty"
-                        value={formData.qty}
-                        onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Enter Quantity"
-                      />
-                    </div>
-
-                    {/* Controller RID No */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Controller RID No
-                      </label>
-                      <input
-                        type="text"
-                        name="controllerRidNo"
-                        value={formData.controllerRidNo}
-                        onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Enter Controller RID No"
-                      />
-                    </div>
-
-                    {/* Product SL No */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Product SL No
-                      </label>
-                      <input
-                        type="text"
-                        name="productSlNo"
-                        value={formData.productSlNo}
-                        onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Enter Product SL No"
-                      />
-                    </div>
-
-                    {/* Insurance Type */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Insurance Type
-                      </label>
-                      <select
-                        name="insuranceType"
-                        value={formData.insuranceType}
-                        onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        <option value="">Select Insurance Type</option>
-                        {insuranceTypeOptions.map((option, index) => (
-                          <option key={index} value={option}>{option}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Technician Name */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Technician Name
-                      </label>
-                      <select
-                        name="technicianName"
-                        value={formData.technicianName}
-                        onChange={(e) => handleSelectChange('technicianName', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        <option value="">Select Technician</option>
-                        {technicianNameOptions.map((option, index) => (
-                          <option key={index} value={option}>{option}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Technician Contact */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Technician Contact
-                      </label>
-                      <input
-                        type="text"
-                        name="technicianContact"
-                        value={formData.technicianContact}
-                        onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700"
-                        placeholder="Auto-filled from technician selection"
-                        readOnly
-                      />
-                    </div>
-
-                    {/* Assignee WhatsApp */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Assignee WhatsApp
-                      </label>
-                      <input
-                        type="text"
-                        name="assigneeWhatsapp"
-                        value={formData.assigneeWhatsapp}
-                        onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Enter WhatsApp Number"
-                      />
-                    </div>
-
-                    {/* Challan No */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Challan No
-                      </label>
-                      <input
-                        type="text"
-                        name="challanNo"
-                        value={formData.challanNo}
-                        onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Enter Challan Number"
-                      />
-                    </div>
-
-                    {/* Challan Date */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Challan Date
-                      </label>
-                      <DatePicker
-                        selected={challanDate}
-                        onChange={(date) => setChallanDate(date)}
-                        dateFormat="dd/MM/yyyy"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholderText="Select challan date"
-                      />
-                    </div>
-
-                  </div>
-
-                  {/* Nature of Complaint - Full Width */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Nature of Complaint *
-                    </label>
-                    <textarea
-                      name="natureOfComplaint"
-                      value={formData.natureOfComplaint}
-                      onChange={handleChange}
-                      required
-                      rows={4}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Describe the nature of complaint..."
-                    />
-                  </div>
-
-                  {/* Form Buttons */}
-                  <div className="flex justify-end space-x-3 pt-4">
-                    <button
-                      type="button"
-                      onClick={() => setShowForm(false)}
-                      className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isSubmitting ? 'Creating...' : 'Create Complaint'}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            )}
-
-            {/* ✅ UPDATE MODAL - POPUP FORM WITH PRE-FILLED DATA */}
-            {showUpdateModal && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-                  <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-                    <h2 className="text-xl font-semibold text-gray-900">
-                      Update Complaint - {updateFormData.complaintId}
-                    </h2>
-                    <button
-                      onClick={() => setShowUpdateModal(false)}
-                      className="text-gray-400 hover:text-gray-600"
-                    >
-                      <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-
-                  <form onSubmit={handleUpdateSubmit} className="p-6 space-y-6">
-                    {/* Grid Layout - Same as Create Form */}
+                    {/* Grid Layout */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
                       {/* Company Name */}
@@ -1419,8 +928,8 @@ function NewComplaintForm() {
                         </label>
                         <select
                           name="companyName"
-                          value={updateFormData.companyName}
-                          onChange={handleUpdateFormChange}
+                          value={formData.companyName}
+                          onChange={handleChange}
                           required
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
@@ -1439,8 +948,8 @@ function NewComplaintForm() {
                         <input
                           type="text"
                           name="modeOfCall"
-                          value={updateFormData.modeOfCall}
-                          onChange={handleUpdateFormChange}
+                          value={formData.modeOfCall}
+                          onChange={handleChange}
                           required
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="Enter Mode of Call"
@@ -1455,8 +964,8 @@ function NewComplaintForm() {
                         <input
                           type="text"
                           name="idNumber"
-                          value={updateFormData.idNumber}
-                          onChange={handleUpdateFormChange}
+                          value={formData.idNumber}
+                          onChange={handleChange}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="Enter ID Number"
                         />
@@ -1470,8 +979,8 @@ function NewComplaintForm() {
                         <input
                           type="text"
                           name="projectName"
-                          value={updateFormData.projectName}
-                          onChange={handleUpdateFormChange}
+                          value={formData.projectName}
+                          onChange={handleChange}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="Enter Project Name"
                         />
@@ -1485,8 +994,8 @@ function NewComplaintForm() {
                         <input
                           type="text"
                           name="complaintNumber"
-                          value={updateFormData.complaintNumber}
-                          onChange={handleUpdateFormChange}
+                          value={formData.complaintNumber}
+                          onChange={handleChange}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="Enter Complaint Number"
                         />
@@ -1498,8 +1007,8 @@ function NewComplaintForm() {
                           Complaint Date *
                         </label>
                         <DatePicker
-                          selected={updateFormData.complaintDate}
-                          onChange={(date) => setUpdateFormData(prev => ({ ...prev, complaintDate: date }))}
+                          selected={complaintDate}
+                          onChange={(date) => setComplaintDate(date)}
                           dateFormat="dd/MM/yyyy"
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholderText="Select complaint date"
@@ -1514,8 +1023,8 @@ function NewComplaintForm() {
                         </label>
                         <select
                           name="beneficiaryName"
-                          value={updateFormData.beneficiaryName}
-                          onChange={handleUpdateFormChange}
+                          value={formData.beneficiaryName}
+                          onChange={handleChange}
                           required
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
@@ -1524,63 +1033,64 @@ function NewComplaintForm() {
                             <option key={index} value={name}>{name}</option>
                           ))}
                         </select>
-                      </div>
+
+                      </div >
 
                       {/* Contact Number */}
-                      <div>
+                      < div >
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Contact Number *
                         </label>
                         <input
                           type="tel"
                           name="contactNumber"
-                          value={updateFormData.contactNumber}
-                          onChange={handleUpdateFormChange}
+                          value={formData.contactNumber}
+                          onChange={handleChange}
                           required
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="Enter Contact Number"
                         />
-                      </div>
+                      </div >
 
                       {/* Village */}
-                      <div>
+                      < div >
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Village
                         </label>
                         <input
                           type="text"
                           name="village"
-                          value={updateFormData.village}
-                          onChange={handleUpdateFormChange}
+                          value={formData.village}
+                          onChange={handleChange}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="Enter Village"
                         />
-                      </div>
+                      </div >
 
                       {/* Block */}
-                      <div>
+                      < div >
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Block
                         </label>
                         <input
                           type="text"
                           name="block"
-                          value={updateFormData.block}
-                          onChange={handleUpdateFormChange}
+                          value={formData.block}
+                          onChange={handleChange}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="Enter Block"
                         />
-                      </div>
+                      </div >
 
                       {/* District */}
-                      <div>
+                      < div >
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           District *
                         </label>
                         <select
                           name="district"
-                          value={updateFormData.district}
-                          onChange={handleUpdateFormChange}
+                          value={formData.district}
+                          onChange={handleChange}
                           required
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
@@ -1589,107 +1099,107 @@ function NewComplaintForm() {
                             <option key={index} value={option}>{option}</option>
                           ))}
                         </select>
-                      </div>
+                      </div >
 
                       {/* Product */}
-                      <div>
+                      < div >
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Product
                         </label>
                         <input
                           type="text"
                           name="product"
-                          value={updateFormData.product}
-                          onChange={handleUpdateFormChange}
+                          value={formData.product}
+                          onChange={handleChange}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="Enter Product"
                         />
-                      </div>
+                      </div >
 
                       {/* Make */}
-                      <div>
+                      < div >
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Make
                         </label>
                         <input
                           type="text"
                           name="make"
-                          value={updateFormData.make}
-                          onChange={handleUpdateFormChange}
+                          value={formData.make}
+                          onChange={handleChange}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="Enter Make"
                         />
-                      </div>
+                      </div >
 
                       {/* Rating */}
-                      <div>
+                      < div >
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Rating
                         </label>
                         <input
                           type="text"
                           name="rating"
-                          value={updateFormData.rating}
-                          onChange={handleUpdateFormChange}
+                          value={formData.rating}
+                          onChange={handleChange}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="Enter Rating"
                         />
-                      </div>
+                      </div >
 
                       {/* Quantity */}
-                      <div>
+                      < div >
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Quantity
                         </label>
                         <input
                           type="text"
                           name="qty"
-                          value={updateFormData.qty}
-                          onChange={handleUpdateFormChange}
+                          value={formData.qty}
+                          onChange={handleChange}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="Enter Quantity"
                         />
-                      </div>
+                      </div >
 
                       {/* Controller RID No */}
-                      <div>
+                      < div >
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Controller RID No
                         </label>
                         <input
                           type="text"
                           name="controllerRidNo"
-                          value={updateFormData.controllerRidNo}
-                          onChange={handleUpdateFormChange}
+                          value={formData.controllerRidNo}
+                          onChange={handleChange}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="Enter Controller RID No"
                         />
-                      </div>
+                      </div >
 
                       {/* Product SL No */}
-                      <div>
+                      < div >
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Product SL No
                         </label>
                         <input
                           type="text"
                           name="productSlNo"
-                          value={updateFormData.productSlNo}
-                          onChange={handleUpdateFormChange}
+                          value={formData.productSlNo}
+                          onChange={handleChange}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="Enter Product SL No"
                         />
-                      </div>
+                      </div >
 
                       {/* Insurance Type */}
-                      <div>
+                      < div >
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Insurance Type
                         </label>
                         <select
                           name="insuranceType"
-                          value={updateFormData.insuranceType}
-                          onChange={handleUpdateFormChange}
+                          value={formData.insuranceType}
+                          onChange={handleChange}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
                           <option value="">Select Insurance Type</option>
@@ -1697,17 +1207,17 @@ function NewComplaintForm() {
                             <option key={index} value={option}>{option}</option>
                           ))}
                         </select>
-                      </div>
+                      </div >
 
                       {/* Technician Name */}
-                      <div>
+                      < div >
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Technician Name
                         </label>
                         <select
                           name="technicianName"
-                          value={updateFormData.technicianName}
-                          onChange={(e) => handleUpdateSelectChange('technicianName', e.target.value)}
+                          value={formData.technicianName}
+                          onChange={(e) => handleSelectChange('technicianName', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
                           <option value="">Select Technician</option>
@@ -1715,91 +1225,91 @@ function NewComplaintForm() {
                             <option key={index} value={option}>{option}</option>
                           ))}
                         </select>
-                      </div>
+                      </div >
 
                       {/* Technician Contact */}
-                      <div>
+                      < div >
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Technician Contact
                         </label>
                         <input
                           type="text"
                           name="technicianContact"
-                          value={updateFormData.technicianContact}
-                          onChange={handleUpdateFormChange}
+                          value={formData.technicianContact}
+                          onChange={handleChange}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700"
                           placeholder="Auto-filled from technician selection"
                           readOnly
                         />
-                      </div>
+                      </div >
 
                       {/* Assignee WhatsApp */}
-                      <div>
+                      < div >
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Assignee WhatsApp
                         </label>
                         <input
                           type="text"
                           name="assigneeWhatsapp"
-                          value={updateFormData.assigneeWhatsapp}
-                          onChange={handleUpdateFormChange}
+                          value={formData.assigneeWhatsapp}
+                          onChange={handleChange}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="Enter WhatsApp Number"
                         />
-                      </div>
+                      </div >
 
                       {/* Challan No */}
-                      <div>
+                      < div >
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Challan No
                         </label>
                         <input
                           type="text"
                           name="challanNo"
-                          value={updateFormData.challanNo}
-                          onChange={handleUpdateFormChange}
+                          value={formData.challanNo}
+                          onChange={handleChange}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="Enter Challan Number"
                         />
-                      </div>
+                      </div >
 
                       {/* Challan Date */}
-                      <div>
+                      < div >
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Challan Date
                         </label>
                         <DatePicker
-                          selected={updateFormData.challanDate}
-                          onChange={(date) => setUpdateFormData(prev => ({ ...prev, challanDate: date }))}
+                          selected={challanDate}
+                          onChange={(date) => setChallanDate(date)}
                           dateFormat="dd/MM/yyyy"
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholderText="Select challan date"
                         />
-                      </div>
+                      </div >
 
-                    </div>
+                    </div >
 
                     {/* Nature of Complaint - Full Width */}
-                    <div>
+                    < div >
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Nature of Complaint *
                       </label>
                       <textarea
                         name="natureOfComplaint"
-                        value={updateFormData.natureOfComplaint}
-                        onChange={handleUpdateFormChange}
+                        value={formData.natureOfComplaint}
+                        onChange={handleChange}
                         required
                         rows={4}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="Describe the nature of complaint..."
                       />
-                    </div>
+                    </div >
 
-                    {/* Modal Form Buttons */}
-                    <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                    {/* Form Buttons */}
+                    < div className="flex justify-end space-x-3 pt-4" >
                       <button
                         type="button"
-                        onClick={() => setShowUpdateModal(false)}
+                        onClick={() => setShowForm(false)}
                         className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         Cancel
@@ -1807,15 +1317,444 @@ function NewComplaintForm() {
                       <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        {isSubmitting ? 'Updating...' : 'Update Complaint'}
+                        {isSubmitting ? 'Creating...' : 'Create Complaint'}
+                      </button>
+                    </div >
+                  </form >
+                </div >
+              )
+            }
+
+            {/* ✅ UPDATE MODAL - POPUP FORM WITH PRE-FILLED DATA */}
+            {
+              showUpdateModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                  <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                    <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+                      <h2 className="text-xl font-semibold text-gray-900">
+                        Update Complaint - {updateFormData.complaintId}
+                      </h2>
+                      <button
+                        onClick={() => setShowUpdateModal(false)}
+                        className="text-gray-400 hover:text-gray-600"
+                      >
+                        <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
                       </button>
                     </div>
-                  </form>
+
+                    <form onSubmit={handleUpdateSubmit} className="p-6 space-y-6">
+                      {/* Grid Layout - Same as Create Form */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+                        {/* Company Name */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Company Name *
+                          </label>
+                          <select
+                            name="companyName"
+                            value={updateFormData.companyName}
+                            onChange={handleUpdateFormChange}
+                            required
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="">Select Company</option>
+                            {companyNameOptions.map((option, index) => (
+                              <option key={index} value={option}>{option}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Mode of Call */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Mode of Call *
+                          </label>
+                          <input
+                            type="text"
+                            name="modeOfCall"
+                            value={updateFormData.modeOfCall}
+                            onChange={handleUpdateFormChange}
+                            required
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Enter Mode of Call"
+                          />
+                        </div>
+
+                        {/* ID Number */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            ID Number
+                          </label>
+                          <input
+                            type="text"
+                            name="idNumber"
+                            value={updateFormData.idNumber}
+                            onChange={handleUpdateFormChange}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Enter ID Number"
+                          />
+                        </div>
+
+                        {/* Project Name */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Project Name
+                          </label>
+                          <input
+                            type="text"
+                            name="projectName"
+                            value={updateFormData.projectName}
+                            onChange={handleUpdateFormChange}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Enter Project Name"
+                          />
+                        </div>
+
+                        {/* Complaint Number */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Complaint Number
+                          </label>
+                          <input
+                            type="text"
+                            name="complaintNumber"
+                            value={updateFormData.complaintNumber}
+                            onChange={handleUpdateFormChange}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Enter Complaint Number"
+                          />
+                        </div>
+
+                        {/* Complaint Date */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Complaint Date *
+                          </label>
+                          <DatePicker
+                            selected={updateFormData.complaintDate}
+                            onChange={(date) => setUpdateFormData(prev => ({ ...prev, complaintDate: date }))}
+                            dateFormat="dd/MM/yyyy"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholderText="Select complaint date"
+                            required
+                          />
+                        </div>
+
+                        {/* Beneficiary Name */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Beneficiary Name *
+                          </label>
+                          <select
+                            name="beneficiaryName"
+                            value={updateFormData.beneficiaryName}
+                            onChange={handleUpdateFormChange}
+                            required
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="">Select Beneficiary Name</option>
+                            {masterBeneficiaryOptions.map((name, index) => (
+                              <option key={index} value={name}>{name}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Contact Number */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Contact Number *
+                          </label>
+                          <input
+                            type="tel"
+                            name="contactNumber"
+                            value={updateFormData.contactNumber}
+                            onChange={handleUpdateFormChange}
+                            required
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Enter Contact Number"
+                          />
+                        </div>
+
+                        {/* Village */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Village
+                          </label>
+                          <input
+                            type="text"
+                            name="village"
+                            value={updateFormData.village}
+                            onChange={handleUpdateFormChange}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Enter Village"
+                          />
+                        </div>
+
+                        {/* Block */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Block
+                          </label>
+                          <input
+                            type="text"
+                            name="block"
+                            value={updateFormData.block}
+                            onChange={handleUpdateFormChange}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Enter Block"
+                          />
+                        </div>
+
+                        {/* District */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            District *
+                          </label>
+                          <select
+                            name="district"
+                            value={updateFormData.district}
+                            onChange={handleUpdateFormChange}
+                            required
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="">Select District</option>
+                            {districtOptions.map((option, index) => (
+                              <option key={index} value={option}>{option}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Product */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Product
+                          </label>
+                          <input
+                            type="text"
+                            name="product"
+                            value={updateFormData.product}
+                            onChange={handleUpdateFormChange}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Enter Product"
+                          />
+                        </div>
+
+                        {/* Make */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Make
+                          </label>
+                          <input
+                            type="text"
+                            name="make"
+                            value={updateFormData.make}
+                            onChange={handleUpdateFormChange}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Enter Make"
+                          />
+                        </div>
+
+                        {/* Rating */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Rating
+                          </label>
+                          <input
+                            type="text"
+                            name="rating"
+                            value={updateFormData.rating}
+                            onChange={handleUpdateFormChange}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Enter Rating"
+                          />
+                        </div>
+
+                        {/* Quantity */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Quantity
+                          </label>
+                          <input
+                            type="text"
+                            name="qty"
+                            value={updateFormData.qty}
+                            onChange={handleUpdateFormChange}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Enter Quantity"
+                          />
+                        </div>
+
+                        {/* Controller RID No */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Controller RID No
+                          </label>
+                          <input
+                            type="text"
+                            name="controllerRidNo"
+                            value={updateFormData.controllerRidNo}
+                            onChange={handleUpdateFormChange}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Enter Controller RID No"
+                          />
+                        </div>
+
+                        {/* Product SL No */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Product SL No
+                          </label>
+                          <input
+                            type="text"
+                            name="productSlNo"
+                            value={updateFormData.productSlNo}
+                            onChange={handleUpdateFormChange}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Enter Product SL No"
+                          />
+                        </div>
+
+                        {/* Insurance Type */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Insurance Type
+                          </label>
+                          <select
+                            name="insuranceType"
+                            value={updateFormData.insuranceType}
+                            onChange={handleUpdateFormChange}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="">Select Insurance Type</option>
+                            {insuranceTypeOptions.map((option, index) => (
+                              <option key={index} value={option}>{option}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Technician Name */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Technician Name
+                          </label>
+                          <select
+                            name="technicianName"
+                            value={updateFormData.technicianName}
+                            onChange={(e) => handleUpdateSelectChange('technicianName', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="">Select Technician</option>
+                            {technicianNameOptions.map((option, index) => (
+                              <option key={index} value={option}>{option}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Technician Contact */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Technician Contact
+                          </label>
+                          <input
+                            type="text"
+                            name="technicianContact"
+                            value={updateFormData.technicianContact}
+                            onChange={handleUpdateFormChange}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700"
+                            placeholder="Auto-filled from technician selection"
+                            readOnly
+                          />
+                        </div>
+
+                        {/* Assignee WhatsApp */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Assignee WhatsApp
+                          </label>
+                          <input
+                            type="text"
+                            name="assigneeWhatsapp"
+                            value={updateFormData.assigneeWhatsapp}
+                            onChange={handleUpdateFormChange}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Enter WhatsApp Number"
+                          />
+                        </div>
+
+                        {/* Challan No */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Challan No
+                          </label>
+                          <input
+                            type="text"
+                            name="challanNo"
+                            value={updateFormData.challanNo}
+                            onChange={handleUpdateFormChange}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Enter Challan Number"
+                          />
+                        </div>
+
+                        {/* Challan Date */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Challan Date
+                          </label>
+                          <DatePicker
+                            selected={updateFormData.challanDate}
+                            onChange={(date) => setUpdateFormData(prev => ({ ...prev, challanDate: date }))}
+                            dateFormat="dd/MM/yyyy"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholderText="Select challan date"
+                          />
+                        </div>
+
+                      </div>
+
+                      {/* Nature of Complaint - Full Width */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Nature of Complaint *
+                        </label>
+                        <textarea
+                          name="natureOfComplaint"
+                          value={updateFormData.natureOfComplaint}
+                          onChange={handleUpdateFormChange}
+                          required
+                          rows={4}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="Describe the nature of complaint..."
+                        />
+                      </div>
+
+                      {/* Modal Form Buttons */}
+                      <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                        <button
+                          type="button"
+                          onClick={() => setShowUpdateModal(false)}
+                          className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={isSubmitting}
+                          className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {isSubmitting ? 'Updating...' : 'Update Complaint'}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
                 </div>
-              </div>
-            )}
+              )
+            }
 
             {/* Table with improved UI */}
             <div className="space-y-4">
@@ -1901,16 +1840,14 @@ function NewComplaintForm() {
                                 >
                                   Update
                                 </button>
-<<<<<<< HEAD
                                 <button
                                   onClick={() => handleDelete(rowIndex)}
                                   className="ml-2 px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded-md text-sm"
                                 >
                                   Delete
                                 </button>
-=======
->>>>>>> 4c89a70c46faaa456ffea1552df8a304a9a19de9
-                              </td>
+
+                              </td >
                               <td className="px-3 py-4 whitespace-nowrap text-sm font-medium text-blue-600">{row[2]}</td>
                               <td className="px-3 py-4 whitespace-nowrap text-sm font-medium text-purple-600">{row[5] || '-'}</td>
                               <td className="px-3 py-4 whitespace-nowrap text-sm">{row[8] ? new Date(row[8]).toLocaleDateString() : '-'}</td>
@@ -1925,98 +1862,101 @@ function NewComplaintForm() {
                               <td className="px-3 py-4 whitespace-nowrap text-sm">
                                 {row[19] ? (row[19].length > 50 ? row[19].substring(0, 50) + '...' : row[19]) : '-'}
                               </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
+                            </tr >
+                          ))
+                          }
+                        </tbody >
+                      </table >
+                    </div >
+                  </div >
 
                   {/* Mobile Card View - Visible on mobile only */}
-                  <div className="lg:hidden space-y-4">
-                    {tableData.map((row, rowIndex) => (
-                      <div
-                        key={`mobile-complaint-${row[2]}-${rowIndex}`}
-                        className="border rounded-lg p-4 bg-white border-gray-200"
-                      >
-                        {/* Header */}
-                        <div className="flex justify-between items-start mb-3">
-                          <div className="flex-1">
-                            <div className="text-xs text-gray-500 mb-1">Complaint ID</div>
-                            <div className="font-semibold text-blue-600">{row[2]}</div>
+                  < div className="lg:hidden space-y-4" >
+                    {
+                      tableData.map((row, rowIndex) => (
+                        <div
+                          key={`mobile-complaint-${row[2]}-${rowIndex}`}
+                          className="border rounded-lg p-4 bg-white border-gray-200"
+                        >
+                          {/* Header */}
+                          <div className="flex justify-between items-start mb-3">
+                            <div className="flex-1">
+                              <div className="text-xs text-gray-500 mb-1">Complaint ID</div>
+                              <div className="font-semibold text-blue-600">{row[2]}</div>
+                            </div>
+                            <div className="flex-1">
+                              <div className="text-xs text-gray-500 mb-1">ID Number</div>
+                              <div className="font-semibold text-purple-600">{row[5] || '-'}</div>
+                            </div>
+                            <button
+                              onClick={() => handleOpenUpdateModal(rowIndex)}
+                              className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded-md text-sm"
+                            >
+                              Update
+                            </button>
                           </div>
-                          <div className="flex-1">
-                            <div className="text-xs text-gray-500 mb-1">ID Number</div>
-                            <div className="font-semibold text-purple-600">{row[5] || '-'}</div>
-                          </div>
-                          <button
-                            onClick={() => handleOpenUpdateModal(rowIndex)}
-                            className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded-md text-sm"
-                          >
-                            Update
-                          </button>
-                        </div>
 
-                        {/* Complaint Details */}
-                        <div className="space-y-3">
-                          <div className="grid grid-cols-2 gap-3">
-                            <div>
-                              <div className="text-xs text-gray-500 mb-1">Date</div>
-                              <div className="text-sm font-medium">
-                                {row[8] ? new Date(row[8]).toLocaleDateString() : '-'}
+                          {/* Complaint Details */}
+                          <div className="space-y-3">
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <div className="text-xs text-gray-500 mb-1">Date</div>
+                                <div className="text-sm font-medium">
+                                  {row[8] ? new Date(row[8]).toLocaleDateString() : '-'}
+                                </div>
+                              </div>
+                              <div>
+                                <div className="text-xs text-gray-500 mb-1">Company</div>
+                                <div className="text-sm font-medium">{row[3] || '-'}</div>
                               </div>
                             </div>
+
                             <div>
-                              <div className="text-xs text-gray-500 mb-1">Company</div>
-                              <div className="text-sm font-medium">{row[3] || '-'}</div>
+                              <div className="text-xs text-gray-500 mb-1">Beneficiary Name</div>
+                              <div className="text-sm font-medium">{row[9] || '-'}</div>
                             </div>
-                          </div>
 
-                          <div>
-                            <div className="text-xs text-gray-500 mb-1">Beneficiary Name</div>
-                            <div className="text-sm font-medium">{row[9] || '-'}</div>
-                          </div>
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <div className="text-xs text-gray-500 mb-1">Contact</div>
+                                <div className="text-sm">{row[10] || '-'}</div>
+                              </div>
+                              <div>
+                                <div className="text-xs text-gray-500 mb-1">Village</div>
+                                <div className="text-sm">{row[11] || '-'}</div>
+                              </div>
+                            </div>
 
-                          <div className="grid grid-cols-2 gap-3">
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <div className="text-xs text-gray-500 mb-1">District</div>
+                                <div className="text-sm">{row[13] || '-'}</div>
+                              </div>
+                              <div>
+                                <div className="text-xs text-gray-500 mb-1">Product</div>
+                                <div className="text-sm">{row[14] || '-'}</div>
+                              </div>
+                            </div>
+
                             <div>
-                              <div className="text-xs text-gray-500 mb-1">Contact</div>
-                              <div className="text-sm">{row[10] || '-'}</div>
+                              <div className="text-xs text-gray-500 mb-1">Technician</div>
+                              <div className="text-sm font-medium">{row[20] || '-'}</div>
                             </div>
+
                             <div>
-                              <div className="text-xs text-gray-500 mb-1">Village</div>
-                              <div className="text-sm">{row[11] || '-'}</div>
+                              <div className="text-xs text-gray-500 mb-1">Mode of Call</div>
+                              <div className="text-sm">{row[4] || '-'}</div>
                             </div>
-                          </div>
 
-                          <div className="grid grid-cols-2 gap-3">
                             <div>
-                              <div className="text-xs text-gray-500 mb-1">District</div>
-                              <div className="text-sm">{row[13] || '-'}</div>
+                              <div className="text-xs text-gray-500 mb-1">Nature of Complaint</div>
+                              <div className="text-sm">{row[19] || '-'}</div>
                             </div>
-                            <div>
-                              <div className="text-xs text-gray-500 mb-1">Product</div>
-                              <div className="text-sm">{row[14] || '-'}</div>
-                            </div>
-                          </div>
-
-                          <div>
-                            <div className="text-xs text-gray-500 mb-1">Technician</div>
-                            <div className="text-sm font-medium">{row[20] || '-'}</div>
-                          </div>
-
-                          <div>
-                            <div className="text-xs text-gray-500 mb-1">Mode of Call</div>
-                            <div className="text-sm">{row[4] || '-'}</div>
-                          </div>
-
-                          <div>
-                            <div className="text-xs text-gray-500 mb-1">Nature of Complaint</div>
-                            <div className="text-sm">{row[19] || '-'}</div>
                           </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))
+                    }
+                  </div >
                 </>
               ) : (
                 <div className="text-center p-6 bg-gray-50 rounded-lg border border-gray-200">
@@ -2026,11 +1966,11 @@ function NewComplaintForm() {
                 </div>
               )}
 
-            </div>
+            </div >
           </>
         )}
-      </div>
-    </div>
+      </div >
+    </div >
   )
 }
 

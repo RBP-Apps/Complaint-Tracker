@@ -373,21 +373,21 @@ function DashboardLayout({ children }) {
       badgeColor: "bg-blue-500 hover:bg-blue-600",
       permissionKey: "approved",
     },
+    
     {
-<<<<<<< HEAD
       name: "Admin Approved",
       href: "/dashboard/admin-approved",
       icon: CheckCircle,
       badgeColor: "bg-green-500 hover:bg-green-600",
       permissionKey: "approved",
     },
-    {
-=======
->>>>>>> 4c89a70c46faaa456ffea1552df8a304a9a19de9
-      name: "Tracker History",
-      href: "/dashboard/tracker-history",
-      icon: Clock,
-      permissionKey: "all", // Restricted to admin (who usually have 'all' permission) or specifically added
+{
+
+
+    name: "Tracker History",
+    href: "/dashboard/tracker-history",
+    icon: Clock,
+    permissionKey: "all", // Restricted to admin (who usually have 'all' permission) or specifically added
     },
     // {
     //   name: "Technician Dashboard",
@@ -405,153 +405,153 @@ function DashboardLayout({ children }) {
     // },
   ]
 
-  // Filter nav items based on user permissions (same for all users including tech)
-  const navItems = allNavItems.filter((item) => {
-    if (item.name === "Tracker History") {
-      return userRole && userRole.toLowerCase() === 'admin';
-    }
-    return hasPermission(item.permissionKey);
-  })
-
-  const handleLogout = () => {
-    localStorage.removeItem("userPermissions")
-    localStorage.removeItem("username")
-    localStorage.removeItem("userRole")
-    window.location.href = "/"
+// Filter nav items based on user permissions (same for all users including tech)
+const navItems = allNavItems.filter((item) => {
+  if (item.name === "Tracker History") {
+    return userRole && userRole.toLowerCase() === 'admin';
   }
+  return hasPermission(item.permissionKey);
+})
 
-  const SidebarContent = () => (
-    <div className="flex flex-col h-full bg-gray-800 text-white">
-      <div className="flex h-16 items-center border-b border-gray-700 px-4">
-        <div className="bg-gray-700 p-1 rounded-full mr-3 flex items-center justify-center">
-          <img
-            src="/RBP-Logo.jpg"
-            alt="RBP logo"
-            className=" object-contain rounded-full shadow-md"
-          />
-        </div>
-        <h1 className="text-xl font-bold">Complaints Tracker</h1>
+const handleLogout = () => {
+  localStorage.removeItem("userPermissions")
+  localStorage.removeItem("username")
+  localStorage.removeItem("userRole")
+  window.location.href = "/"
+}
+
+const SidebarContent = () => (
+  <div className="flex flex-col h-full bg-gray-800 text-white">
+    <div className="flex h-16 items-center border-b border-gray-700 px-4">
+      <div className="bg-gray-700 p-1 rounded-full mr-3 flex items-center justify-center">
+        <img
+          src="/RBP-Logo.jpg"
+          alt="RBP logo"
+          className=" object-contain rounded-full shadow-md"
+        />
       </div>
+      <h1 className="text-xl font-bold">Complaints Tracker</h1>
+    </div>
 
-      <div className="p-4 border-b border-gray-700">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 border-2 border-gray-700 rounded-full overflow-hidden flex items-center justify-center bg-gray-600 text-white">
-            <span>{username ? username.substring(0, 2).toUpperCase() : "AU"}</span>
-          </div>
-          <div>
-            <p className="font-medium">{username || "User"}</p>
-            <p className="text-xs text-gray-400">
-              {userRole || "User"}
-            </p>
-          </div>
+    <div className="p-4 border-b border-gray-700">
+      <div className="flex items-center gap-3">
+        <div className="h-10 w-10 border-2 border-gray-700 rounded-full overflow-hidden flex items-center justify-center bg-gray-600 text-white">
+          <span>{username ? username.substring(0, 2).toUpperCase() : "AU"}</span>
+        </div>
+        <div>
+          <p className="font-medium">{username || "User"}</p>
+          <p className="text-xs text-gray-400">
+            {userRole || "User"}
+          </p>
         </div>
       </div>
+    </div>
 
-      <nav className="mt-5 px-3 flex-1 overflow-y-auto">
-        <div className="space-y-1">
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.href
-            return (
-              <Link
-                key={item.name}
-                to={item.href}
-                className={`group flex items-center rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${isActive ? "bg-gray-700 text-white" : "text-gray-300 hover:bg-gray-700 hover:text-white"
-                  }`}
-                onClick={() => isMobile && setIsSidebarOpen(false)}
-              >
-                <item.icon className="mr-3 h-5 w-5" />
-                {item.name}
-                {item.badge && (
-                  <span className={`ml-auto px-2 py-0.5 text-xs font-semibold rounded-full ${item.badgeColor}`}>
-                    {item.badge}
-                  </span>
-                )}
-              </Link>
-            )
-          })}
-        </div>
-      </nav>
+    <nav className="mt-5 px-3 flex-1 overflow-y-auto">
+      <div className="space-y-1">
+        {navItems.map((item) => {
+          const isActive = location.pathname === item.href
+          return (
+            <Link
+              key={item.name}
+              to={item.href}
+              className={`group flex items-center rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${isActive ? "bg-gray-700 text-white" : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                }`}
+              onClick={() => isMobile && setIsSidebarOpen(false)}
+            >
+              <item.icon className="mr-3 h-5 w-5" />
+              {item.name}
+              {item.badge && (
+                <span className={`ml-auto px-2 py-0.5 text-xs font-semibold rounded-full ${item.badgeColor}`}>
+                  {item.badge}
+                </span>
+              )}
+            </Link>
+          )
+        })}
+      </div>
+    </nav>
 
-      <div className="p-4 mt-auto">
+    <div className="p-4 mt-auto">
+      <button
+        onClick={handleLogout}
+        className="w-full border border-gray-700 text-white hover:bg-gray-700 hover:text-white py-2 px-4 rounded-md flex items-center justify-center"
+      >
+        <LogOut className="mr-2 h-4 w-4" />
+        Logout
+      </button>
+    </div>
+  </div>
+)
+
+return (
+  <div className="flex flex-col min-h-screen bg-gray-100">
+    {/* Mobile sidebar */}
+    {isMobile && (
+      <>
         <button
-          onClick={handleLogout}
-          className="w-full border border-gray-700 text-white hover:bg-gray-700 hover:text-white py-2 px-4 rounded-md flex items-center justify-center"
+          onClick={() => setIsSidebarOpen(true)}
+          className="fixed top-4 left-4 z-40 p-2 rounded-md bg-white border border-gray-200 shadow-sm"
         >
-          <LogOut className="mr-2 h-4 w-4" />
-          Logout
+          <Menu />
         </button>
-      </div>
-    </div>
-  )
 
-  return (
-    <div className="flex flex-col min-h-screen bg-gray-100">
-      {/* Mobile sidebar */}
-      {isMobile && (
-        <>
-          <button
-            onClick={() => setIsSidebarOpen(true)}
-            className="fixed top-4 left-4 z-40 p-2 rounded-md bg-white border border-gray-200 shadow-sm"
-          >
-            <Menu />
-          </button>
-
-          {isSidebarOpen && (
-            <div className="fixed inset-0 z-50 flex">
-              <div className="fixed inset-0 bg-black/50" onClick={() => setIsSidebarOpen(false)}></div>
-              <div className="relative w-[280px] max-w-[80vw] bg-gray-800">
-                <SidebarContent />
-              </div>
+        {isSidebarOpen && (
+          <div className="fixed inset-0 z-50 flex">
+            <div className="fixed inset-0 bg-black/50" onClick={() => setIsSidebarOpen(false)}></div>
+            <div className="relative w-[280px] max-w-[80vw] bg-gray-800">
+              <SidebarContent />
             </div>
-          )}
-        </>
-      )}
+          </div>
+        )}
+      </>
+    )}
 
-      {/* Desktop sidebar */}
-      {!isMobile && (
-        <div className="hidden md:block md:w-64 fixed inset-y-0 left-0 z-40">
-          <SidebarContent />
+    {/* Desktop sidebar */}
+    {!isMobile && (
+      <div className="hidden md:block md:w-64 fixed inset-y-0 left-0 z-40">
+        <SidebarContent />
+      </div>
+    )}
+
+    {/* Main content */}
+    <div className="flex-1 md:ml-64">
+      {/* Top navbar */}
+      <header className="h-16 bg-white shadow-sm flex items-center justify-between px-4 md:px-8">
+        <div className="md:hidden w-8"></div>
+        <div className="md:hidden flex items-center">
+          <Clipboard className="h-5 w-5 mr-2" />
+          <h1 className="text-lg font-bold">Complaints Tracker</h1>
         </div>
-      )}
-
-      {/* Main content */}
-      <div className="flex-1 md:ml-64">
-        {/* Top navbar */}
-        <header className="h-16 bg-white shadow-sm flex items-center justify-between px-4 md:px-8">
-          <div className="md:hidden w-8"></div>
-          <div className="md:hidden flex items-center">
-            <Clipboard className="h-5 w-5 mr-2" />
-            <h1 className="text-lg font-bold">Complaints Tracker</h1>
+        <div className="flex items-center gap-4">
+          <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 border border-gray-300">
+            {username ? username.substring(0, 2).toUpperCase() : "AU"}
           </div>
-          <div className="flex items-center gap-4">
-            <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 border border-gray-300">
-              {username ? username.substring(0, 2).toUpperCase() : "AU"}
-            </div>
-          </div>
-        </header>
+        </div>
+      </header>
 
-        <main className="pb-16">{children}</main>
+      <main className="pb-16">{children}</main>
 
-        <footer className="bg-gray-200 text-center py-4 text-sm text-gray-600 fixed bottom-0 left-0 right-0 md:left-64 z-30">
-          <div className="flex justify-center items-center">
-            <span>© {new Date().getFullYear()} Complaints Tracker. All rights reserved.</span>
-            <span className="mx-2">|</span>
-            <span>
-              Powered By -{" "}
-              <a
-                href="https://www.botivate.in/"
-                className="text-blue-600 hover:underline"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Botivate
-              </a>
-            </span>
-          </div>
-        </footer>
-      </div>
+      <footer className="bg-gray-200 text-center py-4 text-sm text-gray-600 fixed bottom-0 left-0 right-0 md:left-64 z-30">
+        <div className="flex justify-center items-center">
+          <span>© {new Date().getFullYear()} Complaints Tracker. All rights reserved.</span>
+          <span className="mx-2">|</span>
+          <span>
+            Powered By -{" "}
+            <a
+              href="https://www.botivate.in/"
+              className="text-blue-600 hover:underline"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Botivate
+            </a>
+          </span>
+        </div>
+      </footer>
     </div>
-  )
+  </div>
+)
 }
 
 export default DashboardLayout
