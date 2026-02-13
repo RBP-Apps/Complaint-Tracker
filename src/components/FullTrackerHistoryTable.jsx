@@ -50,11 +50,8 @@ function FullTrackerHistoryTable() {
                     const complaintData = []
 
                     data.table.rows.forEach((row, index) => {
-<<<<<<< HEAD
-                        if (row.c && row.c[1]?.v) { // Check if complaint ID exists
-=======
                         if (row.c && row.c[1]?.v && index > 0) { // Check if complaint ID exists and skip header row (index 0)
->>>>>>> 4c89a70c46faaa456ffea1552df8a304a9a19de9
+
                             const complaint = {
                                 complaintId: row.c[1]?.v || "", // Column B (1) - Complaint ID
                                 companyName: row.c[2]?.v || "", // Column C (2) - Company Name
