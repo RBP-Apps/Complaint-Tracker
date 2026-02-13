@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Printer, ArrowLeft, Plus, Download, Save, Send, Share2 } from "lucide-react";
+import { Printer, ArrowLeft, Plus, Download, Save, Send, Share2, Mail } from "lucide-react";
 import DashboardLayout from "../components/DashboardLayout";
 
 const AdminLetter = () => {
@@ -209,10 +209,22 @@ const AdminLetter = () => {
         }, 500);
     };
 
-    const handleSend = () => {
+    const handleWhatsApp = () => {
         const message = `Admin Approved Letter\nLetter No: ${letterInfo.letterNo}\nComplaint ID: ${complaintId}\nSubject: ${letterInfo.subject}`;
         const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, "_blank");
+    };
+
+    const handleEmail = () => {
+        const subject = encodeURIComponent(`Admin Approved Letter - ${letterInfo.letterNo}`);
+        const body = encodeURIComponent(
+            `Admin Approved Letter\n\n` +
+            `Letter No: ${letterInfo.letterNo}\n` +
+            `Complaint ID: ${complaintId}\n` +
+            `Subject: ${letterInfo.subject}\n\n` +
+            `This letter has been approved by the Admin.`
+        );
+        window.location.href = `mailto:?subject=${subject}&body=${body}`;
     };
 
     if (loading) {
@@ -247,11 +259,18 @@ const AdminLetter = () => {
                             {isSaving ? "Saving..." : "Save Data"}
                         </button>
                         <button
-                            onClick={handleSend}
-                            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors shadow-md"
+                            onClick={handleWhatsApp}
+                            className="flex items-center gap-2 px-4 py-2 bg-[#25D366] text-white rounded-lg hover:bg-[#20ba5a] transition-colors shadow-md"
                         >
                             <Send size={18} />
-                            Send
+                            WhatsApp
+                        </button>
+                        <button
+                            onClick={handleEmail}
+                            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors shadow-md"
+                        >
+                            <Mail size={18} />
+                            Email
                         </button>
                         <button
                             onClick={handlePrint}
@@ -481,14 +500,14 @@ const AdminLetter = () => {
 
                         <div className="mt-10">
                             <input
-                                className="w-full border-b border-transparent focus:border-blue-300 focus:outline-none bg-transparent font-bold text-center"
+                                className="w-full border-b border-transparent focus:border-blue-300 focus:outline-none bg-transparent font-bold text-left"
                                 value={letterInfo.thankYou}
                                 onChange={(e) => handleLetterEdit("thankYou", e.target.value)}
                             />
                         </div>
 
                         {/* Signature Section - MOVED TO LEFT AS REQUESTED */}
-                        <div className="mt-12 flex flex-col items-start pl-4 space-y-1">
+                        <div className="mt-12 flex flex-col items-start space-y-1">
                             <input
                                 className="border-b border-transparent focus:border-blue-300 focus:outline-none bg-transparent font-bold text-left w-40"
                                 value={letterInfo.regards}
@@ -510,7 +529,7 @@ const AdminLetter = () => {
                         {/* CC Section */}
                         <div className="mt-10 text-sm space-y-2 italic">
                             <p className="font-bold">प्रतिलिपि:—</p>
-                            <div className="pl-12 space-y-1">
+                            <div className="pl-0 space-y-1">
                                 {letterInfo.copiesTo.map((copy, idx) => (
                                     <div key={idx} className="flex gap-2">
                                         <span className="min-w-[20px]">{idx + 1})</span>

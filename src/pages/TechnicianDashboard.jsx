@@ -9,7 +9,7 @@ const Dashboard = () => {
   const [userPermissions, setUserPermissions] = useState('');
   const [hasAccess, setHasAccess] = useState(false);
 
-  const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwJVTmvMQSqVxvBvejjZxJMIKvFFppXjAbBPDZnXeoIkvEfJSE8GxorNlj_SWQblQ0/exec';
+  const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec';
 
 
   useEffect(() => {

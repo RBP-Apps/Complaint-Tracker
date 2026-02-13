@@ -16,7 +16,7 @@
 
 //     try {
 //       // Using your existing AppScript URL
-//       const scriptUrl = 'https://script.google.com/macros/s/AKfycbwJVTmvMQSqVxvBvejjZxJMIKvFFppXjAbBPDZnXeoIkvEfJSE8GxorNlj_SWQblQ0/exec';
+//       const scriptUrl = 'https://script.google.com/macros/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec';
 
 //       // Direct authentication from the Login sheet without modifying your app script
 //       try {

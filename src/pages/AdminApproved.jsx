@@ -27,7 +27,7 @@ function AdminApproved() {
     const [filterBlock, setFilterBlock] = useState("")
     const [filterTechnician, setFilterTechnician] = useState("")
 
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwJVTmvMQSqVxvBvejjZxJMIKvFFppXjAbBPDZnXeoIkvEfJSE8GxorNlj_SWQblQ0/exec"
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec"
 
     useEffect(() => {
         const fetchTasks = async () => {
