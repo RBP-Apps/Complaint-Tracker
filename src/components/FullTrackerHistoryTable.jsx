@@ -36,43 +36,74 @@ function FullTrackerHistoryTable() {
             setError(null)
 
             try {
-                const sheetUrl = "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=FMS"
-                const response = await fetch(sheetUrl)
-                const text = await response.text()
+                const trackerUrl = "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=Tracker"
+                const fmsUrl = "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=FMS"
 
-                const jsonStart = text.indexOf('{')
-                const jsonEnd = text.lastIndexOf('}') + 1
-                const jsonData = text.substring(jsonStart, jsonEnd)
+                const [trackerRes, fmsRes] = await Promise.all([
+                    fetch(trackerUrl),
+                    fetch(fmsUrl)
+                ])
 
-                const data = JSON.parse(jsonData)
+                const trackerText = await trackerRes.text()
+                const fmsText = await fmsRes.text()
 
-                if (data && data.table && data.table.rows) {
+                const extractJson = (text) => {
+                    const jsonStart = text.indexOf('{')
+                    const jsonEnd = text.lastIndexOf('}') + 1
+                    return JSON.parse(text.substring(jsonStart, jsonEnd))
+                }
+
+                const trackerData = extractJson(trackerText)
+                const fmsData = extractJson(fmsText)
+
+                // Map FMS data for ID Number lookup (Complaint ID -> ID Number)
+                const fmsIdMap = {}
+                if (fmsData && fmsData.table && fmsData.table.rows) {
+                    fmsData.table.rows.forEach(row => {
+                        // In FMS: Column B (1) is Complaint ID, Column E (4) is ID Number
+                        if (row.c && row.c[1]?.v && row.c[4]?.v) {
+                            fmsIdMap[row.c[1].v] = row.c[4].v
+                        }
+                    })
+                }
+
+                if (trackerData && trackerData.table && trackerData.table.rows) {
                     const complaintData = []
 
-                    data.table.rows.forEach((row, index) => {
-                        if (row.c && row.c[1]?.v && index > 0) { // Check if complaint ID exists and skip header row (index 0)
+                    trackerData.table.rows.forEach((row, index) => {
+                        if (row.c && row.c[2]?.v) {
+                            // Skip header row if it contains "Complaint ID" or "Timestamp"
+                            const firstCell = row.c[0]?.v || "";
+                            const thirdCell = row.c[2]?.v || "";
+                            if (firstCell === "Timestamp" || thirdCell === "Complaint ID" || thirdCell === "Task ID") {
+                                return;
+                            }
+
+                            // Skip the first data row (usually a default/sample row)
+                            if (index === 1) return;
+
+                            const complaintId = row.c[2]?.v || ""
 
                             const complaint = {
-                                complaintId: row.c[1]?.v || "", // Column B (1) - Complaint ID
-                                companyName: row.c[2]?.v || "", // Column C (2) - Company Name
-                                modeOfCall: row.c[3]?.v || "", // Column D (3) - Mode of Call
-                                idNumber: row.c[4]?.v || "", // Column E (4) - ID Number
-                                projectName: row.c[5]?.v || "", // Column F (5) - Project Name
-                                complaintNumber: row.c[6]?.v || "", // Column G (6) - Complaint Number
-                                complaintDate: row.c[7] ? (row.c[7].f || formatDateString(row.c[7].v) || row.c[7].v) : "",
-                                beneficiaryName: row.c[8]?.v || "", // Column I (8) - Beneficiary Name
-                                contactNumber: row.c[9]?.v || "", // Column J (9) - Contact Number
-                                village: row.c[10]?.v || "", // Column K (10) - Village
-                                block: row.c[11]?.v || "", // Column L (11) - Block
-                                district: row.c[12]?.v || "", // Column M (12) - District
-                                product: row.c[13]?.v || "", // Column N (13) - Product
-                                make: row.c[14]?.v || "", // Column O (14) - Make
-                                natureOfComplaint: row.c[18]?.v || "", // Column S (18) - Nature of Complaint
-                                technicianName: row.c[19]?.v || "", // Column T (19) - Technician Name
-                                status: row.c[25]?.v ? row.c[25].v : "Open",
-                                closeDate: row.c[25]?.v === "APPROVED-CLOSE" && row.c[23]?.v
-                                    ? (row.c[23].f || formatDateString(row.c[23].v) || row.c[23].v)
-                                    : "",
+                                serialNo: row.c[1]?.v || "", // Column B (1) - Serial No
+                                complaintId: complaintId, // Column C (2) - Complaint ID
+                                idNumber: fmsIdMap[complaintId] || "-", // Joined from FMS
+                                technicianName: row.c[3]?.v || "", // Column D (3) - Technician Name
+                                technicianNumber: row.c[4]?.v || "", // Column E (4) - Technician Number
+                                beneficiaryName: row.c[5]?.v || "", // Column F (5) - Beneficiary Name
+                                contactNumber: row.c[6]?.v || "", // Column G (6) - Contact Number
+                                village: row.c[7]?.v || "", // Column H (7) - Village
+                                block: row.c[8]?.v || "", // Column I (8) - Block
+                                district: row.c[9]?.v || "", // Column J (9) - District
+                                product: row.c[10]?.v || "", // Column K (10) - Product
+                                make: row.c[11]?.v || "", // Column L (11) - Make
+                                natureOfComplaint: row.c[13]?.v || "", // Column N (13) - Nature of Complaint
+                                actionTracker: row.c[16]?.v || "", // Column Q (16) - Action Tracker (Remarks)
+                                status: row.c[17]?.v || "Open", // Column R (17) - Tracker Status
+                                // Required for existing logic
+                                timestamp: row.c[0]?.v || "",
+                                complaintDate: row.c[0] ? (row.c[0].f || formatDateString(row.c[0].v) || row.c[0].v) : "",
+                                complaintNumber: complaintId
                             };
 
                             if (complaint.complaintId) {
@@ -174,7 +205,8 @@ function FullTrackerHistoryTable() {
             String(complaint.district || "").toLowerCase().includes(search) ||
             String(complaint.projectName || "").toLowerCase().includes(search) ||
             String(complaint.natureOfComplaint || "").toLowerCase().includes(search) ||
-            String(complaint.technicianName || "").toLowerCase().includes(search);
+            String(complaint.technicianName || "").toLowerCase().includes(search) ||
+            String(complaint.serialNo || "").toLowerCase().includes(search);
 
         const matchesStatus = statusFilter === "All" || complaint.status === statusFilter;
         const matchesId = !filterInputs.idNumber || String(complaint.idNumber).toLowerCase().includes(filterInputs.idNumber.toLowerCase());
@@ -360,51 +392,54 @@ function FullTrackerHistoryTable() {
                                 <table className="min-w-full divide-y divide-gray-200">
                                     <thead className="bg-gray-50 sticky top-0 z-20 shadow-sm border-b border-gray-200">
                                         <tr>
+                                            <th className="px-4 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-widest whitespace-nowrap">Serial No</th>
                                             <th className="px-4 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-widest whitespace-nowrap">Complaint ID</th>
-                                            <th className="px-4 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-widest whitespace-nowrap">Date</th>
                                             <th className="px-4 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-widest whitespace-nowrap">ID Number</th>
+                                            <th className="px-4 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-widest whitespace-nowrap">Technician Name</th>
+                                            <th className="px-4 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-widest whitespace-nowrap">Technician Number</th>
                                             <th className="px-4 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-widest whitespace-nowrap">Beneficiary Name</th>
-                                            <th className="px-4 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-widest whitespace-nowrap">Contact</th>
+                                            <th className="px-4 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-widest whitespace-nowrap">Contact Number</th>
                                             <th className="px-4 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-widest whitespace-nowrap">Village</th>
                                             <th className="px-4 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-widest whitespace-nowrap">Block</th>
                                             <th className="px-4 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-widest whitespace-nowrap">District</th>
-                                            <th className="px-4 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-widest whitespace-nowrap">Project / Company</th>
-                                            <th className="px-4 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-widest whitespace-nowrap">Technician</th>
-                                            <th className="px-4 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-widest whitespace-nowrap text-center">Status</th>
-                                            <th className="px-4 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-widest whitespace-nowrap">Close Date</th>
+                                            <th className="px-4 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-widest whitespace-nowrap">Product</th>
+                                            <th className="px-4 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-widest whitespace-nowrap">Make</th>
+                                            <th className="px-4 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-widest min-w-[200px]">Nature of Complaint</th>
+                                            <th className="px-4 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-widest min-w-[250px]">Action Tracker</th>
+                                            <th className="px-4 py-4 text-xs font-bold text-gray-600 uppercase tracking-widest whitespace-nowrap text-center">Tracker Status</th>
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white divide-y divide-gray-100">
                                         {filteredComplaints.map((complaint, index) => (
                                             <tr key={`history-${complaint.complaintId}-${index}`} className="hover:bg-blue-50/30 transition-colors group">
+                                                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">{complaint.serialNo}</td>
                                                 <td className="px-4 py-4 whitespace-nowrap text-sm font-semibold text-blue-600">#{complaint.complaintId}</td>
-                                                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">{complaint.complaintDate}</td>
                                                 <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600 font-medium">{complaint.idNumber}</td>
+                                                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600 font-medium">{complaint.technicianName || "-"}</td>
+                                                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600 font-medium">{complaint.technicianNumber || "-"}</td>
                                                 <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-bold">{complaint.beneficiaryName}</td>
                                                 <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600 font-medium">{complaint.contactNumber}</td>
                                                 <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">{complaint.village}</td>
                                                 <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">{complaint.block}</td>
                                                 <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">{complaint.district}</td>
-                                                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
-                                                    <div className="font-medium text-gray-800">{complaint.projectName}</div>
-                                                    <div className="text-[10px] text-gray-400 leading-none mt-1">{complaint.companyName}</div>
-                                                </td>
-                                                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600 font-medium">{complaint.technicianName || "-"}</td>
+                                                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">{complaint.product}</td>
+                                                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">{complaint.make}</td>
+                                                <td className="px-4 py-4 text-sm text-gray-600 min-w-[200px]">{complaint.natureOfComplaint}</td>
+                                                <td className="px-4 py-4 text-sm text-gray-600 min-w-[250px]">{complaint.actionTracker || "-"}</td>
                                                 <td className="px-4 py-4 whitespace-nowrap text-center">
-                                                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border transition-all ${complaint.status === "APPROVED-CLOSE"
+                                                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border transition-all ${complaint.status === "close_task"
                                                         ? "bg-green-100 text-green-700 border-green-200 shadow-sm"
                                                         : "bg-blue-100 text-blue-700 border-blue-200 shadow-sm"
                                                         }`}>
                                                         {complaint.status}
                                                     </span>
                                                 </td>
-                                                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 italic">
-                                                    {complaint.closeDate || "-"}
-                                                </td>
                                             </tr>
                                         ))}
                                     </tbody>
                                 </table>
+
+
                             </div>
 
                             {/* Mobile Card View */}
@@ -425,6 +460,10 @@ function FullTrackerHistoryTable() {
                                         </div>
 
                                         <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                                            <div>
+                                                <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Serial No.</div>
+                                                <div className="text-xs font-semibold text-gray-800">{complaint.serialNo}</div>
+                                            </div>
                                             <div>
                                                 <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Date</div>
                                                 <div className="text-xs font-semibold text-gray-800">{complaint.complaintDate}</div>
