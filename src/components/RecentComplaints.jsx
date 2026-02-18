@@ -13,7 +13,7 @@ function RecentComplaints() {
         setIsLoading(true)
         // Fetch the entire sheet using Google Sheets API directly
         const sheetUrl =
-          "https://docs.google.com/spreadsheets/d/1VH0Wa4zOM77A1cYF7TZB9DBpVDbeFwdRPI9OS26CdL8/gviz/tq?tqx=out:json&sheet=FMS"
+          "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=FMS"
         const response = await fetch(sheetUrl)
 
         if (!response.ok) {
