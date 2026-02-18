@@ -39,7 +39,7 @@ import Reportpage from "./pages/Reportpage"
 import TechnicianDashboard from "./pages/TechnicianDashboard"
 import TechnicianTracker from "./pages/TechnicianTracker"
 import Approved from "./pages/Approved"
-import AdminApproved from "./pages/AdminApproved"
+import DraftLetter from "./pages/DraftLetter"
 import AdminLetter from "./pages/AdminLetter"
 import TrackerHistoryPage from "./pages/TrackerHistoryPage"
 
@@ -59,7 +59,7 @@ function App() {
         <Route path="/dashboard/technician-dasboard" element={<TechnicianDashboard />} />
         <Route path="/dashboard/technician-tracker" element={<TechnicianTracker />} />
         <Route path="/dashboard/approved" element={<Approved />} />
-        <Route path="/dashboard/admin-approved" element={<AdminApproved />} />
+        <Route path="/dashboard/draft-letter" element={<DraftLetter />} />
         <Route path="/dashboard/admin-letter/:complaintId" element={<AdminLetter />} />
         <Route path="/dashboard/tracker-history" element={<TrackerHistoryPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />

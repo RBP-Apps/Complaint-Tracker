@@ -290,7 +290,7 @@
 
 import { useState, useEffect } from "react"
 import { Link, useLocation } from "react-router-dom"
-import { Clipboard, Home, CheckCircle, Clock, LogOut, MapPin, Menu, FileText, UserCheck, DollarSign, BarChart, Tool } from "react-feather";
+import { Clipboard, Home, CheckCircle, Clock, LogOut, MapPin, Menu, FileText, UserCheck, DollarSign, BarChart, Tool, Edit2 } from "react-feather";
 
 function DashboardLayout({ children }) {
   const location = useLocation()
@@ -374,9 +374,9 @@ function DashboardLayout({ children }) {
       permissionKey: "approved",
     },
     {
-      name: "Admin Approved",
-      href: "/dashboard/admin-approved",
-      icon: CheckCircle,
+      name: "Draft Letter",
+      href: "/dashboard/draft-letter",
+      icon: Edit2,
       badgeColor: "bg-green-500 hover:bg-green-600",
       permissionKey: "approved",
     },

@@ -36,8 +36,8 @@ function FullTrackerHistoryTable() {
             setError(null)
 
             try {
-                const trackerUrl = "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=Tracker"
-                const fmsUrl = "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=FMS"
+                const trackerUrl = "https://docs.google.com/spreadsheets/d/1VH0Wa4zOM77A1cYF7TZB9DBpVDbeFwdRPI9OS26CdL8/gviz/tq?tqx=out:json&sheet=Tracker"
+                const fmsUrl = "https://docs.google.com/spreadsheets/d/1VH0Wa4zOM77A1cYF7TZB9DBpVDbeFwdRPI9OS26CdL8/gviz/tq?tqx=out:json&sheet=FMS"
 
                 const [trackerRes, fmsRes] = await Promise.all([
                     fetch(trackerUrl),

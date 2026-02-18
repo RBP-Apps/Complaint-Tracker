@@ -14,7 +14,7 @@ function ComplaintsTable() {
   const [isExporting, setIsExporting] = useState(false);
 
   // Google Apps Script Web App URL
-  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec"
+  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwJVTmvMQSqVxvBvejjZxJMIKvFFppXjAbBPDZnXeoIkvEfJSE8GxorNlj_SWQblQ0/exec"
 
 
   // Advanced Filter States
@@ -64,7 +64,7 @@ function ComplaintsTable() {
       setError(null)
 
       try {
-        const sheetUrl = "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=FMS"
+        const sheetUrl = "https://docs.google.com/spreadsheets/d/1VH0Wa4zOM77A1cYF7TZB9DBpVDbeFwdRPI9OS26CdL8/gviz/tq?tqx=out:json&sheet=FMS"
         const response = await fetch(sheetUrl)
         const text = await response.text()
 

@@ -1,16 +1,17 @@
-// AdminApproved.jsx
+// DraftLetter.jsx
 "use client"
 
 import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom"
 import { Calendar, Upload, MapPin, Loader, Edit, Check, X, FileText } from "react-feather"
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
 import DashboardLayout from "../components/DashboardLayout"
 
-function AdminApproved() {
+function DraftLetter() {
     const navigate = useNavigate()
-    const [activeTab, setActiveTab] = useState("pending")
+    const location = useLocation()
+    const [activeTab, setActiveTab] = useState(location.state?.tab || "pending")
     const [pendingTasks, setPendingTasks] = useState([])
     const [historyTasks, setHistoryTasks] = useState([])
     const [selectedTask, setSelectedTask] = useState(null)
@@ -27,7 +28,20 @@ function AdminApproved() {
     const [filterBlock, setFilterBlock] = useState("")
     const [filterTechnician, setFilterTechnician] = useState("")
 
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec"
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwJVTmvMQSqVxvBvejjZxJMIKvFFppXjAbBPDZnXeoIkvEfJSE8GxorNlj_SWQblQ0/exec"
+
+    // Helper to ensure Google Drive links open in viewer instead of downloading
+    const getViewerUrl = (url) => {
+        if (!url) return "";
+        // Convert export=download or uc?id= style links to /file/d/.../view
+        if (url.includes("drive.google.com/uc?") || url.includes("drive.google.com/open?")) {
+            const match = url.match(/[?&]id=([^&]+)/);
+            if (match && match[1]) {
+                return `https://drive.google.com/file/d/${match[1]}/view?usp=sharing`;
+            }
+        }
+        return url;
+    };
 
     useEffect(() => {
         const fetchTasks = async () => {
@@ -35,8 +49,8 @@ function AdminApproved() {
             setError(null)
 
             try {
-                console.log("%c[DEBUG] AdminApproved: Fetching FMS sheet data...", "color: cyan")
-                const fmsSheetUrl = "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=FMS"
+                console.log("%c[DEBUG] DraftLetter: Fetching FMS sheet data...", "color: cyan")
+                const fmsSheetUrl = "https://docs.google.com/spreadsheets/d/1VH0Wa4zOM77A1cYF7TZB9DBpVDbeFwdRPI9OS26CdL8/gviz/tq?tqx=out:json&sheet=FMS"
 
                 const fmsRes = await fetch(fmsSheetUrl)
                 const fmsText = await fmsRes.text()
@@ -84,6 +98,9 @@ function AdminApproved() {
                                 trackerStatus: statusValue,               // FMS Column Z (25) - Status
                                 columnV: planned1,                        // FMS Column AH (33) - Planned1
                                 actualDate: actual1,                      // FMS Column AI (34) - Actual1
+                                companyName: row.c[36]?.v || "",           // FMS Column AK (36) - Company Name
+                                email: row.c[37]?.v || "",                 // FMS Column AL (37) - Email
+                                pdfUrl: row.c[38]?.v || "",               // FMS Column AM (38) - PDF URL
                                 checked: statusValue,                     // Status from FMS
                                 remark: "",
                                 rowIndex: index + 1,
@@ -104,7 +121,7 @@ function AdminApproved() {
                     })
                 }
 
-                console.log("%c[DEBUG] AdminApproved: Pending:", "color: lime", pendingData.length, "History:", historyData.length)
+                console.log("%c[DEBUG] DraftLetter: Pending:", "color: lime", pendingData.length, "History:", historyData.length)
 
                 const uniquePending = pendingData.filter((task, index, self) =>
                     index === self.findIndex(t => t.complaintId === task.complaintId)
@@ -118,7 +135,7 @@ function AdminApproved() {
                 setHistoryTasks(uniqueHistory)
 
             } catch (err) {
-                console.error("AdminApproved: Failed fetching tasks:", err)
+                console.error("DraftLetter: Failed fetching tasks:", err)
                 setError(err.message)
                 setPendingTasks([])
                 setHistoryTasks([])
@@ -133,9 +150,9 @@ function AdminApproved() {
 
     const fetchCompanyOptions = async () => {
         try {
-            console.log("%c[DEBUG] AdminApproved: Fetching Master sheet for Company data...", "color: cyan")
+            console.log("%c[DEBUG] DraftLetter: Fetching Master sheet for Company data...", "color: cyan")
             const masterSheetUrl =
-                "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=Master"
+                "https://docs.google.com/spreadsheets/d/1VH0Wa4zOM77A1cYF7TZB9DBpVDbeFwdRPI9OS26CdL8/gviz/tq?tqx=out:json&sheet=Master"
 
             const response = await fetch(masterSheetUrl)
             const text = await response.text()
@@ -170,21 +187,21 @@ function AdminApproved() {
                 })
             }
 
-            console.log("%c[DEBUG] AdminApproved: Fetched Company options:", "color: lime", options)
+            console.log("%c[DEBUG] DraftLetter: Fetched Company options:", "color: lime", options)
             setCompanyOptions(options)
 
         } catch (err) {
-            console.error("%c[ERROR] AdminApproved: Failed fetching Master sheet options:", "color: red", err)
+            console.error("%c[ERROR] DraftLetter: Failed fetching Master sheet options:", "color: red", err)
         }
     }
 
     const handleUpdateTask = async () => {
-        if (!email) {
-            alert("Please enter an email address.")
-            return
-        }
         if (!selectedCompany) {
             alert("Please select a company.")
+            return
+        }
+        if (!email) {
+            alert("Selected company has no email address. Please check Master sheet.")
             return
         }
 
@@ -280,7 +297,7 @@ function AdminApproved() {
             formData.append('checkedValue', task.checked || (task.trackerStatus === 'APPROVED-CLOSE' ? 'APPROVED-CLOSE' : ''))
             formData.append('remarkValue', task.remark || '')
 
-            console.log('AdminApproved: Submitting data:', {
+            console.log('DraftLetter: Submitting data:', {
                 action: 'sendComplaintLetter',
                 email,
                 company: selectedCompany
@@ -292,7 +309,7 @@ function AdminApproved() {
             })
 
             const result = await response.json()
-            console.log('AdminApproved: Response:', result)
+            console.log('DraftLetter: Response:', result)
 
             if (!result.success) {
                 // If backend warns about missing action, we might need to fallback
@@ -326,7 +343,7 @@ function AdminApproved() {
             resetDialogState()
 
         } catch (err) {
-            console.error("AdminApproved: Error updating task:", err)
+            console.error("DraftLetter: Error updating task:", err)
             alert("Failed to process: " + err.message)
         } finally {
             setIsSubmitting(false)
@@ -391,7 +408,7 @@ function AdminApproved() {
             <DashboardLayout>
                 <div className="p-6">
                     <div className="flex justify-center items-center h-64">
-                        <div className="text-gray-500">Loading admin approved data...</div>
+                        <div className="text-gray-500">Loading draft letter data...</div>
                     </div>
                 </div>
             </DashboardLayout>
@@ -413,7 +430,7 @@ function AdminApproved() {
     return (
         <DashboardLayout>
             <div className="p-6">
-                <h1 className="text-2xl font-bold mb-6">Admin Approved</h1>
+                <h1 className="text-2xl font-bold mb-6">Draft Letter</h1>
 
                 {/* Tabs */}
                 <div className="mb-6 border-b border-gray-200">
@@ -575,6 +592,15 @@ function AdminApproved() {
                                                     <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                                                         Remark
                                                     </th>
+                                                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                                                        Letter PDF
+                                                    </th>
+                                                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                                                        Company
+                                                    </th>
+                                                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                                                        Email
+                                                    </th>
                                                 </>
                                             )}
                                         </tr>
@@ -584,8 +610,8 @@ function AdminApproved() {
                                             <tr>
                                                 <td colSpan={activeTab === "pending" ? 14 : 16} className="px-3 py-10 text-center text-gray-500 italic font-medium">
                                                     {activeTab === "pending"
-                                                        ? "No pending admin approved complaints found"
-                                                        : "No admin approved complaint history found"
+                                                        ? "No pending draft letter complaints found"
+                                                        : "No draft letter complaint history found"
                                                     }
                                                 </td>
                                             </tr>
@@ -599,7 +625,6 @@ function AdminApproved() {
                                                                 onClick={() => {
                                                                     setSelectedTask(task.id)
                                                                     setSelectedTaskData(task)
-                                                                    setIsDialogOpen(true)
                                                                     setIsDialogOpen(true)
                                                                     setEmail("")
                                                                     setSelectedCompany("")
@@ -636,6 +661,23 @@ function AdminApproved() {
                                                             <td className="px-3 py-4 whitespace-nowrap text-sm max-w-xs truncate" title={task.remark}>
                                                                 {task.remark}
                                                             </td>
+                                                            <td className="px-3 py-4 whitespace-nowrap text-sm">
+                                                                {task.pdfUrl ? (
+                                                                    <a
+                                                                        href={getViewerUrl(task.pdfUrl)}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        className="flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium"
+                                                                    >
+                                                                        <FileText size={14} />
+                                                                        View PDF
+                                                                    </a>
+                                                                ) : (
+                                                                    <span className="text-gray-400 italic text-xs">No PDF</span>
+                                                                )}
+                                                            </td>
+                                                            <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">{task.companyName}</td>
+                                                            <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{task.email}</td>
                                                         </>
                                                     )}
                                                 </tr>
@@ -652,8 +694,8 @@ function AdminApproved() {
                                 <div className="text-center p-10 bg-gray-50 rounded-lg border border-gray-200">
                                     <p className="text-gray-500 italic">
                                         {activeTab === "pending"
-                                            ? "No pending admin approved complaints found"
-                                            : "No admin approved complaint history found"
+                                            ? "No pending draft letter complaints found"
+                                            : "No draft letter complaint history found"
                                         }
                                     </p>
                                 </div>
@@ -702,6 +744,30 @@ function AdminApproved() {
                                                             {task.checked}
                                                         </span>
                                                     </div>
+                                                    <div className="flex justify-between text-xs items-center mt-2 pt-2 border-t border-gray-100">
+                                                        <span className="text-gray-500 font-medium">Letter PDF</span>
+                                                        {task.pdfUrl ? (
+                                                            <a
+                                                                href={getViewerUrl(task.pdfUrl)}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="flex items-center gap-1 text-blue-600 font-bold"
+                                                            >
+                                                                <FileText size={12} />
+                                                                View PDF
+                                                            </a>
+                                                        ) : (
+                                                            <span className="text-gray-400 italic">Not Generated</span>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex justify-between text-xs mt-1">
+                                                        <span className="text-gray-500">Company</span>
+                                                        <span className="text-gray-900 font-medium">{task.companyName}</span>
+                                                    </div>
+                                                    <div className="flex justify-between text-xs mt-1">
+                                                        <span className="text-gray-500">Email</span>
+                                                        <span className="text-gray-900">{task.email}</span>
+                                                    </div>
                                                 </div>
                                             )}
 
@@ -713,7 +779,6 @@ function AdminApproved() {
                                                         onClick={() => {
                                                             setSelectedTask(task.id)
                                                             setSelectedTaskData(task)
-                                                            setIsDialogOpen(true)
                                                             setIsDialogOpen(true)
                                                             setEmail("")
                                                             setSelectedCompany("")
@@ -763,11 +828,35 @@ function AdminApproved() {
 
                                                     <div className="space-y-2">
                                                         <label className="block text-sm font-medium text-gray-700">
+                                                            ID Number
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            value={selectedTaskData?.idNumber || ""}
+                                                            readOnly
+                                                            className="w-full border border-gray-300 rounded-md py-2 px-3 bg-gray-50 text-gray-600"
+                                                        />
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <label className="block text-sm font-medium text-gray-700">
                                                             Technician Name
                                                         </label>
                                                         <input
                                                             type="text"
                                                             value={selectedTaskData?.technicianName || ""}
+                                                            readOnly
+                                                            className="w-full border border-gray-300 rounded-md py-2 px-3 bg-gray-50 text-gray-600"
+                                                        />
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <label className="block text-sm font-medium text-gray-700">
+                                                            Technician Contact
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            value={selectedTaskData?.technicianContact || ""}
                                                             readOnly
                                                             className="w-full border border-gray-300 rounded-md py-2 px-3 bg-gray-50 text-gray-600"
                                                         />
@@ -787,11 +876,47 @@ function AdminApproved() {
 
                                                     <div className="space-y-2">
                                                         <label className="block text-sm font-medium text-gray-700">
+                                                            Contact Number
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            value={selectedTaskData?.contactNumber || ""}
+                                                            readOnly
+                                                            className="w-full border border-gray-300 rounded-md py-2 px-3 bg-gray-50 text-gray-600"
+                                                        />
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <label className="block text-sm font-medium text-gray-700">
                                                             Village
                                                         </label>
                                                         <input
                                                             type="text"
                                                             value={selectedTaskData?.village || ""}
+                                                            readOnly
+                                                            className="w-full border border-gray-300 rounded-md py-2 px-3 bg-gray-50 text-gray-600"
+                                                        />
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <label className="block text-sm font-medium text-gray-700">
+                                                            Block
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            value={selectedTaskData?.block || ""}
+                                                            readOnly
+                                                            className="w-full border border-gray-300 rounded-md py-2 px-3 bg-gray-50 text-gray-600"
+                                                        />
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <label className="block text-sm font-medium text-gray-700">
+                                                            District
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            value={selectedTaskData?.district || ""}
                                                             readOnly
                                                             className="w-full border border-gray-300 rounded-md py-2 px-3 bg-gray-50 text-gray-600"
                                                         />
@@ -808,6 +933,31 @@ function AdminApproved() {
                                                             className="w-full border border-gray-300 rounded-md py-2 px-3 bg-gray-50 text-gray-600"
                                                         />
                                                     </div>
+
+                                                    <div className="space-y-2">
+                                                        <label className="block text-sm font-medium text-gray-700">
+                                                            Make
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            value={selectedTaskData?.make || ""}
+                                                            readOnly
+                                                            className="w-full border border-gray-300 rounded-md py-2 px-3 bg-gray-50 text-gray-600"
+                                                        />
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <label className="block text-sm font-medium text-gray-700">
+                                                            Nature of Complaint
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            value={selectedTaskData?.natureOfComplaint || ""}
+                                                            readOnly
+                                                            className="w-full border border-gray-300 rounded-md py-2 px-3 bg-gray-50 text-gray-600"
+                                                        />
+                                                    </div>
+
                                                     <div className="space-y-2">
                                                         <label className="block text-sm font-medium text-gray-700">
                                                             Status
@@ -827,7 +977,16 @@ function AdminApproved() {
                                                         <select
                                                             id="company"
                                                             value={selectedCompany}
-                                                            onChange={(e) => setSelectedCompany(e.target.value)}
+                                                            onChange={(e) => {
+                                                                const companyName = e.target.value;
+                                                                setSelectedCompany(companyName);
+                                                                const companyDetails = companyOptions.find(c => c.name === companyName);
+                                                                if (companyDetails) {
+                                                                    setEmail(companyDetails.email || "");
+                                                                } else {
+                                                                    setEmail("");
+                                                                }
+                                                            }}
                                                             className="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                                         >
                                                             <option value="">Select a company</option>
@@ -837,20 +996,6 @@ function AdminApproved() {
                                                                 </option>
                                                             ))}
                                                         </select>
-                                                    </div>
-
-                                                    <div className="space-y-2">
-                                                        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                                                            Email ID <span className="text-red-500">*</span>
-                                                        </label>
-                                                        <input
-                                                            type="email"
-                                                            id="email"
-                                                            value={email}
-                                                            onChange={(e) => setEmail(e.target.value)}
-                                                            placeholder="Enter email address"
-                                                            className="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                        />
                                                     </div>
                                                 </div>
                                             </div>
@@ -901,4 +1046,4 @@ function AdminApproved() {
     )
 }
 
-export default AdminApproved
+export default DraftLetter

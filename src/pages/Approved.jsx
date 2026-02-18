@@ -22,7 +22,7 @@ function ComplaintTracker() {
   const [remark, setRemark] = useState("")
   const [checkedOptions, setCheckedOptions] = useState([])
 
-  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec"
+  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwJVTmvMQSqVxvBvejjZxJMIKvFFppXjAbBPDZnXeoIkvEfJSE8GxorNlj_SWQblQ0/exec"
 
 
   useEffect(() => {
@@ -32,8 +32,8 @@ function ComplaintTracker() {
 
       try {
         console.log("%c[DEBUG] Step 1: Fetching Tracker and FMS sheet data...", "color: cyan")
-        const trackerSheetUrl = "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=Tracker"
-        const fmsSheetUrl = "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=FMS"
+        const trackerSheetUrl = "https://docs.google.com/spreadsheets/d/1VH0Wa4zOM77A1cYF7TZB9DBpVDbeFwdRPI9OS26CdL8/gviz/tq?tqx=out:json&sheet=Tracker"
+        const fmsSheetUrl = "https://docs.google.com/spreadsheets/d/1VH0Wa4zOM77A1cYF7TZB9DBpVDbeFwdRPI9OS26CdL8/gviz/tq?tqx=out:json&sheet=FMS"
 
         const [trackerRes, fmsRes] = await Promise.all([
           fetch(trackerSheetUrl),
@@ -154,7 +154,7 @@ function ComplaintTracker() {
 
       // Update this URL with your Master sheet URL
       const masterSheetUrl =
-        "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=Master&range=I:I"
+        "https://docs.google.com/spreadsheets/d/1VH0Wa4zOM77A1cYF7TZB9DBpVDbeFwdRPI9OS26CdL8/gviz/tq?tqx=out:json&sheet=Master&range=I:I"
 
       const response = await fetch(masterSheetUrl)
       const text = await response.text()

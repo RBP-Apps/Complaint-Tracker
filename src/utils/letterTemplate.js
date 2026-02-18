@@ -1,6 +1,6 @@
 
 export const generateLetterHTML = (taskData, headerInfo, letterInfo) => {
-    return `
+  return `
     <html>
       <head>
         <style>

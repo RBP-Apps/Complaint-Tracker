@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Printer, ArrowLeft, Plus, Download, Save, Send, Share2, Mail } from "lucide-react";
+import { ArrowLeft, Plus, Save, FileText, Mail, Globe, Phone } from "lucide-react";
+import { pdf } from "@react-pdf/renderer";
 import DashboardLayout from "../components/DashboardLayout";
+import LetterPDFDocument from "../components/LetterPDFDocument";
 
 const AdminLetter = () => {
     const { complaintId } = useParams();
@@ -9,7 +11,11 @@ const AdminLetter = () => {
     const [loading, setLoading] = useState(true);
     const [taskData, setTaskData] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [isSavingPDF, setIsSavingPDF] = useState(false);
     const [companyOptions, setCompanyOptions] = useState([]);
+    const [selectedEmail, setSelectedEmail] = useState("tanay.vidhyut@gmail.com");
+
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwJVTmvMQSqVxvBvejjZxJMIKvFFppXjAbBPDZnXeoIkvEfJSE8GxorNlj_SWQblQ0/exec";
 
     // Header Content State
     const [headerInfo, setHeaderInfo] = useState({
@@ -36,7 +42,7 @@ const AdminLetter = () => {
         closingParagraph: "उपरोक्त साईट के संयंत्र का सुधार कार्य हमारे द्वारा कर दिया गया है, तथा संयंत्र वर्तमान में कार्य शील है। इस पत्र के साथ साईट की संपुष्टि पत्र संलग्न है। पत्र आपकी ओर सादर सूचनार्थ हेतु प्रेषित।",
         thankYou: "सधन्यवाद !",
         regards: "भवदीय",
-        forCompany: "वास्ते, तनय विद्युत (ई०) प्रालि.",
+        forCompany: "वास्ते, तनय विद्युत (ई०) प्रा.लि.",
         designation: "अधिकृत हस्ताक्षरकर्ता",
         copiesTo: [
             "कार्यपालन अभियंता महोदय, (RE-05) क्रेडा प्रधान कार्यालय, रायपुर को सादर सूचनार्थ प्रेषित।",
@@ -45,14 +51,14 @@ const AdminLetter = () => {
     });
 
     // Dynamic Table State
-    const [tableColumns, setTableColumns] = useState(["क्र.", "सौर समाधान क्र.", "आई. डी. नं.", "हितग्राही का नाम", "ग्राम/ विकासखण्ड़", "दिनांक", "रिमार्क"]);
+    const [tableColumns, setTableColumns] = useState(["क्र.", "सौर समाधान क्र.", "आई. डी. नं.", "हितग्राही का नाम", "ग्राम/ विकासखण्ड", "दिनांक", "रिमार्क"]);
     const [tableData, setTableData] = useState([
         {
             "क्र.": "01.",
             "सौर समाधान क्र.": "2936",
             "आई. डी. नं.": "819241",
             "हितग्राही का नाम": "SARADU RAM PATEL/ NIRANJAN PATEL",
-            "ग्राम/ विकासखण्ड़": "BAMHANI/ KONDAGAON",
+            "ग्राम/ विकासखण्ड": "BAMHANI/ KONDAGAON",
             "दिनांक": "23.10.2025",
             "रिमार्क": "संयंत्र कार्य शील हैं।"
         }
@@ -66,15 +72,15 @@ const AdminLetter = () => {
                 const savedData = localStorage.getItem(`admin_letter_${complaintId}`);
                 if (savedData) {
                     const parsed = JSON.parse(savedData);
-                    setLetterInfo(parsed.letterInfo);
-                    setHeaderInfo(parsed.headerInfo);
-                    setTableColumns(parsed.tableColumns);
-                    setTableData(parsed.tableData);
+                    setLetterInfo(prev => ({ ...prev, ...parsed.letterInfo }));
+                    setHeaderInfo(prev => ({ ...prev, ...parsed.headerInfo }));
+                    if (parsed.tableColumns) setTableColumns(parsed.tableColumns);
+                    if (parsed.tableData) setTableData(parsed.tableData);
                     setLoading(false);
                     return;
                 }
 
-                const trackerSheetUrl = "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=Tracker";
+                const trackerSheetUrl = "https://docs.google.com/spreadsheets/d/1VH0Wa4zOM77A1cYF7TZB9DBpVDbeFwdRPI9OS26CdL8/gviz/tq?tqx=out:json&sheet=Tracker";
                 const response = await fetch(trackerSheetUrl);
                 const text = await response.text();
                 const jsonStart = text.indexOf("{");
@@ -102,7 +108,7 @@ const AdminLetter = () => {
                             "सौर समाधान क्र.": task.complaintId || "-",
                             "आई. डी. नं.": task.idNumber || "-",
                             "हितग्राही का नाम": task.beneficiaryName || "-",
-                            "ग्राम/ विकासखण्ड़": `${task.village || ""}/ ${task.block || ""}`,
+                            "ग्राम/ विकासखण्ड": `${task.village || ""}/ ${task.block || ""}`,
                             "दिनांक": task.actualDate || "-",
                             "रिमार्क": "संयंत्र कार्य शील हैं।"
                         }]);
@@ -132,7 +138,7 @@ const AdminLetter = () => {
 
     const fetchCompanyOptions = async () => {
         try {
-            const masterSheetUrl = "https://docs.google.com/spreadsheets/d/1A9kxc6P8UkQ-pY8R8DQHpW9OIGhxeszUoTou1yKpNvU/gviz/tq?tqx=out:json&sheet=Master";
+            const masterSheetUrl = "https://docs.google.com/spreadsheets/d/1VH0Wa4zOM77A1cYF7TZB9DBpVDbeFwdRPI9OS26CdL8/gviz/tq?tqx=out:json&sheet=Master";
             const response = await fetch(masterSheetUrl);
             const text = await response.text();
             const jsonStart = text.indexOf("{");
@@ -142,18 +148,25 @@ const AdminLetter = () => {
 
             const options = [];
             if (data?.table?.rows) {
-                data.table.rows.forEach((row, index) => {
-                    if (index === 0) return
-                    const companyName1 = row.c[9]?.v
-                    if (companyName1) {
+                // Using column J (index 9) for Company Name1
+                // Skip header row only if it matches the header text, otherwise include all data
+                data.table.rows.forEach((row) => {
+                    const companyName = row.c[9]?.v;
+                    if (companyName) {
+                        const nameStr = String(companyName).trim();
+                        // Ignore the literal header labels
+                        if (nameStr === "Company Name1" || nameStr === "Company Name" || nameStr === "Company Name 1") {
+                            return;
+                        }
+
                         options.push({
-                            name: companyName1,
+                            name: nameStr,
                             address: row.c[10]?.v || "",
                             email: row.c[11]?.v || "",
                             phone: row.c[12]?.v || ""
-                        })
+                        });
                     }
-                })
+                });
             }
             setCompanyOptions(options);
         } catch (error) {
@@ -190,10 +203,6 @@ const AdminLetter = () => {
         setHeaderInfo(prev => ({ ...prev, [field]: value }));
     };
 
-    const handlePrint = () => {
-        window.print();
-    };
-
     const handleSave = () => {
         setIsSaving(true);
         const dataToSave = {
@@ -209,23 +218,83 @@ const AdminLetter = () => {
         }, 500);
     };
 
-    const handleWhatsApp = () => {
-        const message = `Admin Approved Letter\nLetter No: ${letterInfo.letterNo}\nComplaint ID: ${complaintId}\nSubject: ${letterInfo.subject}`;
-        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-        window.open(whatsappUrl, "_blank");
+    const handleSavePDF = async () => {
+        setIsSavingPDF(true);
+
+        try {
+            // 1. Generate PDF blob using @react-pdf/renderer
+            const pdfBlob = await pdf(
+                <LetterPDFDocument
+                    headerInfo={headerInfo}
+                    letterInfo={letterInfo}
+                    tableColumns={tableColumns}
+                    tableData={tableData}
+                />
+            ).toBlob();
+
+            // 2. Trigger browser download
+            const url = URL.createObjectURL(pdfBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `AdminLetter_${complaintId}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            // 3. Upload to Google Drive
+            const reader = new FileReader();
+            const base64data = await new Promise((resolve, reject) => {
+                reader.onloadend = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = reject;
+                reader.readAsDataURL(pdfBlob);
+            });
+
+            const uploadData = new URLSearchParams();
+            uploadData.append('action', 'uploadFile');
+            uploadData.append('fileName', `AdminLetter_${complaintId}.pdf`);
+            uploadData.append('data', base64data);
+            uploadData.append('mimeType', 'application/pdf');
+            uploadData.append('folderId', '1fD7xiE6Tec_X4CwbllShNH6S04U33VsM');
+
+            const uploadRes = await fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                body: uploadData
+            });
+            const uploadResult = await uploadRes.json();
+
+            if (uploadResult.success) {
+                const pdfUrl = uploadResult.fileUrl;
+                const saveParams = new URLSearchParams();
+                saveParams.append('action', 'savePdfLinkToFMS');
+                saveParams.append('complaintId', complaintId);
+                saveParams.append('companyName', headerInfo.companyName);
+                saveParams.append('email', selectedEmail);
+                saveParams.append('pdfUrl', pdfUrl);
+
+                const saveRes = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    body: saveParams
+                });
+                const saveResult = await saveRes.json();
+
+                if (saveResult.success) {
+                    alert("PDF saved and data updated in FMS successfully!");
+                    setIsSavingPDF(false);
+                    navigate("/dashboard/draft-letter", { state: { tab: "history" } });
+                } else {
+                    throw new Error(saveResult.error || "Failed to update FMS");
+                }
+            } else {
+                throw new Error(uploadResult.error || "Failed to upload PDF");
+            }
+        } catch (error) {
+            console.error("Error saving PDF:", error);
+            alert("Error: " + error.message);
+            setIsSavingPDF(false);
+        }
     };
 
-    const handleEmail = () => {
-        const subject = encodeURIComponent(`Admin Approved Letter - ${letterInfo.letterNo}`);
-        const body = encodeURIComponent(
-            `Admin Approved Letter\n\n` +
-            `Letter No: ${letterInfo.letterNo}\n` +
-            `Complaint ID: ${complaintId}\n` +
-            `Subject: ${letterInfo.subject}\n\n` +
-            `This letter has been approved by the Admin.`
-        );
-        window.location.href = `mailto:?subject=${subject}&body=${body}`;
-    };
 
     if (loading) {
         return (
@@ -250,42 +319,22 @@ const AdminLetter = () => {
                         Back
                     </button>
                     <div className="flex gap-3">
+
                         <button
-                            onClick={handleSave}
-                            className={`flex items-center gap-2 px-4 py-2 ${isSaving ? 'bg-gray-400' : 'bg-blue-600'} text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md`}
-                            disabled={isSaving}
+                            onClick={handleSavePDF}
+                            className={`flex items-center gap-2 px-4 py-2 ${isSavingPDF ? 'bg-gray-400' : 'bg-blue-600'} text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md`}
+                            disabled={isSaving || isSavingPDF}
                         >
-                            <Save size={18} />
-                            {isSaving ? "Saving..." : "Save Data"}
-                        </button>
-                        <button
-                            onClick={handleWhatsApp}
-                            className="flex items-center gap-2 px-4 py-2 bg-[#25D366] text-white rounded-lg hover:bg-[#20ba5a] transition-colors shadow-md"
-                        >
-                            <Send size={18} />
-                            WhatsApp
-                        </button>
-                        <button
-                            onClick={handleEmail}
-                            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors shadow-md"
-                        >
-                            <Mail size={18} />
-                            Email
-                        </button>
-                        <button
-                            onClick={handlePrint}
-                            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-md"
-                        >
-                            <Printer size={18} />
-                            Print
+                            <FileText size={18} />
+                            {isSavingPDF ? "Generating PDF..." : "Save PDF"}
                         </button>
                     </div>
                 </div>
 
                 {/* Letter Content */}
-                <div className="max-w-4xl mx-auto bg-white shadow-2xl rounded-none p-12 print:shadow-none print:p-8 min-h-[1056px] relative overflow-hidden boarder border-gray-100" id="letter-content">
+                <div className="max-w-4xl mx-auto bg-white shadow-2xl rounded-none p-12 print:shadow-none print:p-8 min-h-[1056px] relative overflow-hidden border border-gray-100" id="letter-content">
                     {/* Editable Header */}
-                    <div className="text-center mb-10 border-b-2 border-black pb-4">
+                    <div id="letter-header" className="text-center mb-10 border-b-2 border-black pb-4">
                         <div className="mb-4 no-print flex justify-center">
                             <select
                                 className="border border-gray-300 rounded px-2 py-1 bg-white text-sm"
@@ -296,12 +345,19 @@ const AdminLetter = () => {
                                             companyName: selected.name,
                                             address: selected.address,
                                             location: "",
-                                            contact: `Phone No. ${selected.phone} Email : ${selected.email}`
+                                            contact: `Phone No. ${selected.phone} | Email : ${selected.email}`
                                         });
+                                        setSelectedEmail(selected.email);
                                         // Also update "For Company" signature line
                                         setLetterInfo(prev => ({
                                             ...prev,
-                                            forCompany: `वास्ते, ${selected.name}`
+                                            forCompany: `वास्ते, ${selected.name}`,
+                                            // Store original details for footer
+                                            companyDetails: {
+                                                phone: selected.phone,
+                                                email: selected.email,
+                                                address: selected.address
+                                            }
                                         }));
                                     }
                                 }}
@@ -312,30 +368,77 @@ const AdminLetter = () => {
                                 ))}
                             </select>
                         </div>
-                        <input
-                            type="text"
-                            value={headerInfo.companyName}
-                            onChange={(e) => handleHeaderEdit("companyName", e.target.value)}
-                            className="text-3xl font-bold text-gray-900 tracking-wider w-full text-center focus:outline-none border-none bg-transparent"
-                        />
-                        <input
-                            type="text"
-                            value={headerInfo.address}
-                            onChange={(e) => handleHeaderEdit("address", e.target.value)}
-                            className="text-sm mt-1 w-full text-center focus:outline-none border-none bg-transparent"
-                        />
-                        <input
-                            type="text"
-                            value={headerInfo.location}
-                            onChange={(e) => handleHeaderEdit("location", e.target.value)}
-                            className="text-sm font-medium w-full text-center focus:outline-none border-none bg-transparent"
-                        />
-                        <input
-                            type="text"
-                            value={headerInfo.contact}
-                            onChange={(e) => handleHeaderEdit("contact", e.target.value)}
-                            className="text-sm w-full text-center focus:outline-none border-none bg-transparent"
-                        />
+                        {headerInfo.companyName.includes("RBP") ? (
+                            <div className="flex flex-col items-center mb-0 mt-4">
+                                <img src="/RBP-Logo.jpg" alt="RBP Logo" className="h-28 object-contain mb-0" />
+                            </div>
+                        ) : headerInfo.companyName.toLowerCase().includes("rotomag") ? (
+                            <div className="flex justify-end mb-4 mt-4">
+                                <img src="/rotomag.png?v=3" alt="Rotomag Logo" className="h-32 object-contain" />
+                            </div>
+                        ) : headerInfo.companyName.toLowerCase().includes("solex") ? (
+                            <div className="flex justify-end mb-4 mt-4">
+                                <img src="/solex.png" alt="Solex Logo" className="h-24 object-contain" />
+                            </div>
+                        ) : headerInfo.companyName.toLowerCase().includes("suraj") ? (
+                            <div className="w-full font-sans mb-4">
+                                <div className="flex justify-between items-start">
+                                    <div className="flex flex-col items-start">
+                                        <h1 className="text-5xl font-extrabold text-[#ed7d31] tracking-tight" style={{ fontFamily: '"Comic Sans MS", "Chalkboard SE", sans-serif' }}>
+                                            Suraj Enterprises
+                                        </h1>
+                                        <div className="mt-1 ml-2">
+                                            <p className="font-bold text-xs text-[#ed7d31]">Deals of -</p>
+                                            <ul className="list-disc pl-5 text-[10px] font-bold text-[#ed7d31] leading-tight">
+                                                <li>Civil & Electrical Works</li>
+                                                <li>Renewable Sources of Energy</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col items-end text-xs font-bold text-[#ed7d31]">
+                                        <p className="text-lg">Prop. Rahul Kumar Sharma</p>
+                                        <p className="mt-1">Call- 88895-44440, 70240-58958</p>
+                                        <p>Email - surajenterprise0587@gmail.com</p>
+                                    </div>
+                                </div>
+                                <div className="border-t-2 border-[#ed7d31] my-1 w-full"></div>
+                                <div className="text-center font-bold text-[#ed7d31] text-xs">
+                                    Jayanti Nagar, Shri Ram Chowk, Sikola Bhata, Durg (C.G.) 491001
+                                </div>
+                                <div className="border-t-2 border-[#ed7d31] my-1 w-full"></div>
+                            </div>
+                        ) : headerInfo.companyName.toLowerCase().includes("premier") ? (
+                            <div className="flex justify-start mb-4 mt-4">
+                                <img src="/premier.png" alt="Premier Logo" className="h-28 object-contain" />
+                            </div>
+                        ) : (
+                            <>
+                                <input
+                                    type="text"
+                                    value={headerInfo.companyName}
+                                    onChange={(e) => handleHeaderEdit("companyName", e.target.value)}
+                                    className="text-3xl font-bold text-gray-900 tracking-wider w-full text-center focus:outline-none border-none bg-transparent"
+                                />
+                                <input
+                                    type="text"
+                                    value={headerInfo.address}
+                                    onChange={(e) => handleHeaderEdit("address", e.target.value)}
+                                    className="text-sm mt-1 w-full text-center focus:outline-none border-none bg-transparent"
+                                />
+                                <input
+                                    type="text"
+                                    value={headerInfo.location}
+                                    onChange={(e) => handleHeaderEdit("location", e.target.value)}
+                                    className="text-sm font-medium w-full text-center focus:outline-none border-none bg-transparent"
+                                />
+                                <input
+                                    type="text"
+                                    value={headerInfo.contact}
+                                    onChange={(e) => handleHeaderEdit("contact", e.target.value)}
+                                    className="text-sm w-full text-center focus:outline-none border-none bg-transparent"
+                                />
+                            </>
+                        )}
                     </div>
 
                     {/* Letter Body */}
@@ -395,7 +498,7 @@ const AdminLetter = () => {
                         <div className="mt-4 flex gap-2">
                             <span className="font-bold whitespace-nowrap min-w-[60px]">संदर्भ:-</span>
                             <div className="w-full space-y-2">
-                                {letterInfo.reference.map((ref, idx) => (
+                                {letterInfo.reference?.map((ref, idx) => (
                                     <div key={idx} className="flex gap-2">
                                         <span className="min-w-[20px]">{idx + 1})</span>
                                         <textarea
@@ -530,7 +633,7 @@ const AdminLetter = () => {
                         <div className="mt-10 text-sm space-y-2 italic">
                             <p className="font-bold">प्रतिलिपि:—</p>
                             <div className="pl-0 space-y-1">
-                                {letterInfo.copiesTo.map((copy, idx) => (
+                                {letterInfo.copiesTo?.map((copy, idx) => (
                                     <div key={idx} className="flex gap-2">
                                         <span className="min-w-[20px]">{idx + 1})</span>
                                         <input
@@ -548,35 +651,164 @@ const AdminLetter = () => {
                         </div>
                     </div>
 
+                    {/* Dynamic Footer Section */}
+                    {(headerInfo.companyName.toLowerCase().includes("suraj") || headerInfo.companyName.toLowerCase().includes("tanay")) ? null : (
+                        <div id="letter-footer" className="mt-20 border-t border-black pt-4 text-center text-[10px] leading-tight">
+                            {headerInfo.companyName.includes("RBP") ? (
+                                <div className="space-y-1">
+                                    <p className="font-bold text-xs uppercase tracking-widest text-black">
+                                        RBP ENERGY (INDIA) PVT. LTD.
+                                    </p>
+                                    <p className="text-gray-900 font-medium">
+                                        303 Guru Ghasidas Plaza, Amapara, G.E Road, Raipur (C.G) 492001
+                                    </p>
+                                    <p className="text-gray-900">
+                                        <span className="text-[#00CCCC] font-bold">T :</span> 9200012500 <span className="text-[#00CCCC] font-bold">Email :</span> info@rbpindia.com, <span className="text-[#00CCCC] font-bold">Website :</span> www.rbpindia.com
+                                    </p>
+                                </div>
+                            ) : headerInfo.companyName.toLowerCase().includes("rotomag") ? (
+                                <div className="space-y-1">
+                                    <p className="font-bold text-gray-900">
+                                        CIN No. : U34100GJ1993PTCO20063
+                                    </p>
+                                    <p className="text-gray-900 font-medium">
+                                        Regd.Off. : 2102/3&4, GIDC Estate, Vitthal Udyognagar Gujarat-388 121, India
+                                    </p>
+                                    <p className="text-gray-900">
+                                        Ph. : +91-2692-236005, 236409(Unit), 230430, 9227110023/24/25 (unit 2) Fax:+91-2692-239805
+                                    </p>
+                                    <p className="text-blue-700 underline">
+                                        Mail@rotomag.com | www.rotomag.com
+                                    </p>
+                                </div>
+                            ) : headerInfo.companyName.toLowerCase().includes("solex") ? (
+                                <div className="space-y-1 relative pb-2 w-full font-sans">
+                                    <h1 className="text-xl font-bold text-[#f58220] uppercase tracking-wide">Solex Energy Limited</h1>
+                                    <p className="text-[10px] font-bold text-gray-800">(Formerly known as SOLEX ENERGY PVT LTD)</p>
+                                    <p className="text-[9px] text-gray-800 leading-tight">
+                                        <span className="font-extrabold text-[#f58220]">Regd. Off & Works:</span> Plot No: 131/A, Phase - 1, Nr. Krimy, H M Road, G. I. D. C, Vitthal Udyognagar - 388121, Dist: Anand (Gujarat), India.
+                                    </p>
+                                    <p className="text-[9px] text-gray-800 leading-tight">
+                                        <span className="font-extrabold text-[#f58220]">Customer Care:</span> 1800 233 28298 <span className="font-extrabold text-[#f58220]">Tel.:</span> +91-2692-230317 <span className="font-extrabold text-[#f58220]">Fax:</span> +91-2692-231216 <span className="font-extrabold text-[#f58220]">Mob.</span> +91 94265 91750
+                                    </p>
+                                    <p className="text-[9px] text-gray-800 leading-tight">
+                                        <span className="font-extrabold text-[#f58220]">Mail:</span> <a href="mailto:solexin14@gmail.com" className="text-blue-700 underline">solexin14@gmail.com</a>, <a href="mailto:info@solex.in" className="text-blue-700 underline">info@solex.in</a> <span className="font-extrabold text-[#f58220]">Web:</span> <a href="http://www.solex.in" target="_blank" rel="noreferrer" className="text-blue-700 underline">www.solex.in</a> <span className="font-extrabold text-[#f58220]">CIN:</span> L40106GJ2014PLC081036
+                                    </p>
+                                    <p className="text-[9px] text-gray-800 leading-tight">
+                                        <span className="font-extrabold text-[#f58220]">GST No.:</span> 24AAVCS0328R1ZN <span className="font-extrabold text-[#f58220]">PAN No.:</span> AAVCS 0328 R
+                                    </p>
+                                    <div className="mt-1 border-t-2 border-[#f58220] pt-1">
+                                        <p className="text-[9px] text-[#f58220] font-bold uppercase tracking-wider">
+                                            Mfg. Of SPV Module, Solar Lighting System, Solar Rooftop System, Solar Pumping Systems & Solar Power Plants
+                                        </p>
+                                    </div>
+                                </div>
+                            ) : headerInfo.companyName.toLowerCase().includes("premier") ? (
+                                <div className="w-full font-sans">
+                                    {/* Color Bar */}
+                                    <div className="flex w-full text-white text-[10px] font-bold mb-2">
+                                        <div className="bg-[#4472c4] flex-1 py-1 px-4 flex items-center gap-2">
+                                            <Mail size={12} className="fill-current" />
+                                            <span>info@premierenergies.com</span>
+                                        </div>
+                                        <div className="bg-[#70ad47] flex-1 py-1 px-4 flex items-center justify-end gap-2 relative">
+                                            <div className="absolute left-[-10px] top-0 bottom-0 w-0 h-0 border-t-[20px] border-t-transparent border-b-[20px] border-b-transparent border-l-[15px] border-l-[#4472c4]"></div>
+                                            <Globe size={12} className="fill-current" />
+                                            <span>www.premierenergies.com</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="text-center space-y-1 text-[9px] text-[#2f5597]">
+                                        <h2 className="text-sm font-bold uppercase tracking-wider">PREMIER ENERGIES LTD.</h2>
+                                        <p className="font-medium">
+                                            Regd Office: Sy.No.54/Part, Above G.Pulla Reddy Sweets, Vikrampuri, Secunderabad-500009, Telangana, India
+                                        </p>
+                                        <p>
+                                            Factory: Sy.No. 53, Annaram Village, Gummadidala-Mandal, Sangareddy District. -502313, Telangana, India.
+                                        </p>
+                                        <div className="flex justify-center items-center gap-2 font-bold">
+                                            <Phone size={10} className="fill-current" />
+                                            <span>+91-40-27744415/16</span>
+                                            <span className="text-gray-400">|</span>
+                                            <span>GST: 36AABCP8800D1ZP</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="space-y-1">
+                                    <p className="font-bold uppercase">{headerInfo.companyName}</p>
+                                    <p>{headerInfo.address}</p>
+                                    <p>{headerInfo.contact}</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
                     {/* Print specific styles */}
                     <style>{`
-            @media print {
-              body * {
-                visibility: hidden;
-              }
-              #letter-content, #letter-content * {
-                visibility: visible;
-              }
-              #letter-content {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                margin: 0;
-                padding: 0;
-                border: none;
-                box-shadow: none;
-              }
-              .no-print {
-                display: none !important;
-              }
-              textarea, input {
-                border: none !important;
-                background: transparent !important;
-                resize: none !important;
-              }
-            }
-          `}</style>
+                #letter-content {
+                  padding: 20mm 20mm 50mm 20mm !important;
+                  background-color: #ffffff !important;
+                  color: #1f2937 !important;
+                }
+                #letter-content .bg-gray-50 {
+                  background-color: #f9fafb !important;
+                }
+                #letter-content .text-gray-800 {
+                  color: #1f2937 !important;
+                }
+                #letter-content .text-gray-900 {
+                  color: #111827 !important;
+                }
+                #letter-content .border-gray-100 {
+                  border-color: #f3f4f6 !important;
+                }
+                #letter-content .border-black {
+                  border-color: #000000 !important;
+                }
+                /* Global footer positioning */
+                #letter-footer {
+                  position: absolute !important;
+                  bottom: 15mm !important;
+                  left: 20mm !important;
+                  right: 20mm !important;
+                  width: auto !important;
+                }
+
+                @media print {
+                  body * {
+                    visibility: hidden;
+                  }
+                  #letter-content, #letter-content * {
+                    visibility: visible;
+                  }
+                  #letter-content {
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    width: 100%;
+                    margin: 0;
+                    padding: 0;
+                    border: none;
+                    box-shadow: none;
+                  }
+                  .no-print {
+                    display: none !important;
+                  }
+                  textarea, input {
+                    border: none !important;
+                    background: transparent !important;
+                    resize: none !important;
+                  }
+                  #letter-footer {
+                    position: absolute !important;
+                    bottom: 15mm !important;
+                    left: 20mm !important;
+                    right: 20mm !important;
+                    width: auto !important;
+                  }
+                }
+              `}</style>
                 </div>
             </div>
         </DashboardLayout>
