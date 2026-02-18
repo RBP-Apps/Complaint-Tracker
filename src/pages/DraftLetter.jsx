@@ -11,7 +11,7 @@ import DashboardLayout from "../components/DashboardLayout"
 function DraftLetter() {
     const navigate = useNavigate()
     const location = useLocation()
-    const [activeTab, setActiveTab] = useState(location.state?.tab || "pending")
+    const [activeTab, setActiveTab] = useState("pending")
     const [pendingTasks, setPendingTasks] = useState([])
     const [historyTasks, setHistoryTasks] = useState([])
     const [selectedTask, setSelectedTask] = useState(null)
@@ -44,6 +44,13 @@ function DraftLetter() {
     };
 
     useEffect(() => {
+        // Handle initial tab from state (e.g. when coming from AdminLetter)
+        if (location.state?.tab) {
+            setActiveTab(location.state.tab);
+            // Clear state from history so refresh defaults to pending
+            window.history.replaceState(null, '');
+        }
+
         const fetchTasks = async () => {
             setIsLoading(true)
             setError(null)
@@ -1002,7 +1009,7 @@ function DraftLetter() {
                                             <div className="flex justify-end gap-2 mt-4">
                                                 <button
                                                     type="button"
-                                                    onClick={() => navigate(`/dashboard/admin-letter/${selectedTaskData?.complaintId}`)}
+                                                    onClick={() => navigate(`/dashboard/admin-letter/${selectedTaskData?.complaintId}`, { state: { task: selectedTaskData } })}
                                                     className="py-2 px-4 border border-blue-300 rounded-md bg-blue-50 text-blue-700 hover:bg-blue-100 flex items-center"
                                                     disabled={isSubmitting}
                                                 >

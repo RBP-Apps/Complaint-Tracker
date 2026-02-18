@@ -1,6 +1,6 @@
 ﻿import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Save, FileText, Mail, Globe, Phone } from "lucide-react";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { ArrowLeft, Plus, Save, FileText, Mail, Globe, Phone, Trash2, SquarePlus } from "lucide-react";
 import { pdf } from "@react-pdf/renderer";
 import DashboardLayout from "../components/DashboardLayout";
 import LetterPDFDocument from "../components/LetterPDFDocument";
@@ -8,6 +8,7 @@ import LetterPDFDocument from "../components/LetterPDFDocument";
 const AdminLetter = () => {
     const { complaintId } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
     const [loading, setLoading] = useState(true);
     const [taskData, setTaskData] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
@@ -52,23 +53,37 @@ const AdminLetter = () => {
 
     // Dynamic Table State
     const [tableColumns, setTableColumns] = useState(["क्र.", "सौर समाधान क्र.", "आई. डी. नं.", "हितग्राही का नाम", "ग्राम/ विकासखण्ड", "दिनांक", "रिमार्क"]);
-    const [tableData, setTableData] = useState([
-        {
-            "क्र.": "01.",
-            "सौर समाधान क्र.": "2936",
-            "आई. डी. नं.": "819241",
-            "हितग्राही का नाम": "SARADU RAM PATEL/ NIRANJAN PATEL",
-            "ग्राम/ विकासखण्ड": "BAMHANI/ KONDAGAON",
-            "दिनांक": "23.10.2025",
-            "रिमार्क": "संयंत्र कार्य शील हैं।"
-        }
-    ]);
+    const [tableData, setTableData] = useState([]);
 
     useEffect(() => {
         const fetchTaskDetails = async () => {
             setLoading(true);
             try {
-                // First check if we have saved data in localStorage
+                // Scenario 1: Data passed via navigation state
+                if (location.state?.task) {
+                    const task = location.state.task;
+                    setTaskData(task);
+                    setTableData([{
+                        "क्र.": "01.",
+                        "सौर समाधान क्र.": task.complaintId || "-",
+                        "आई. डी. नं.": task.idNumber || "-",
+                        "हितग्राही का नाम": task.beneficiaryName || "-",
+                        "ग्राम/ विकासखण्ड": `${task.village || ""}/ ${task.block || ""}`,
+                        "दिनांक": task.actualDate || "-",
+                        "रिमार्क": "संयंत्र कार्य शील हैं।"
+                    }]);
+                    if (task.district) {
+                        setLetterInfo(prev => ({
+                            ...prev,
+                            districtOffice: `जिला कार्यालय, ${task.district} (छ०ग०)`,
+                            introParagraph: prev.introParagraph.replace(/कोण्डागांव/g, task.district)
+                        }));
+                    }
+                    setLoading(false);
+                    return;
+                }
+
+                // Scenario 2: Check if we have saved progress in localStorage
                 const savedData = localStorage.getItem(`admin_letter_${complaintId}`);
                 if (savedData) {
                     const parsed = JSON.parse(savedData);
@@ -80,8 +95,9 @@ const AdminLetter = () => {
                     return;
                 }
 
-                const trackerSheetUrl = "https://docs.google.com/spreadsheets/d/1VH0Wa4zOM77A1cYF7TZB9DBpVDbeFwdRPI9OS26CdL8/gviz/tq?tqx=out:json&sheet=Tracker";
-                const response = await fetch(trackerSheetUrl);
+                // Scenario 3: Fallback - Fetch from FMS sheet (same indices as DraftLetter)
+                const fmsSheetUrl = "https://docs.google.com/spreadsheets/d/1VH0Wa4zOM77A1cYF7TZB9DBpVDbeFwdRPI9OS26CdL8/gviz/tq?tqx=out:json&sheet=FMS";
+                const response = await fetch(fmsSheetUrl);
                 const text = await response.text();
                 const jsonStart = text.indexOf("{");
                 const jsonEnd = text.lastIndexOf("}") + 1;
@@ -89,20 +105,20 @@ const AdminLetter = () => {
                 const data = JSON.parse(jsonData);
 
                 if (data?.table?.rows) {
-                    const row = data.table.rows.find(r => r.c && r.c[2] && String(r.c[2].v).trim() === complaintId);
+                    // Match by Complaint ID (Index 1 in FMS)
+                    const row = data.table.rows.find(r => r.c && r.c[1] && String(r.c[1].v).trim() === complaintId);
                     if (row) {
                         const task = {
-                            complaintId: row.c[2]?.v || "",
-                            idNumber: row.c[1]?.v || "",
-                            beneficiaryName: row.c[5]?.v || "",
-                            village: row.c[7]?.v || "",
-                            block: row.c[8]?.v || "",
-                            district: row.c[9]?.v || "",
-                            actualDate: row.c[22]?.v || new Date().toLocaleDateString("en-GB")
+                            complaintId: row.c[1]?.v || "",
+                            idNumber: row.c[4]?.v || "-",
+                            beneficiaryName: row.c[8]?.v || "",
+                            village: row.c[10]?.v || "",
+                            block: row.c[11]?.v || "",
+                            district: row.c[12]?.v || "",
+                            actualDate: row.c[34]?.v || new Date().toLocaleDateString("en-GB")
                         };
                         setTaskData(task);
 
-                        // Auto-fill table with task data
                         setTableData([{
                             "क्र.": "01.",
                             "सौर समाधान क्र.": task.complaintId || "-",
@@ -110,10 +126,9 @@ const AdminLetter = () => {
                             "हितग्राही का नाम": task.beneficiaryName || "-",
                             "ग्राम/ विकासखण्ड": `${task.village || ""}/ ${task.block || ""}`,
                             "दिनांक": task.actualDate || "-",
-                            "रिमार्क": "संयंत्र कार्य शील हैं।"
+                            "रिमार्क": "संयंत्र कार्य शील हैं."
                         }]);
 
-                        // Update district in letter
                         if (task.district) {
                             setLetterInfo(prev => ({
                                 ...prev,
@@ -134,7 +149,7 @@ const AdminLetter = () => {
             fetchTaskDetails();
             fetchCompanyOptions();
         }
-    }, [complaintId]);
+    }, [complaintId, location.state]);
 
     const fetchCompanyOptions = async () => {
         try {
@@ -185,8 +200,16 @@ const AdminLetter = () => {
             if (!isNaN(lastNum)) {
                 newRow["क्र."] = (lastNum + 1).toString().padStart(2, '0') + ".";
             }
+        } else {
+            newRow["क्र."] = "01."; // If no rows or first row, start with 01.
         }
         setTableData([...tableData, newRow]);
+    };
+
+    const removeRow = (index) => {
+        const newData = [...tableData];
+        newData.splice(index, 1);
+        setTableData(newData);
     };
 
     const handleTableEdit = (rowIndex, colName, value) => {
@@ -534,7 +557,7 @@ const AdminLetter = () => {
                         </div>
 
                         {/* Dynamic Table */}
-                        <div className="my-8 overflow-hidden rounded-md border border-black">
+                        <div className="my-8 overflow-hidden rounded-md border border-black relative">
                             <table className="w-full border-collapse">
                                 <thead>
                                     <tr className="bg-gray-50 border-b border-black">
@@ -560,11 +583,21 @@ const AdminLetter = () => {
                                                 />
                                             </th>
                                         ))}
+                                        {/* Action Header Column for Add Row */}
+                                        <th className="p-2 text-center text-sm font-bold bg-gray-100 no-print w-10 border-l border-black">
+                                            <button
+                                                onClick={addRow}
+                                                className="text-blue-600 hover:text-blue-800 transition-colors"
+                                                title="Add Row"
+                                            >
+                                                <SquarePlus size={20} />
+                                            </button>
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {tableData.map((row, rowIndex) => (
-                                        <tr key={rowIndex} className="border-b border-black last:border-b-0">
+                                        <tr key={rowIndex} className="border-b border-black last:border-b-0 group">
                                             {tableColumns.map((col, colIndex) => (
                                                 <td key={colIndex} className="border-r border-black p-2 text-center text-sm last:border-r-0">
                                                     <input
@@ -575,21 +608,20 @@ const AdminLetter = () => {
                                                     />
                                                 </td>
                                             ))}
+                                            {/* Action Column for Delete Row */}
+                                            <td className="p-2 text-center text-sm no-print border-l border-black bg-gray-50/50 w-10">
+                                                <button
+                                                    onClick={() => removeRow(rowIndex)}
+                                                    className="text-red-400 hover:text-red-600 transition-colors"
+                                                    title="Remove Row"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
-                            {/* Add Row Button - Hidden on Print */}
-                            <div className="flex justify-center p-2 bg-gray-50 border-t border-black no-print">
-                                <button
-                                    onClick={addRow}
-                                    className="flex items-center gap-1 text-sm font-bold text-blue-600 hover:text-blue-800 transition-colors"
-                                    title="Add Row"
-                                >
-                                    <Plus size={16} />
-                                    <span>Add Row</span>
-                                </button>
-                            </div>
                         </div>
 
                         <div className="mt-6 text-justify">
