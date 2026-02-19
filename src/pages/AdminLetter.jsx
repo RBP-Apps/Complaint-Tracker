@@ -255,17 +255,7 @@ const AdminLetter = () => {
                 />
             ).toBlob();
 
-            // 2. Trigger browser download
-            const url = URL.createObjectURL(pdfBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `AdminLetter_${complaintId}.pdf`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-
-            // 3. Upload to Google Drive
+            // 2. Upload to Google Drive (Download to browser removed as per request)
             const reader = new FileReader();
             const base64data = await new Promise((resolve, reject) => {
                 reader.onloadend = () => resolve(reader.result.split(',')[1]);
@@ -302,7 +292,7 @@ const AdminLetter = () => {
                 const saveResult = await saveRes.json();
 
                 if (saveResult.success) {
-                    alert("PDF saved and data updated in FMS successfully!");
+                    alert("Letter data saved and updated in FMS successfully!");
                     setIsSavingPDF(false);
                     navigate("/dashboard/draft-letter", { state: { tab: "history" } });
                 } else {
@@ -349,7 +339,7 @@ const AdminLetter = () => {
                             disabled={isSaving || isSavingPDF}
                         >
                             <FileText size={18} />
-                            {isSavingPDF ? "Generating PDF..." : "Save PDF"}
+                            {isSavingPDF ? "Saving..." : "Save Letter"}
                         </button>
                     </div>
                 </div>
