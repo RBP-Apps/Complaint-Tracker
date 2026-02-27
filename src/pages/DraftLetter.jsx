@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
-import { Calendar, Upload, MapPin, Loader, Edit, Check, X, FileText } from "react-feather"
+import { Calendar, Upload, MapPin, Loader, Edit, Check, X, FileText, Mail, Trash2, Plus, Paperclip } from "react-feather"
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
 import DashboardLayout from "../components/DashboardLayout"
@@ -27,6 +27,14 @@ function DraftLetter() {
     const [filterDistrict, setFilterDistrict] = useState("")
     const [filterBlock, setFilterBlock] = useState("")
     const [filterTechnician, setFilterTechnician] = useState("")
+    const [selectedHistoryIds, setSelectedHistoryIds] = useState(new Set())
+    const [isSendingEmail, setIsSendingEmail] = useState(false)
+    const [emailModalOpen, setEmailModalOpen] = useState(false)
+    const [emailModalRow, setEmailModalRow] = useState(null)
+    const [emailRecipients, setEmailRecipients] = useState([])
+    const [emailSubject, setEmailSubject] = useState("")
+    const [emailBody, setEmailBody] = useState("")
+    const [emailAttachments, setEmailAttachments] = useState([])
 
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwnIMOzsFbniWnPFhl3lzE-2W0l6lD23keuz57-ldS_umSXIJqpEK-qxLE6eM0s7drqrQ/exec"
 
@@ -364,6 +372,287 @@ function DraftLetter() {
         setSelectedCompany("")
     }
 
+    // --- History tab checkbox & send-email helpers ---
+    const toggleHistorySelection = (complaintId) => {
+        setSelectedHistoryIds(prev => {
+            const next = new Set(prev)
+            if (next.has(complaintId)) {
+                next.delete(complaintId)
+            } else {
+                next.add(complaintId)
+            }
+            return next
+        })
+    }
+
+    // --- Email Modal helpers ---
+    const extractFileId = (url) => {
+        if (!url) return null
+        const match = url.match(/[?&]id=([^&]+)/)
+        if (match && match[1]) return match[1]
+        const match2 = url.match(/\/d\/([^/]+)/)
+        if (match2 && match2[1]) return match2[1]
+        return null
+    }
+
+    const openEmailModal = (taskData) => {
+        const isBulk = Array.isArray(taskData)
+        const tasks = isBulk ? taskData : [taskData]
+
+        setEmailModalRow(tasks[0]) // Use first task for context
+
+        const allRecipients = []
+        const allAttachments = []
+
+        tasks.forEach(task => {
+            const name = task.companyName || task.beneficiaryName || ""
+            const taskEmail = task.email || ""
+            const fileId = extractFileId(task.pdfUrl)
+            // Only auto-add recipients for bulk selection, not single row
+            if (isBulk && taskEmail && !allRecipients.some(r => r.email === taskEmail)) {
+                allRecipients.push({ name, email: taskEmail, fileId: fileId || "" })
+            }
+
+            if (fileId && !allAttachments.some(a => a.fileId === fileId)) {
+                allAttachments.push({ fileId, name: `${task.complaintId} - Letter PDF`, url: task.pdfUrl })
+            }
+        })
+
+        setEmailRecipients(allRecipients)
+        setEmailAttachments(allAttachments)
+        setEmailSubject("Document Notification")
+
+        if (isBulk && tasks.length > 1) {
+            setEmailBody(`Dear {name},\n\nPlease find the following documents ready for your review.\n\nTotal Documents: ${tasks.length}\n\nRegards,\nTeam`)
+        } else {
+            const first = tasks[0]
+            const name = first.companyName || first.beneficiaryName || ""
+            setEmailBody(`Dear ${name},\n\nYour document is ready. Please find the details below:\n\nComplaint ID: ${first.complaintId}\nBeneficiary: ${first.beneficiaryName}\nVillage: ${first.village}\nBlock: ${first.block}\nDistrict: ${first.district}\nProduct: ${first.product}\nNature of Complaint: ${first.natureOfComplaint}\n\nRegards,\nTeam`)
+        }
+
+        setEmailModalOpen(true)
+    }
+
+    const removeAttachment = (index) => {
+        setEmailAttachments(prev => prev.filter((_, i) => i !== index))
+    }
+
+    const addAttachmentFromHistory = (complaintId) => {
+        if (!complaintId) return
+        const task = historyTasks.find(t => t.complaintId === complaintId)
+        if (!task || !task.pdfUrl) return
+        const fileId = extractFileId(task.pdfUrl)
+        if (!fileId) return
+        if (emailAttachments.some(a => a.fileId === fileId)) return // already added
+        setEmailAttachments(prev => [...prev, { fileId, name: `${task.complaintId} - Letter PDF`, url: task.pdfUrl }])
+    }
+
+    const addRecipient = (emailValue) => {
+        if (!emailValue || !emailValue.trim()) return
+        if (emailRecipients.some(r => r.email === emailValue.trim())) return
+        setEmailRecipients(prev => [...prev, { name: "", email: emailValue.trim() }])
+    }
+
+    const removeRecipient = (index) => {
+        setEmailRecipients(prev => prev.filter((_, i) => i !== index))
+    }
+
+    const handleSendEmailModal = async () => {
+        if (emailRecipients.length === 0) {
+            alert("Please select at least one recipient")
+            return
+        }
+        const invalidEmails = emailRecipients.filter(r => !r.email || !r.email.includes("@"))
+        if (invalidEmails.length > 0) {
+            alert("Some recipients have invalid email addresses. Please fix them.")
+            return
+        }
+
+        setIsSendingEmail(true)
+        try {
+            // Each recipient carries their own fileId; also include any extra attachments from dropdown
+            const recipientsWithFiles = emailRecipients.map(r => ({
+                ...r,
+                fileId: r.fileId || ""
+            }))
+            // Extra attachments added via dropdown (not already linked to a recipient)
+            const extraFileIds = emailAttachments
+                .filter(a => !emailRecipients.some(r => r.fileId === a.fileId))
+                .map(a => a.fileId)
+
+            const formData = new FormData()
+            formData.append('action', 'sendBulkEmail')
+            formData.append('recipients', JSON.stringify(recipientsWithFiles))
+            formData.append('subject', emailSubject)
+            formData.append('body', emailBody)
+            formData.append('complaintId', emailModalRow?.complaintId || '')
+            formData.append('fileIds', JSON.stringify(extraFileIds))
+
+            console.log('DraftLetter: Sending bulk email:', {
+                recipients: recipientsWithFiles.length,
+                subject: emailSubject,
+                complaintId: emailModalRow?.complaintId,
+                extraAttachments: extraFileIds.length
+            })
+
+            const response = await fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                body: formData,
+            })
+
+            const result = await response.json()
+
+            if (result.success) {
+                alert("Email sent successfully to selected recipients")
+                setEmailModalOpen(false)
+                setEmailModalRow(null)
+                setEmailRecipients([])
+                setEmailSubject("")
+                setEmailBody("")
+                setEmailAttachments([])
+            } else {
+                throw new Error(result.error || 'Failed to send email')
+            }
+        } catch (err) {
+            console.error('DraftLetter: Email modal send error:', err)
+            alert('Failed to send email: ' + err.message)
+        } finally {
+            setIsSendingEmail(false)
+        }
+    }
+
+    const toggleSelectAllHistory = (checked) => {
+        if (checked) {
+            const allIds = filteredTasks.map(t => t.complaintId)
+            setSelectedHistoryIds(new Set(allIds))
+        } else {
+            setSelectedHistoryIds(new Set())
+        }
+    }
+
+    const handleSendEmailForSelected = async () => {
+        if (selectedHistoryIds.size === 0) {
+            alert("Please select at least one recipient")
+            return
+        }
+
+        setIsSendingEmail(true)
+
+        try {
+            const selectedTasks = historyTasks.filter(t => selectedHistoryIds.has(t.complaintId))
+            const { generateLetterHTML } = await import("../utils/letterTemplate.js")
+
+            let successCount = 0
+            let failCount = 0
+
+            for (const task of selectedTasks) {
+                try {
+                    // Use saved letter data from localStorage if available, otherwise build defaults
+                    const savedData = localStorage.getItem(`admin_letter_${task.complaintId}`)
+                    let letterInfoToUse = {}
+                    let headerInfo = {}
+
+                    if (savedData) {
+                        const parsed = JSON.parse(savedData)
+                        letterInfoToUse = parsed.letterInfo || {}
+                        headerInfo = parsed.headerInfo || {
+                            companyName: task.companyName,
+                            address: "",
+                            location: "",
+                            contact: ""
+                        }
+                    } else {
+                        // Build default letter info
+                        letterInfoToUse = {
+                            letterNo: `SSY/2025/${Math.floor(Math.random() * 900) + 100}`,
+                            date: new Date().toLocaleDateString("en-GB").replace(/\//g, "."),
+                            subject: "जिला कोण्डागांव में सौर सुजला योजनांतर्गत स्थापित सिंचाई सोलर पंप के संबंध में ।",
+                            reference: [
+                                "पत्र क्र. 2386/क्रेडा/जि.का./SSY/O&M/F-04/2024-25 कोण्डागांव, दिनांक 06.11.2025,",
+                                "जिला कार्यालय कोण्डागांव का पत्र क्रमांक / दिनांक 2067 / 26.09.2025, 2282 / 29.10.2025, 2112 / 29.09.2025 |"
+                            ],
+                            officerName: "जिला प्रभारी,",
+                            department: "छत्तीसगढ़ राज्य अक्षय ऊर्जा विकास अभिकरण (क्रेडा)",
+                            districtOffice: `जिला कार्यालय, ${task.district || 'कोण्डागांव'} (छ०ग०)`,
+                            salutation: "महोदय,",
+                            introParagraph: "उपरोक्त विषयांतर्गत लेख है कि, जिला कोण्डागांव अंतर्गत हमारे द्वारा विभिन्न स्थलों में सोलर पंपों स्थापित किया गया है। जिसकी अकार्य शीलता की सूचना हमें आपके संदर्भित पत्र के माध्यम से प्राप्त हुआ। जिसका विवरण निम्नानुसार है-",
+                            closingParagraph: "उपरोक्त साईट के संयंत्र का सुधार कार्य हमारे द्वारा कर दिया गया है, तथा संयंत्र वर्तमान में कार्य शील है। इस पत्र के साथ साईट की संपुष्टि पत्र संलग्न है। पत्र आपकी ओर सादर सूचनार्थ हेतु प्रेषित।",
+                            thankYou: "सधन्यवाद !",
+                            regards: "भवदीय",
+                            forCompany: `वास्ते, ${task.companyName}`,
+                            designation: "अधिकृत हस्ताक्षरकर्ता",
+                            copiesTo: [
+                                "कार्यपालन अभियंता महोदय, (RE-05) क्रेडा प्रधान कार्यालय, रायपुर को सादर सूचनार्थ प्रेषित।",
+                                "कार्यपालन अभियंता महोदय,क्रेडा जोनल कार्यालय, जगदलपुर को सादर सूचनार्थ प्रेषित।"
+                            ]
+                        }
+                        headerInfo = {
+                            companyName: task.companyName,
+                            address: "",
+                            location: "",
+                            contact: ""
+                        }
+                    }
+
+                    const taskEmail = task.email
+                    if (!taskEmail) {
+                        console.warn(`DraftLetter: Skipping ${task.complaintId} — no email address`)
+                        failCount++
+                        continue
+                    }
+
+                    const htmlContent = generateLetterHTML(task, headerInfo, letterInfoToUse)
+
+                    const formData = new FormData()
+                    formData.append('action', 'sendBulkEmail')
+                    formData.append('recipients', JSON.stringify([{ email: taskEmail, name: task.companyName || '' }]))
+                    formData.append('subject', letterInfoToUse.subject || '')
+                    formData.append('htmlBody', htmlContent) // Traditional letter HTML
+                    formData.append('fileIds', JSON.stringify([])) // No Drive attachments for bulk generator
+                    formData.append('complaintId', task.complaintId)
+                    formData.append('checkedValue', task.checked || '')
+                    formData.append('remarkValue', task.remark || '')
+
+                    console.log(`DraftLetter: Sending email for ${task.complaintId} to ${taskEmail}`)
+
+                    const response = await fetch(GOOGLE_SCRIPT_URL, {
+                        method: 'POST',
+                        body: formData,
+                    })
+
+                    const result = await response.json()
+
+                    if (result.success) {
+                        successCount++
+                    } else {
+                        console.error(`DraftLetter: Failed for ${task.complaintId}:`, result.error)
+                        failCount++
+                    }
+                } catch (innerErr) {
+                    console.error(`DraftLetter: Error sending email for ${task.complaintId}:`, innerErr)
+                    failCount++
+                }
+            }
+
+            // Show result summary
+            if (failCount === 0) {
+                alert("Email sent successfully to selected recipients")
+            } else if (successCount > 0) {
+                alert(`Email sent to ${successCount} recipient(s). ${failCount} failed.`)
+            } else {
+                alert(`Failed to send emails. Please check email addresses and try again.`)
+            }
+
+            setSelectedHistoryIds(new Set())
+
+        } catch (err) {
+            console.error("DraftLetter: Batch email error:", err)
+            alert("Failed to send emails: " + err.message)
+        } finally {
+            setIsSendingEmail(false)
+        }
+    }
+
     const getCurrentTasks = () => {
         return activeTab === "pending" ? pendingTasks : historyTasks
     }
@@ -534,6 +823,40 @@ function DraftLetter() {
                     </select>
                 </div>
 
+                {/* Send Email button for History tab */}
+                {activeTab === "history" && (
+                    <div className="mb-4 flex items-center gap-3">
+                        <button
+                            onClick={() => {
+                                const selected = historyTasks.filter(t => selectedHistoryIds.has(t.complaintId))
+                                openEmailModal(selected)
+                            }}
+                            disabled={selectedHistoryIds.size === 0 || isSendingEmail}
+                            className={`flex items-center gap-2 py-2 px-4 rounded-md text-white font-medium transition-all duration-200 ${selectedHistoryIds.size === 0
+                                ? "bg-gray-300 cursor-not-allowed"
+                                : "bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 shadow-sm hover:shadow-md"
+                                }`}
+                        >
+                            {isSendingEmail ? (
+                                <>
+                                    <Loader size={16} className="animate-spin" />
+                                    Sending...
+                                </>
+                            ) : (
+                                <>
+                                    <Mail size={16} />
+                                    Send Email {selectedHistoryIds.size > 0 && `(${selectedHistoryIds.size})`}
+                                </>
+                            )}
+                        </button>
+                        {selectedHistoryIds.size > 0 && (
+                            <span className="text-sm text-gray-500">
+                                {selectedHistoryIds.size} row{selectedHistoryIds.size > 1 ? "s" : ""} selected
+                            </span>
+                        )}
+                    </div>
+                )}
+
                 {/* Table */}
                 <div className="overflow-x-auto -mx-4 sm:mx-0">
                     <div className="inline-block min-w-full align-middle">
@@ -543,6 +866,17 @@ function DraftLetter() {
                                 <table className="min-w-full divide-y divide-gray-200">
                                     <thead className="bg-gray-100 sticky top-0 z-10">
                                         <tr>
+                                            {activeTab === "history" && (
+                                                <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                                                    <input
+                                                        type="checkbox"
+                                                        className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                                                        checked={filteredTasks.length > 0 && selectedHistoryIds.size === filteredTasks.length}
+                                                        onChange={(e) => toggleSelectAllHistory(e.target.checked)}
+                                                        title="Select All"
+                                                    />
+                                                </th>
+                                            )}
                                             {activeTab === "pending" && (
                                                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                                                     Actions
@@ -608,6 +942,9 @@ function DraftLetter() {
                                                     <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                                                         Email
                                                     </th>
+                                                    <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                                                        Actions
+                                                    </th>
                                                 </>
                                             )}
                                         </tr>
@@ -615,7 +952,7 @@ function DraftLetter() {
                                     <tbody className="bg-white divide-y divide-gray-200">
                                         {filteredTasks.length === 0 ? (
                                             <tr>
-                                                <td colSpan={activeTab === "pending" ? 14 : 16} className="px-3 py-10 text-center text-gray-500 italic font-medium">
+                                                <td colSpan={activeTab === "pending" ? 14 : 18} className="px-3 py-10 text-center text-gray-500 italic font-medium">
                                                     {activeTab === "pending"
                                                         ? "No pending draft letter complaints found"
                                                         : "No draft letter complaint history found"
@@ -624,7 +961,17 @@ function DraftLetter() {
                                             </tr>
                                         ) : (
                                             filteredTasks.map((task, index) => (
-                                                <tr key={task.complaintId || index} className="hover:bg-gray-50">
+                                                <tr key={task.complaintId || index} className={`hover:bg-gray-50 ${activeTab === "history" && selectedHistoryIds.has(task.complaintId) ? "bg-blue-50" : ""}`}>
+                                                    {activeTab === "history" && (
+                                                        <td className="px-3 py-4 whitespace-nowrap text-center">
+                                                            <input
+                                                                type="checkbox"
+                                                                className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                                                                checked={selectedHistoryIds.has(task.complaintId)}
+                                                                onChange={() => toggleHistorySelection(task.complaintId)}
+                                                            />
+                                                        </td>
+                                                    )}
                                                     {activeTab === "pending" && (
                                                         <td className="px-3 py-4 whitespace-nowrap">
                                                             <button
@@ -685,6 +1032,15 @@ function DraftLetter() {
                                                             </td>
                                                             <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">{task.companyName}</td>
                                                             <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{task.email}</td>
+                                                            <td className="px-3 py-4 whitespace-nowrap text-center">
+                                                                <button
+                                                                    onClick={() => openEmailModal(task)}
+                                                                    className="inline-flex items-center gap-1 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white py-1 px-3 rounded-md text-xs font-medium transition-all duration-200 shadow-sm hover:shadow-md"
+                                                                >
+                                                                    <Mail size={12} />
+                                                                    Email
+                                                                </button>
+                                                            </td>
                                                         </>
                                                     )}
                                                 </tr>
@@ -741,6 +1097,16 @@ function DraftLetter() {
                                             {/* History specific fields */}
                                             {activeTab === "history" && (
                                                 <div className="mt-2 pt-2 border-t border-gray-100">
+                                                    {/* Checkbox for mobile card */}
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        <input
+                                                            type="checkbox"
+                                                            className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                                                            checked={selectedHistoryIds.has(task.complaintId)}
+                                                            onChange={() => toggleHistorySelection(task.complaintId)}
+                                                        />
+                                                        <span className="text-xs text-gray-600 font-medium">Select for Email</span>
+                                                    </div>
                                                     <div className="flex justify-between text-xs items-center">
                                                         <span className="text-gray-500">Actual Date</span>
                                                         <span className="text-gray-900">{task.actualDate}</span>
@@ -774,6 +1140,15 @@ function DraftLetter() {
                                                     <div className="flex justify-between text-xs mt-1">
                                                         <span className="text-gray-500">Email</span>
                                                         <span className="text-gray-900">{task.email}</span>
+                                                    </div>
+                                                    <div className="mt-2 pt-2 border-t border-gray-100">
+                                                        <button
+                                                            onClick={() => openEmailModal(task)}
+                                                            className="w-full inline-flex items-center justify-center gap-1 bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-1.5 rounded-md text-xs font-medium"
+                                                        >
+                                                            <Mail size={12} />
+                                                            Send Email
+                                                        </button>
                                                     </div>
                                                 </div>
                                             )}
@@ -1041,6 +1416,179 @@ function DraftLetter() {
                                                 </button>
                                             </div>
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Email Modal */}
+                {emailModalOpen && (
+                    <div className="fixed inset-0 z-50 overflow-y-auto">
+                        <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+                                <div className="absolute inset-0 bg-gray-500 opacity-75" onClick={() => setEmailModalOpen(false)}></div>
+                            </div>
+
+                            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full relative z-10">
+                                <div className="bg-white px-4 pt-5 pb-4 sm:p-6">
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <div className="flex items-center justify-center h-8 w-8 rounded-full bg-blue-100">
+                                            <Mail size={16} className="text-blue-600" />
+                                        </div>
+                                        <h3 className="text-lg font-medium text-gray-900">
+                                            Send Email — {emailModalRow?.complaintId}
+                                        </h3>
+                                    </div>
+
+                                    <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+                                        {/* Recipients */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Recipients</label>
+                                            <div className="space-y-2">
+                                                {emailRecipients.map((r, idx) => (
+                                                    <div key={idx} className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-md px-3 py-2">
+                                                        <div className="flex-1 min-w-0">
+                                                            <span className="text-sm font-medium text-gray-900 truncate block">{r.name || 'No name'}</span>
+                                                            <span className="text-xs text-gray-500 truncate block">{r.email}</span>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => removeRecipient(idx)}
+                                                            className="text-red-400 hover:text-red-600 flex-shrink-0"
+                                                            title="Remove"
+                                                        >
+                                                            <X size={14} />
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            <div className="mt-2 flex items-center gap-2">
+                                                <input
+                                                    type="email"
+                                                    placeholder="Add email address and press Enter"
+                                                    className="flex-1 border border-gray-300 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter') {
+                                                            e.preventDefault()
+                                                            addRecipient(e.target.value)
+                                                            e.target.value = ''
+                                                        }
+                                                    }}
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        const input = e.currentTarget.previousElementSibling
+                                                        addRecipient(input.value)
+                                                        input.value = ''
+                                                    }}
+                                                    className="p-2 bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100"
+                                                    title="Add recipient"
+                                                >
+                                                    <Plus size={16} />
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {/* PDF Attachments */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">PDF Attachments</label>
+                                            {emailAttachments.length > 0 && (
+                                                <div className="space-y-2 mb-2">
+                                                    {emailAttachments.map((att, idx) => (
+                                                        <div key={idx} className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-md px-3 py-2">
+                                                            <Paperclip size={14} className="text-blue-500 flex-shrink-0" />
+                                                            <span className="text-sm text-blue-800 flex-1 truncate">{att.name}</span>
+                                                            <button
+                                                                onClick={() => removeAttachment(idx)}
+                                                                className="text-red-400 hover:text-red-600 flex-shrink-0"
+                                                                title="Remove"
+                                                            >
+                                                                <X size={14} />
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                            <select
+                                                className="w-full border border-gray-300 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                value=""
+                                                onChange={(e) => {
+                                                    addAttachmentFromHistory(e.target.value)
+                                                    e.target.value = ''
+                                                }}
+                                            >
+                                                <option value="">Select PDF to attach...</option>
+                                                {historyTasks
+                                                    .filter(t => t.pdfUrl && extractFileId(t.pdfUrl))
+                                                    .filter(t => !emailAttachments.some(a => a.fileId === extractFileId(t.pdfUrl)))
+                                                    .map(t => (
+                                                        <option key={t.complaintId} value={t.complaintId}>
+                                                            {t.complaintId} - {t.beneficiaryName || t.companyName || 'PDF'}
+                                                        </option>
+                                                    ))
+                                                }
+                                            </select>
+                                            {emailAttachments.length === 0 && (
+                                                <p className="text-xs text-gray-400 mt-1 italic">No PDF attached. Select from dropdown above.</p>
+                                            )}
+                                        </div>
+
+                                        {/* Subject */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                                            <input
+                                                type="text"
+                                                value={emailSubject}
+                                                onChange={(e) => setEmailSubject(e.target.value)}
+                                                className="w-full border border-gray-300 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            />
+                                        </div>
+
+                                        {/* Body */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Email Body</label>
+                                            <textarea
+                                                value={emailBody}
+                                                onChange={(e) => setEmailBody(e.target.value)}
+                                                rows={8}
+                                                className="w-full border border-gray-300 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Actions */}
+                                    <div className="flex justify-end gap-2 mt-4 pt-4 border-t border-gray-200">
+                                        <button
+                                            type="button"
+                                            onClick={() => setEmailModalOpen(false)}
+                                            className="py-2 px-4 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50 text-sm"
+                                            disabled={isSendingEmail}
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={handleSendEmailModal}
+                                            disabled={isSendingEmail || emailRecipients.length === 0}
+                                            className={`py-2 px-4 rounded-md text-white text-sm font-medium flex items-center gap-2 ${emailRecipients.length === 0
+                                                ? 'bg-gray-300 cursor-not-allowed'
+                                                : 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700'
+                                                }`}
+                                        >
+                                            {isSendingEmail ? (
+                                                <>
+                                                    <Loader size={14} className="animate-spin" />
+                                                    Sending...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Mail size={14} />
+                                                    Send Email ({emailRecipients.length})
+                                                </>
+                                            )}
+                                        </button>
                                     </div>
                                 </div>
                             </div>
